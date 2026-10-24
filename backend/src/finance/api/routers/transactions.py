@@ -45,7 +45,7 @@ def list_transactions(
     include_voided: bool = False,
     limit: int = Query(default=100, ge=1, le=500),
     cursor: str | None = None,
-    session: Session = Depends(get_db_session),
+    session: Session = Depends(get_db_session, scope="function"),
 ) -> dict[str, Any]:
     page = transactions.list_transactions(
         session,
@@ -65,7 +65,7 @@ def list_transactions(
 
 @router.post("/transactions", status_code=201)
 def create_transaction(
-    body: TransactionInput, session: Session = Depends(get_db_session)
+    body: TransactionInput, session: Session = Depends(get_db_session, scope="function")
 ) -> dict[str, Any]:
     return serializers.transaction_result(transactions.create_transaction(session, to_data(body)))
 
@@ -73,7 +73,7 @@ def create_transaction(
 @router.get("/transactions/{transactionId}", responses={404: NOT_FOUND})
 def get_transaction(
     transactionId: UUID,
-    session: Session = Depends(get_db_session),
+    session: Session = Depends(get_db_session, scope="function"),
 ) -> dict[str, Any]:
     current, versions = transactions.get_transaction(session, str(transactionId))
     return {
@@ -86,7 +86,7 @@ def get_transaction(
 def update_transaction(
     transactionId: UUID,
     body: TransactionInput,
-    session: Session = Depends(get_db_session),
+    session: Session = Depends(get_db_session, scope="function"),
 ) -> dict[str, Any]:
     outcome = transactions.update_transaction(session, str(transactionId), to_data(body))
     return serializers.transaction_result(outcome)
@@ -95,7 +95,7 @@ def update_transaction(
 @router.delete("/transactions/{transactionId}", responses={404: NOT_FOUND})
 def void_transaction(
     transactionId: UUID,
-    session: Session = Depends(get_db_session),
+    session: Session = Depends(get_db_session, scope="function"),
 ) -> dict[str, Any]:
     return serializers.transaction_result(
         transactions.void_transaction(session, str(transactionId))
@@ -104,7 +104,7 @@ def void_transaction(
 
 @router.post("/transfers", status_code=201)
 def create_transfer(
-    body: TransferInput, session: Session = Depends(get_db_session)
+    body: TransferInput, session: Session = Depends(get_db_session, scope="function")
 ) -> dict[str, Any]:
     outcome = transfers.create_transfer(
         session,

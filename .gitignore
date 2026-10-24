@@ -31,3 +31,8 @@ frontend/dist/
 
 # Système
 .DS_Store
+
+# Tests de bout en bout
+frontend/.e2e-data/
+frontend/test-results/
+frontend/playwright-report/
