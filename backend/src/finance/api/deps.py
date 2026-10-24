@@ -31,6 +31,11 @@ def require_session(
 def get_db_session(
     _: str = Depends(require_session), auth: AuthService = Depends(get_auth)
 ) -> Iterator[Session]:
-    """Session SQLAlchemy sur la base déverrouillée ; fermée en fin de requête."""
+    """Session SQLAlchemy sur la base déverrouillée : validée si la route réussit, sinon annulée."""
     with auth.session_factory()() as session:
-        yield session
+        try:
+            yield session
+            session.commit()
+        except BaseException:
+            session.rollback()
+            raise

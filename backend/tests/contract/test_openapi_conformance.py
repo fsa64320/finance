@@ -143,10 +143,14 @@ def test_request_constraints_match_the_contract(
             continue
         assert set(got.get("required", [])) == set(wanted.get("required", [])), key
         for name, spec in wanted["properties"].items():
+            expected_property = simplified(resolve(contract, spec))
+            actual_property = simplified(resolve(served, got["properties"][name]))
             for constraint in ("minLength", "maxLength", "type"):
-                assert simplified(got["properties"][name]).get(constraint) == simplified(spec).get(
-                    constraint
-                ), (key, name, constraint)
+                assert actual_property.get(constraint) == expected_property.get(constraint), (
+                    key,
+                    name,
+                    constraint,
+                )
 
 
 def test_public_and_protected_operations_match_the_contract(

@@ -18,6 +18,7 @@ from finance.auth.errors import (
     TooManyAttemptsError,
 )
 from finance.auth.passwords import PasswordPolicyError
+from finance.services.errors import ConflictError, NotFoundError, ValidationFailed
 
 logger = logging.getLogger("finance.api")
 
@@ -94,6 +95,23 @@ async def _too_many_handler(_: Request, error: Exception) -> JSONResponse:
     )
 
 
+async def _not_found_handler(_: Request, error: Exception) -> JSONResponse:
+    if not isinstance(error, NotFoundError):
+        raise error
+    return error_response(404, "not_found", f"{error.kind} introuvable.")
+
+
+async def _conflict_handler(_: Request, error: Exception) -> JSONResponse:
+    return error_response(409, "conflict", str(error))
+
+
+async def _service_validation_handler(_: Request, error: Exception) -> JSONResponse:
+    if not isinstance(error, ValidationFailed):
+        raise error
+    details = [{"field": d.field, "message": d.message} for d in error.details]
+    return error_response(422, "validation_error", "Données invalides", details=details)
+
+
 async def _unexpected_handler(_: Request, error: Exception) -> JSONResponse:
     logger.error("erreur inattendue : %s", type(error).__name__)  # jamais le contenu de la requête
     return error_response(500, "internal_error", "Erreur interne")
@@ -125,4 +143,7 @@ def install_error_handlers(app: FastAPI) -> None:
         _simple(401, "session_required", "Session absente ou expirée."),
     )
     app.add_exception_handler(LockedError, _simple(423, "locked", "L'instance est verrouillée."))
+    app.add_exception_handler(NotFoundError, _not_found_handler)
+    app.add_exception_handler(ConflictError, _conflict_handler)
+    app.add_exception_handler(ValidationFailed, _service_validation_handler)
     app.add_exception_handler(Exception, _unexpected_handler)

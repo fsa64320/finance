@@ -102,8 +102,8 @@ Règles transverses à respecter dans chaque tâche : montants, quantités, prix
 - [x] T043 [P] [US1] Écrire `backend/tests/unit/test_transaction_rules.py` : `EMPLOYER_MATCH` « n'est autorisé que sur un compte `PEE` » ; achat ou vente sur un compte `LIVRET_A` « refusé » ; `trade_date` « supérieure ou égale à `opened_on` » ; une vente supérieure à la quantité détenue est acceptée avec un avertissement, jamais bloquée ; `quantity` « strictement positive pour `BUY`, `SELL` » *(les règles vivent dans `backend/src/finance/domain/rules.py`, fonction pure appelée par T054)*
 - [x] T044 [P] [US1] Écrire `backend/tests/unit/test_pea_cap_and_pee_lock.py` : cumul des versements du PEA comparé au plafond paramétrable (défaut 150000), virements entrants inclus, retraits non déduits ; somme du PEE bloquée jusqu'à `unlock_date`, abondement exclu des apports
 - [x] T045 [P] [US1] Écrire `backend/tests/unit/test_euro_fund_valuation.py` : valeur = dernier solde déclaré à la date plus flux suivants ; sans solde déclaré valeur nulle et message ; le solde déclaré le plus récent (`recorded_at`) fait foi à une même date
-- [ ] T046 [P] [US1] Écrire `backend/tests/contract/test_accounts_transactions_contract.py` pour `/accounts`, `/instruments`, `/transactions`, `/transfers`, `/declared-balances` selon `contracts/openapi.yaml`
-- [ ] T047 [P] [US1] Écrire `backend/tests/integration/test_quickstart_scenario_3.py` : étapes a à g de `quickstart.md` section 3 de bout en bout sur la base chiffrée
+- [x] T046 [P] [US1] Écrire `backend/tests/contract/test_accounts_transactions_contract.py` pour `/accounts`, `/instruments`, `/transactions`, `/transfers`, `/declared-balances` selon `contracts/openapi.yaml`
+- [x] T047 [P] [US1] Écrire `backend/tests/integration/test_quickstart_scenario_3.py` : étapes a à g de `quickstart.md` section 3 de bout en bout sur la base chiffrée
 
 ### Implementation for User Story 1
 
@@ -111,15 +111,15 @@ Règles transverses à respecter dans chaque tâche : montants, quantités, prix
 - [x] T049 [P] [US1] Implémenter `backend/src/finance/domain/cost_basis.py` : prix de revient unitaire en moyenne pondérée frais inclus
 - [x] T050 [P] [US1] Implémenter `backend/src/finance/domain/caps.py` : cumul des versements du PEA et plafond, disponibilité des sommes du PEE selon `unlock_date`
 - [x] T051 [US1] Implémenter `backend/src/finance/domain/valuation.py` : valeur d'une position (dernier prix connu, à défaut prix de revient marqué « estimé »), valeur d'un compte (positions plus trésorerie), fonds en euros par solde déclaré (dépend de T048, T049)
-- [ ] T052 [P] [US1] Implémenter `backend/src/finance/services/accounts.py` (création, modification, clôture ; `settings` avec `deposit_cap` et `lock_years`)
-- [ ] T053 [P] [US1] Implémenter `backend/src/finance/services/instruments.py` (création, ISIN validé et unique, `price_mode` par défaut `MANUAL` pour `SCPI, FCPE, EURO_FUND, CASH`)
-- [ ] T054 [US1] Implémenter `backend/src/finance/services/transactions.py` : création, modification et annulation par ajout de version, application de toutes les règles de data-model.md, avertissements non bloquants, historique des versions (dépend de T048)
-- [ ] T055 [US1] Implémenter `backend/src/finance/services/transfers.py` : création, modification et annulation atomiques des deux jambes reliées par `transfer_group_id` (dépend de T054)
-- [ ] T056 [P] [US1] Implémenter `backend/src/finance/services/balances.py` (soldes déclarés)
-- [ ] T057 [P] [US1] Implémenter `backend/src/finance/api/routers/accounts.py` : `GET/POST /accounts`, `GET/PATCH /accounts/{accountId}` avec positions, valeur et indicateurs « estimé »
-- [ ] T058 [P] [US1] Implémenter `backend/src/finance/api/routers/instruments.py` : `GET/POST /instruments`, `PATCH /instruments/{instrumentId}`
-- [ ] T059 [US1] Implémenter `backend/src/finance/api/routers/transactions.py` : `GET/POST /transactions`, `GET/PUT/DELETE /transactions/{transactionId}` (la suppression annule, l'historique des versions est renvoyé), et `POST /transfers`
-- [ ] T060 [P] [US1] Implémenter `backend/src/finance/api/routers/balances.py` : `POST /declared-balances`
+- [x] T052 [P] [US1] Implémenter `backend/src/finance/services/accounts.py` (création, modification, clôture ; `settings` avec `deposit_cap` et `lock_years`) *(avec `services/errors.py` et `services/loaders.py`, communs aux services)*
+- [x] T053 [P] [US1] Implémenter `backend/src/finance/services/instruments.py` (création, ISIN validé et unique, `price_mode` par défaut `MANUAL` pour `SCPI, FCPE, EURO_FUND, CASH`)
+- [x] T054 [US1] Implémenter `backend/src/finance/services/transactions.py` : création, modification et annulation par ajout de version, application de toutes les règles de data-model.md, avertissements non bloquants, historique des versions (dépend de T048)
+- [x] T055 [US1] Implémenter `backend/src/finance/services/transfers.py` : création, modification et annulation atomiques des deux jambes reliées par `transfer_group_id` (dépend de T054)
+- [x] T056 [P] [US1] Implémenter `backend/src/finance/services/balances.py` (soldes déclarés)
+- [x] T057 [P] [US1] Implémenter `backend/src/finance/api/routers/accounts.py` : `GET/POST /accounts`, `GET/PATCH /accounts/{accountId}` avec positions, valeur et indicateurs « estimé »
+- [x] T058 [P] [US1] Implémenter `backend/src/finance/api/routers/instruments.py` : `GET/POST /instruments`, `PATCH /instruments/{instrumentId}`
+- [x] T059 [US1] Implémenter `backend/src/finance/api/routers/transactions.py` : `GET/POST /transactions`, `GET/PUT/DELETE /transactions/{transactionId}` (la suppression annule, l'historique des versions est renvoyé), et `POST /transfers` *(le sérialiseur JSON est `api/serializers.py` ; les réponses sont validées contre le contrat par T046)*
+- [x] T060 [P] [US1] Implémenter `backend/src/finance/api/routers/balances.py` : `POST /declared-balances` *(la route vit dans `api/routers/accounts.py` : le contrat range `/declared-balances` sous le tag `accounts`)*
 - [ ] T061 [P] [US1] Écrire `frontend/tests/components/TransactionForm.test.tsx` puis implémenter `frontend/src/components/TransactionForm.tsx` (champs selon le type, avertissement de vente excédentaire, abondement réservé au PEE)
 - [ ] T062 [P] [US1] Implémenter `frontend/src/components/TransferForm.tsx` et `frontend/src/components/ModificationHistory.tsx` (versions d'une opération)
 - [ ] T063 [P] [US1] Implémenter `frontend/src/pages/Instruments.tsx` (création, message d'ISIN invalide)
