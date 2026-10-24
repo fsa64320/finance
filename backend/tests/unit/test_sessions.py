@@ -1,7 +1,6 @@
 """FR-028 : 30 minutes d'inactivité, 12 heures au plus."""
 
 from finance.auth.sessions import IDLE_TIMEOUT, MAX_AGE, SessionStore
-
 from tests.conftest import FakeClock
 
 MINUTE = 60.0

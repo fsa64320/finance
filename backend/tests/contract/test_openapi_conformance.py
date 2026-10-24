@@ -9,9 +9,9 @@ from typing import Any
 import pytest
 import yaml
 from fastapi import FastAPI
-from finance.main import create_app
 
 from finance.config import Settings
+from finance.main import create_app
 
 CONTRACT_PATH = (
     Path(__file__).resolve().parents[3]
@@ -21,6 +21,8 @@ CONTRACT_PATH = (
     / "openapi.yaml"
 )
 IMPLEMENTED_TAGS = {"auth"}
+# Opérations du contrat reportées à une tâche ultérieure ; T141 vide cette liste.
+DEFERRED_OPERATIONS = {("POST", "/api/v1/auth/change-password")}  # T139 (US5, FR-033)
 METHODS = {"get", "post", "put", "patch", "delete"}
 
 Operation = dict[str, Any]
@@ -40,7 +42,11 @@ def operations(document: dict[str, Any], path_prefix: str = "") -> dict[tuple[st
 
 
 def only_implemented(ops: dict[tuple[str, str], Operation]) -> dict[tuple[str, str], Operation]:
-    return {key: op for key, op in ops.items() if IMPLEMENTED_TAGS & set(op.get("tags", []))}
+    return {
+        key: op
+        for key, op in ops.items()
+        if IMPLEMENTED_TAGS & set(op.get("tags", [])) and key not in DEFERRED_OPERATIONS
+    }
 
 
 def resolve(document: dict[str, Any], schema: dict[str, Any]) -> dict[str, Any]:
@@ -83,6 +89,13 @@ def served(app: FastAPI) -> dict[str, Any]:
 def test_implemented_tags_exist_in_the_contract(contract: dict[str, Any]) -> None:
     declared = {tag["name"] for tag in contract["tags"]}
     assert declared >= IMPLEMENTED_TAGS
+
+
+def test_deferred_operations_are_in_the_contract_but_not_served(
+    contract: dict[str, Any], served: dict[str, Any]
+) -> None:
+    assert set(operations(contract, prefix(contract))) >= DEFERRED_OPERATIONS
+    assert not DEFERRED_OPERATIONS & set(operations(served))
 
 
 def test_paths_and_methods_match_the_contract(

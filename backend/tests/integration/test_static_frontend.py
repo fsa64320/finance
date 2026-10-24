@@ -5,9 +5,9 @@ from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
-from finance.main import create_app
 
 from finance.config import Settings
+from finance.main import create_app
 
 
 @pytest.fixture

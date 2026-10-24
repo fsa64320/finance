@@ -6,6 +6,9 @@ import stat
 from pathlib import Path
 
 import pytest
+from sqlalchemy import text
+
+from finance.auth import metadata
 from finance.auth.errors import (
     AlreadyInitializedError,
     InvalidCredentialsError,
@@ -15,9 +18,6 @@ from finance.auth.errors import (
 )
 from finance.auth.passwords import PasswordPolicyError
 from finance.auth.service import AuthService
-from sqlalchemy import text
-
-from finance.auth import metadata
 from finance.config import Settings
 from tests.conftest import FakeClock
 

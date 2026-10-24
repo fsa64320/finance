@@ -6,9 +6,9 @@ from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
-from finance.main import COOKIE_NAME, create_app
 
 from finance.config import Settings
+from finance.main import COOKIE_NAME, create_app
 from tests.conftest import FakeClock
 
 API = "/api/v1"
@@ -252,3 +252,22 @@ def test_malformed_body_uses_the_error_format(client: TestClient) -> None:
     )
     assert response.status_code == 422
     assert set(response.json()) >= {"code", "message"}
+
+
+def test_db_session_dependency_serves_only_unlocked_sessions(client: TestClient) -> None:
+    from fastapi import Depends
+    from sqlalchemy import text
+    from sqlalchemy.orm import Session
+
+    from finance.api.deps import get_db_session
+
+    def probe(session: Session = Depends(get_db_session)) -> dict[str, int]:
+        count = session.execute(text("SELECT count(*) FROM account")).scalar_one()
+        return {"accounts": int(count)}
+
+    client.app.add_api_route(f"{API}/_probe", probe)  # type: ignore[attr-defined]
+    assert client.get(f"{API}/_probe").status_code == 401
+    setup(client)
+    assert client.get(f"{API}/_probe").json() == {"accounts": 0}
+    client.post(f"{API}/auth/lock")
+    assert client.get(f"{API}/_probe").status_code == 401

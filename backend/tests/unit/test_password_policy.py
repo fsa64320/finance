@@ -1,6 +1,7 @@
 """FR-028 : 12 à 128 caractères, hors liste des mots de passe courants."""
 
 import pytest
+
 from finance.auth.passwords import MAX_LENGTH, MIN_LENGTH, PasswordPolicyError, validate_password
 
 

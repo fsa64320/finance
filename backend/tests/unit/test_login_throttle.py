@@ -1,7 +1,6 @@
 """FR-028 : 5 échecs, puis 15 secondes qui doublent à chaque échec jusqu'à 15 minutes."""
 
 from finance.auth.ratelimit import AttemptLimiter
-
 from tests.conftest import FakeClock
 
 

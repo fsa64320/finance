@@ -3,8 +3,9 @@
 from decimal import Decimal
 
 import pytest
-from finance.api.schemas import DecimalStr
 from pydantic import BaseModel, ValidationError
+
+from finance.api.schemas import DecimalStr
 
 
 class Line(BaseModel):
