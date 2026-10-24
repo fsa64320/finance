@@ -2,6 +2,7 @@ from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
+from fastapi.testclient import TestClient
 from sqlalchemy import Engine
 from sqlalchemy.orm import Session
 
@@ -56,3 +57,19 @@ class FakeClock:
 @pytest.fixture
 def clock() -> FakeClock:
     return FakeClock()
+
+
+API_PASSWORD = "tulipe-bleue-47-horizon"  # noqa: S105 - valeur jetable des tests
+
+
+@pytest.fixture
+def authed_client(tmp_path: Path, clock: FakeClock) -> Iterator[TestClient]:
+    """Client d'une instance initialisée avec une session ouverte."""
+    from finance.config import Settings
+    from finance.main import create_app
+
+    settings = Settings(data_dir=tmp_path / "data", host="127.0.0.1", port=8000)
+    with TestClient(create_app(settings, clock=clock), base_url="http://testserver") as client:
+        response = client.post("/api/v1/auth/setup", json={"password": API_PASSWORD})
+        assert response.status_code == 204
+        yield client

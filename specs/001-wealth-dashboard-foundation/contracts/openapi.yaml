@@ -110,6 +110,7 @@ paths:
               schema:
                 type: array
                 items: { $ref: "#/components/schemas/AccountSummary" }
+        "422": { $ref: "#/components/responses/Validation" }
     post:
       tags: [accounts]
       summary: Crée un compte
@@ -124,6 +125,7 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Account" }
+        "409": { $ref: "#/components/responses/Conflict" }
         "422": { $ref: "#/components/responses/Validation" }
   /accounts/{accountId}:
     parameters:
@@ -140,6 +142,7 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/AccountDetail" }
         "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/Validation" }
     patch:
       tags: [accounts]
       summary: Modifie ou clôture un compte
@@ -154,6 +157,8 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Account" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
         "422": { $ref: "#/components/responses/Validation" }
 
   /instruments:
@@ -182,6 +187,7 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Instrument" }
+        "409": { $ref: "#/components/responses/Conflict" }
         "422": { $ref: "#/components/responses/Validation" }
   /instruments/{instrumentId}:
     parameters:
@@ -201,6 +207,7 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/Instrument" }
         "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/Validation" }
   /instruments/{instrumentId}/ticker-suggestions:
     parameters:
       - { name: instrumentId, in: path, required: true, schema: { type: string, format: uuid } }
@@ -249,6 +256,7 @@ paths:
                     type: array
                     items: { $ref: "#/components/schemas/Transaction" }
                   next_cursor: { type: [string, "null"] }
+        "422": { $ref: "#/components/responses/Validation" }
     post:
       tags: [transactions]
       summary: Saisit une opération
@@ -277,6 +285,7 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/TransactionWithHistory" }
         "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/Validation" }
     put:
       tags: [transactions]
       summary: Modifie une opération (ajoute une version, l'ancienne est conservée)
@@ -291,16 +300,19 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/TransactionResult" }
+        "404": { $ref: "#/components/responses/NotFound" }
         "422": { $ref: "#/components/responses/Validation" }
     delete:
       tags: [transactions]
       summary: Annule une opération (ajoute une version annulée, rien n'est effacé)
       responses:
         "200":
-          description: Version d'annulation
+          description: Version d'annulation (un virement s'annule avec ses deux jambes)
           content:
             application/json:
               schema: { $ref: "#/components/schemas/TransactionResult" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/Validation" }
   /transfers:
     post:
       tags: [transactions]
@@ -383,7 +395,7 @@ paths:
                         message: { type: string }
   /declared-balances:
     post:
-      tags: [prices]
+      tags: [accounts]
       summary: Déclare un solde (fonds en euros, Livret A)
       requestBody:
         required: true
@@ -752,8 +764,15 @@ components:
       properties:
         instrument_id: { type: string, format: uuid }
         quantity: { $ref: "#/components/schemas/Decimal" }
-        unit_cost: { $ref: "#/components/schemas/Decimal" }
-        value: { $ref: "#/components/schemas/Decimal" }
+        kind: { $ref: "#/components/schemas/InstrumentKind" }
+        unit_cost:
+          description: Prix de revient unitaire moyen (null si aucune part n'est détenue)
+          oneOf: [{ $ref: "#/components/schemas/Decimal" }, { type: "null" }]
+        total_cost: { $ref: "#/components/schemas/Decimal" }
+        value:
+          description: Valeur de la position (null si elle ne peut pas être valorisée)
+          oneOf: [{ $ref: "#/components/schemas/Decimal" }, { type: "null" }]
+        price: { oneOf: [{ $ref: "#/components/schemas/Decimal" }, { type: "null" }] }
         price_date: { type: [string, "null"], format: date }
         estimated: { type: boolean }
     AccountDetail:
@@ -770,10 +789,23 @@ components:
               type: object
               description: Cumul des versements et plafond (PEA, Livret A)
               properties:
-                deposited: { $ref: "#/components/schemas/Decimal" }
+                deposited:
+                  { $ref: "#/components/schemas/Decimal" }
                 cap: { $ref: "#/components/schemas/Decimal" }
+                remaining: { $ref: "#/components/schemas/Decimal" }
+                exceeded: { type: boolean }
             locked_amount:
               { $ref: "#/components/schemas/Decimal" }
+            warnings:
+              type: array
+              description: Prix manquant, solde non déclaré, position négative, devise non convertible
+              items:
+                type: object
+                required: [code, message]
+                properties:
+                  code: { type: string }
+                  instrument_id: { type: [string, "null"], format: uuid }
+                  message: { type: string }
 
     InstrumentKind:
       type: string

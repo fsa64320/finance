@@ -20,9 +20,12 @@ CONTRACT_PATH = (
     / "contracts"
     / "openapi.yaml"
 )
-IMPLEMENTED_TAGS = {"auth"}
+IMPLEMENTED_TAGS = {"auth", "accounts", "instruments", "transactions"}
 # Opérations du contrat reportées à une tâche ultérieure ; T141 vide cette liste.
-DEFERRED_OPERATIONS = {("POST", "/api/v1/auth/change-password")}  # T139 (US5, FR-033)
+DEFERRED_OPERATIONS = {
+    ("POST", "/api/v1/auth/change-password"),  # T139 (US5, FR-033)
+    ("POST", "/api/v1/instruments/{instrumentId}/ticker-suggestions"),  # T110 (US4)
+}
 METHODS = {"get", "post", "put", "patch", "delete"}
 
 Operation = dict[str, Any]
@@ -55,6 +58,18 @@ def resolve(document: dict[str, Any], schema: dict[str, Any]) -> dict[str, Any]:
         for part in schema["$ref"].lstrip("#/").split("/"):
             node = node[part]
         schema = node
+    return schema
+
+
+def simplified(schema: dict[str, Any]) -> dict[str, Any]:
+    """Ramène un schéma optionnel ou nullable (`anyOf` avec null, `type: [x, null]`) à sa base."""
+    options = [o for o in schema.get("anyOf", []) if o.get("type") != "null"]
+    if len(options) == 1:
+        schema = {**{k: v for k, v in schema.items() if k != "anyOf"}, **options[0]}
+    kind = schema.get("type")
+    if isinstance(kind, list):
+        remaining = [k for k in kind if k != "null"]
+        schema = {**schema, "type": remaining[0] if len(remaining) == 1 else remaining}
     return schema
 
 
@@ -129,11 +144,9 @@ def test_request_constraints_match_the_contract(
         assert set(got.get("required", [])) == set(wanted.get("required", [])), key
         for name, spec in wanted["properties"].items():
             for constraint in ("minLength", "maxLength", "type"):
-                assert got["properties"][name].get(constraint) == spec.get(constraint), (
-                    key,
-                    name,
-                    constraint,
-                )
+                assert simplified(got["properties"][name]).get(constraint) == simplified(spec).get(
+                    constraint
+                ), (key, name, constraint)
 
 
 def test_public_and_protected_operations_match_the_contract(
