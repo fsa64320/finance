@@ -13,11 +13,11 @@ def test_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_environment_overrides(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("FINANCE_DATA_DIR", "/tmp/finance-data")
+    monkeypatch.setenv("FINANCE_DATA_DIR", "/srv/finance-data")
     monkeypatch.setenv("FINANCE_HOST", "0.0.0.0")  # noqa: S104 - valeur de test
     monkeypatch.setenv("FINANCE_PORT", "9000")
     settings = load_settings()
-    assert settings.data_dir == Path("/tmp/finance-data")  # noqa: S108 - valeur de test
+    assert settings.data_dir == Path("/srv/finance-data")
     assert settings.host == "0.0.0.0"  # noqa: S104
     assert settings.port == 9000
 
