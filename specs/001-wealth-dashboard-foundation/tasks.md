@@ -183,8 +183,8 @@ Règles transverses à respecter dans chaque tâche : montants, quantités, prix
 - [x] T089 [P] [US3] Implémenter `backend/src/finance/services/import_mappings.py` : paramétrage par établissement (`delimiter` « un caractère », `decimal_separator` `,` ou `.`)
 - [x] T090 [US3] Implémenter `backend/src/finance/services/imports.py` : aperçu, empreinte de ligne avec rang d'occurrence, actifs inconnus, validation, écriture via `services/transactions.py`, trace `ImportBatch` (`rows_added`, `rows_skipped`, `rows_rejected`) (dépend de T088, T054) *(attention : `services/transactions.create_transaction` relit toutes les opérations du compte à chaque appel, soit O(n²) pour 500 lignes ; prévoir une écriture groupée avec un seul chargement)*
 - [x] T091 [US3] Implémenter `backend/src/finance/api/routers/imports.py` : `GET/POST /import-mappings`, `POST /imports/preview`, `POST /imports/commit`, avec limite de taille de fichier (dépend de T090)
-- [ ] T092 [P] [US3] Implémenter `frontend/src/components/ColumnMapper.tsx` et `frontend/src/components/UnknownInstrumentsPanel.tsx` (créer, rattacher ou ignorer)
-- [ ] T093 [US3] Écrire `frontend/tests/pages/Import.test.tsx` puis implémenter `frontend/src/pages/Import.tsx` : dépôt du fichier, réglages, correspondance des colonnes, aperçu, actifs inconnus, résumé (ajoutées, ignorées, rejetées), paramétrage proposé automatiquement au prochain fichier du même établissement
+- [x] T092 [P] [US3] Implémenter `frontend/src/components/ColumnMapper.tsx` et `frontend/src/components/UnknownInstrumentsPanel.tsx` (créer, rattacher ou ignorer)
+- [x] T093 [US3] Écrire `frontend/tests/pages/Import.test.tsx` puis implémenter `frontend/src/pages/Import.tsx` : dépôt du fichier, réglages, correspondance des colonnes, aperçu, actifs inconnus, résumé (ajoutées, ignorées, rejetées), paramétrage proposé automatiquement au prochain fichier du même établissement
 
 **Checkpoint**: US1, US2 et US3 fonctionnent : un historique importé apparaît sur le tableau de bord
 

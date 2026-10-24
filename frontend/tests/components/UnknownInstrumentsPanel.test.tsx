@@ -2,10 +2,8 @@ import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
-import UnknownInstrumentsPanel, {
-  isResolved,
-  toResolutions,
-} from '../../src/components/UnknownInstrumentsPanel'
+import UnknownInstrumentsPanel from '../../src/components/UnknownInstrumentsPanel'
+import { isResolved, toResolutions } from '../../src/lib/import-resolutions'
 import { ETF_ID, instrument } from '../fixtures'
 
 const ALPHA = { key: 'FR0000000036', name: 'Fonds Inconnu Alpha', isin: 'FR0000000036', rows: 2 }
