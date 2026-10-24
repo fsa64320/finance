@@ -81,3 +81,46 @@ export function transaction(overrides: Partial<Transaction> = {}): Transaction {
     ...overrides,
   }
 }
+
+export function summaryBody(overrides: Record<string, unknown> = {}) {
+  return {
+    currency: 'EUR',
+    net_worth: '8500',
+    excludes_debts: true as const,
+    estimated: true,
+    as_of: '2026-10-24',
+    notices: [
+      {
+        kind: 'stale_price' as const,
+        message: 'Aucun prix connu : valorisé au prix de revient.',
+        instrument_id: ETF_ID,
+        account_id: PEA_ID,
+      },
+    ],
+    ...overrides,
+  }
+}
+
+export function seriesBody(overrides: Record<string, unknown> = {}) {
+  return {
+    currency: 'EUR',
+    points: [
+      { date: '2026-01-05', value: '1000', estimated: false },
+      { date: '2026-06-01', value: '4000', estimated: true },
+      { date: '2026-10-24', value: '8500', estimated: true },
+    ],
+    ...overrides,
+  }
+}
+
+export function allocationBody(overrides: Record<string, unknown> = {}) {
+  return {
+    currency: 'EUR',
+    slices: [
+      { asset_class: 'equities_etf' as const, value: '901.99', weight_percent: '10.61' },
+      { asset_class: 'euro_funds' as const, value: '5000', weight_percent: '58.82' },
+      { asset_class: 'cash' as const, value: '2598.01', weight_percent: '30.57' },
+    ],
+    ...overrides,
+  }
+}
