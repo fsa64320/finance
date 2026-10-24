@@ -33,6 +33,16 @@ describe('request', () => {
     expect(options.credentials).toBe('same-origin')
   })
 
+  it('envoie un formulaire tel quel, sans en-tête de type de contenu', async () => {
+    fetchMock.mockResolvedValue(json({}))
+    const form = new FormData()
+    form.set('a', 'b')
+    await request('POST', '/imports/preview', form)
+    const [, options] = lastCall()
+    expect(options.body).toBe(form)
+    expect(options.headers['content-type']).toBeUndefined()
+  })
+
   it('renvoie le JSON de la réponse', async () => {
     fetchMock.mockResolvedValue(json({ state: 'unlocked' }))
     await expect(request('GET', '/auth/status')).resolves.toEqual({ state: 'unlocked' })
