@@ -131,6 +131,8 @@ describe('Sauvegarde et sécurité', () => {
     })
     await user.upload(await screen.findByLabelText('Fichier d’export à restaurer'), file)
     await user.click(screen.getByRole('button', { name: 'Restaurer' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Restaurer ces données ?' })
+    await user.click(within(dialog).getByRole('button', { name: 'Restaurer les données' }))
     await waitFor(() =>
       expect(dataApi.restoreData).toHaveBeenCalledWith({ format_version: 1, accounts: [] }),
     )
