@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -87,7 +87,38 @@ describe('rappel', () => {
   })
 })
 
+async function restore(user: ReturnType<typeof userEvent.setup>) {
+  await user.upload(screen.getByLabelText('Fichier d’export à restaurer'), file)
+  await user.click(screen.getByRole('button', { name: 'Restaurer' }))
+  const dialog = await screen.findByRole('dialog', { name: 'Restaurer ces données ?' })
+  await user.click(within(dialog).getByRole('button', { name: 'Restaurer les données' }))
+}
+
 describe('restauration', () => {
+  it('demande confirmation et rappelle que les données actuelles seront remplacées', async () => {
+    const { onRestore } = setup()
+    const user = userEvent.setup()
+    await user.upload(screen.getByLabelText('Fichier d’export à restaurer'), file)
+    await user.click(screen.getByRole('button', { name: 'Restaurer' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Restaurer ces données ?' })
+    expect(dialog).toHaveTextContent(/remplac/i)
+    expect(onRestore).not.toHaveBeenCalled()
+    await user.click(within(dialog).getByRole('button', { name: 'Annuler' }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(onRestore).not.toHaveBeenCalled()
+  })
+
+  it('se ferme avec Échap sans restaurer', async () => {
+    const { onRestore } = setup()
+    const user = userEvent.setup()
+    await user.upload(screen.getByLabelText('Fichier d’export à restaurer'), file)
+    await user.click(screen.getByRole('button', { name: 'Restaurer' }))
+    await screen.findByRole('dialog')
+    await user.keyboard('{Escape}')
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(onRestore).not.toHaveBeenCalled()
+  })
+
   it('exige un fichier et rappelle la condition d’une instance vide', () => {
     setup()
     expect(screen.getByRole('button', { name: 'Restaurer' })).toBeDisabled()
@@ -97,8 +128,7 @@ describe('restauration', () => {
   it('restaure le fichier choisi', async () => {
     const { onRestore } = setup()
     const user = userEvent.setup()
-    await user.upload(screen.getByLabelText('Fichier d’export à restaurer'), file)
-    await user.click(screen.getByRole('button', { name: 'Restaurer' }))
+    await restore(user)
     expect(onRestore).toHaveBeenCalledWith(file)
     expect(await screen.findByRole('status', { name: /restauration/i })).toHaveTextContent(
       /données restaurées/i,
@@ -118,8 +148,7 @@ describe('restauration', () => {
         ),
     })
     const user = userEvent.setup()
-    await user.upload(screen.getByLabelText('Fichier d’export à restaurer'), file)
-    await user.click(screen.getByRole('button', { name: 'Restaurer' }))
+    await restore(user)
     expect(await screen.findByRole('alert')).toHaveTextContent('instance vide')
   })
 
@@ -133,8 +162,7 @@ describe('restauration', () => {
       ),
     })
     const user = userEvent.setup()
-    await user.upload(screen.getByLabelText('Fichier d’export à restaurer'), file)
-    await user.click(screen.getByRole('button', { name: 'Restaurer' }))
+    await restore(user)
     const alert = await screen.findByRole('alert')
     expect(alert).toHaveTextContent('accounts[1].type')
     expect(alert).toHaveTextContent('Compte inconnu.')
@@ -146,8 +174,7 @@ describe('restauration', () => {
       onRestore: vi.fn().mockRejectedValue(new Error('Ce fichier n’est pas un export valide.')),
     })
     const user = userEvent.setup()
-    await user.upload(screen.getByLabelText('Fichier d’export à restaurer'), file)
-    await user.click(screen.getByRole('button', { name: 'Restaurer' }))
+    await restore(user)
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Ce fichier n’est pas un export valide.',
     )

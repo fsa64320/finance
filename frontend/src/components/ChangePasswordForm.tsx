@@ -1,6 +1,7 @@
 import { type FormEvent, useEffect, useState } from 'react'
 
 import { ApiError } from '../api/client'
+import ConfirmDialog from './ConfirmDialog'
 import { TextField, buttonClass } from './fields'
 
 const MIN_LENGTH = 12
@@ -23,6 +24,7 @@ export default function ChangePasswordForm({ onSubmit }: ChangePasswordFormProps
   const [done, setDone] = useState(false)
   const [pending, setPending] = useState(false)
   const [retryIn, setRetryIn] = useState(0)
+  const [confirming, setConfirming] = useState(false)
 
   useEffect(() => {
     if (retryIn <= 0) return
@@ -59,6 +61,11 @@ export default function ChangePasswordForm({ onSubmit }: ChangePasswordFormProps
       return
     }
     setError(null)
+    setConfirming(true)
+  }
+
+  async function apply() {
+    setConfirming(false)
     setPending(true)
     try {
       await onSubmit(current, next)
@@ -129,6 +136,15 @@ export default function ChangePasswordForm({ onSubmit }: ChangePasswordFormProps
       <button type="submit" className={`${buttonClass} mt-4`} disabled={pending || retryIn > 0}>
         Changer le mot de passe
       </button>
+      <ConfirmDialog
+        open={confirming}
+        title="Changer le mot de passe ?"
+        description="Vos données seront rechiffrées avec le nouveau mot de passe, et l'ancien mot de passe cessera de fonctionner immédiatement. Aucun moyen ne permet de récupérer un mot de passe oublié."
+        confirmLabel="Changer le mot de passe"
+        cancelLabel="Annuler"
+        onCancel={() => setConfirming(false)}
+        onConfirm={() => void apply()}
+      />
     </form>
   )
 }

@@ -8,6 +8,9 @@
 /.specify/                          @fsa64320
 /CLAUDE.md                          @fsa64320
 /Dockerfile                         @fsa64320
+/.dockerignore                      @fsa64320
+/.gitleaks.toml                     @fsa64320
+/scripts/                           @fsa64320
 /compose.yaml                       @fsa64320
 /SECURITY.md                        @fsa64320
 
@@ -15,6 +18,8 @@
 /backend/src/finance/auth/          @fsa64320
 /backend/src/finance/db/            @fsa64320
 /backend/migrations/                @fsa64320
+/backend/src/finance/services/export.py @fsa64320
+/backend/src/finance/prices/         @fsa64320
 
 # Principes du projet
 /.specify/memory/constitution.md    @fsa64320

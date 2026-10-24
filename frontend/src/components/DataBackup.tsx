@@ -2,6 +2,7 @@ import { type FormEvent, useState } from 'react'
 
 import { ApiError } from '../api/client'
 import { formatDate } from '../lib/format'
+import ConfirmDialog from './ConfirmDialog'
 import { TextField, buttonClass, secondaryButtonClass } from './fields'
 
 interface DataBackupProps {
@@ -31,6 +32,7 @@ export default function DataBackup({
   const [restored, setRestored] = useState(false)
   const [restoreProblems, setRestoreProblems] = useState<string[] | null>(null)
   const [restoring, setRestoring] = useState(false)
+  const [confirmRestore, setConfirmRestore] = useState(false)
 
   async function runExport() {
     setExported(false)
@@ -154,7 +156,7 @@ export default function DataBackup({
           type="button"
           className={`${secondaryButtonClass} mt-3`}
           disabled={!file || restoring}
-          onClick={() => void runRestore()}
+          onClick={() => setConfirmRestore(true)}
         >
           {restoring ? 'Restauration…' : 'Restaurer'}
         </button>
@@ -173,6 +175,17 @@ export default function DataBackup({
           </div>
         )}
       </div>
+      <ConfirmDialog
+        open={confirmRestore}
+        title="Restaurer ces données ?"
+        description="Les données de ce fichier remplaceront le contenu de cette installation. La restauration n'est acceptée que sur une installation vide ; si le fichier contient une erreur, rien n'est modifié."
+        confirmLabel="Restaurer les données"
+        onCancel={() => setConfirmRestore(false)}
+        onConfirm={() => {
+          setConfirmRestore(false)
+          void runRestore()
+        }}
+      />
     </div>
   )
 }

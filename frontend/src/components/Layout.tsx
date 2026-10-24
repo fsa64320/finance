@@ -3,6 +3,7 @@ import { NavLink, Outlet } from 'react-router-dom'
 
 import { AUTH_STATUS_KEY, lockInstance } from '../api/auth'
 import { BRAND } from '../brand'
+import Disclaimer from './Disclaimer'
 import { NAV_ITEMS } from '../nav'
 import ExportReminder from './ExportReminder'
 import Logo from './Logo'
@@ -55,7 +56,9 @@ export default function Layout() {
         <main className="flex-1 p-4 md:p-8">
           <Outlet />
         </main>
-        <footer className="border-t border-line p-4 text-xs text-muted">{BRAND.disclaimer}</footer>
+        <footer className="border-t border-line p-4 text-xs text-muted">
+          <Disclaimer />
+        </footer>
       </div>
     </div>
   )
