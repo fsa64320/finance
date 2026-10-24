@@ -3,5 +3,5 @@ Date;Opération;Libellé;ISIN;Quantité;Cours;Montant;Frais;Référence
 31/02/2024;Versement;Date impossible;;;;100,00;;
 05/01/2024;Versement;Montant manquant;;;;;;
 06/01/2024;Spéculation;Type inconnu;;;;50,00;;
-07/01/2024;Achat;ETF Exemple Monde;FR0000000011;abc;40,00;;;
-08/01/2024;Achat;ETF Exemple Monde;FR0000000011;2;40,00;80,00;1,50;
+07/01/2024;Achat;ETF Exemple Monde;FR0000000010;abc;40,00;;;
+08/01/2024;Achat;ETF Exemple Monde;FR0000000010;2;40,00;80,00;1,50;

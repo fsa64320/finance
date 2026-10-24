@@ -1,4 +1,4 @@
-"""FR-015, FR-017 : lecture d'un CSV générique, détection des réglages, lignes rejetées avec cause."""
+"""FR-015, FR-017 : lecture d'un CSV générique, réglages détectés, lignes rejetées avec cause."""
 
 from datetime import date
 from decimal import Decimal
@@ -99,7 +99,7 @@ class TestParsing:
         assert first.amount == Decimal("12500.00")  # « 12 500,00 » avec espace insécable
         assert buy.type is T.BUY
         assert buy.instrument_name == "ETF Exemple Monde"
-        assert buy.isin == "FR0000000011"
+        assert buy.isin == "FR0000000010"
         assert buy.quantity == Decimal("1.5")
         assert buy.unit_price == Decimal("41.35")
         assert buy.amount == Decimal("62.02")
@@ -125,59 +125,108 @@ class TestParsing:
 
     def test_une_ligne_rejetee_ne_bloque_pas_les_suivantes(self):
         result = parse_csv(fixture("lignes_invalides.csv"), FR)
-        assert result.rows[-1].isin == "FR0000000011"
+        assert result.rows[-1].isin == "FR0000000010"
 
     def test_point_decimal_et_virgule_des_milliers(self):
-        settings = ImportSettings(",", "utf-8", "%Y-%m-%d", ".", {"trade_date": "Date", "type": "Type", "amount": "Amount"})
+        settings = ImportSettings(
+            ",",
+            "utf-8",
+            "%Y-%m-%d",
+            ".",
+            {"trade_date": "Date", "type": "Type", "amount": "Amount"},
+        )
         content = b'Date,Type,Amount\n2024-01-02,Deposit,"1,250.50"\n'
         assert parse_csv(content, settings).rows[0].amount == Decimal("1250.50")
 
     def test_champ_entre_guillemets_contenant_le_separateur(self):
         content = 'Date;Opération;Libellé;Montant\n02/01/2024;Versement;"Virement; salaire";10,00\n'
-        settings = ImportSettings(";", "utf-8", "%d/%m/%Y", ",", {
-            "trade_date": "Date", "type": "Opération", "label": "Libellé", "amount": "Montant",
-        })
+        settings = ImportSettings(
+            ";",
+            "utf-8",
+            "%d/%m/%Y",
+            ",",
+            {
+                "trade_date": "Date",
+                "type": "Opération",
+                "label": "Libellé",
+                "amount": "Montant",
+            },
+        )
         assert parse_csv(content.encode(), settings).rows[0].label == "Virement; salaire"
 
     def test_montant_negatif_lu_en_valeur_absolue(self):
         content = b"Date;Op;Montant\n02/01/2024;Frais;-2,50\n"
-        settings = ImportSettings(";", "utf-8", "%d/%m/%Y", ",", {"trade_date": "Date", "type": "Op", "amount": "Montant"})
+        settings = ImportSettings(
+            ";", "utf-8", "%d/%m/%Y", ",", {"trade_date": "Date", "type": "Op", "amount": "Montant"}
+        )
         row = parse_csv(content, settings).rows[0]
         assert row.type is T.FEE and row.amount == Decimal("2.50")
 
     @pytest.mark.parametrize("value", ["NaN", "Infinity", "1e400", "12,3,4"])
     def test_nombres_non_finis_ou_illisibles_rejetes(self, value: str):
         content = f"Date;Op;Montant\n02/01/2024;Versement;{value}\n".encode()
-        settings = ImportSettings(";", "utf-8", "%d/%m/%Y", ",", {"trade_date": "Date", "type": "Op", "amount": "Montant"})
+        settings = ImportSettings(
+            ";", "utf-8", "%d/%m/%Y", ",", {"trade_date": "Date", "type": "Op", "amount": "Montant"}
+        )
         result = parse_csv(content, settings)
         assert result.rows == [] and len(result.rejected) == 1
 
     @pytest.mark.parametrize(
         ("word", "expected"),
         [
-            ("Achat", T.BUY), ("ACHAT", T.BUY), ("BUY", T.BUY), ("Vente", T.SELL),
-            ("Dividende", T.DIVIDEND), ("Dividendes", T.DIVIDEND), ("Distribution", T.DISTRIBUTION),
-            ("Intérêts", T.INTEREST), ("Interets", T.INTEREST), ("Frais", T.FEE),
-            ("Retrait", T.WITHDRAWAL), ("Versement", T.DEPOSIT), ("Dépôt", T.DEPOSIT),
+            ("Achat", T.BUY),
+            ("ACHAT", T.BUY),
+            ("BUY", T.BUY),
+            ("Vente", T.SELL),
+            ("Dividende", T.DIVIDEND),
+            ("Dividendes", T.DIVIDEND),
+            ("Distribution", T.DISTRIBUTION),
+            ("Intérêts", T.INTEREST),
+            ("Interets", T.INTEREST),
+            ("Frais", T.FEE),
+            ("Retrait", T.WITHDRAWAL),
+            ("Versement", T.DEPOSIT),
+            ("Dépôt", T.DEPOSIT),
             ("Abondement", T.EMPLOYER_MATCH),
         ],
     )
     def test_vocabulaire_des_types(self, word: str, expected: T):
-        content = f"Date;Op;Montant;Quantité;Cours;ISIN\n02/01/2024;{word};10,00;1;10,00;FR0000000011\n".encode()
-        settings = ImportSettings(";", "utf-8", "%d/%m/%Y", ",", {
-            "trade_date": "Date", "type": "Op", "amount": "Montant", "quantity": "Quantité",
-            "unit_price": "Cours", "isin": "ISIN",
-        })
+        row = f"02/01/2024;{word};10,00;1;10,00;FR0000000010"
+        content = f"Date;Op;Montant;Quantité;Cours;ISIN\n{row}\n".encode()
+        settings = ImportSettings(
+            ";",
+            "utf-8",
+            "%d/%m/%Y",
+            ",",
+            {
+                "trade_date": "Date",
+                "type": "Op",
+                "amount": "Montant",
+                "quantity": "Quantité",
+                "unit_price": "Cours",
+                "isin": "ISIN",
+            },
+        )
         assert parse_csv(content, settings).rows[0].type is expected
 
     def test_identifiant_externe_lu(self):
-        content = b"Date;Op;Montant;Ref\n02/01/2024;Versement;10,00;ABC-1\n02/01/2024;Versement;10,00;\n"
-        settings = ImportSettings(";", "utf-8", "%d/%m/%Y", ",", {"trade_date": "Date", "type": "Op", "amount": "Montant", "external_id": "Ref"})
+        content = (
+            b"Date;Op;Montant;Ref\n02/01/2024;Versement;10,00;ABC-1\n02/01/2024;Versement;10,00;\n"
+        )
+        settings = ImportSettings(
+            ";",
+            "utf-8",
+            "%d/%m/%Y",
+            ",",
+            {"trade_date": "Date", "type": "Op", "amount": "Montant", "external_id": "Ref"},
+        )
         rows = parse_csv(content, settings).rows
         assert [row.external_id for row in rows] == ["ABC-1", None]
 
     def test_colonne_declaree_mais_absente_du_fichier(self):
-        settings = ImportSettings(";", "utf-8", "%d/%m/%Y", ",", {"trade_date": "Date", "type": "Type inexistant"})
+        settings = ImportSettings(
+            ";", "utf-8", "%d/%m/%Y", ",", {"trade_date": "Date", "type": "Type inexistant"}
+        )
         with pytest.raises(ImportFileError, match="Type inexistant"):
             parse_csv(b"Date;Op\n02/01/2024;Versement\n", settings)
 
@@ -187,7 +236,10 @@ class TestParsing:
             parse_csv(b"Montant\n10\n", settings)
 
     def test_fichier_avec_seulement_l_en_tete(self):
-        result = parse_csv(b"Date;Op\n", ImportSettings(";", "utf-8", "%d/%m/%Y", ",", {"trade_date": "Date", "type": "Op"}))
+        result = parse_csv(
+            b"Date;Op\n",
+            ImportSettings(";", "utf-8", "%d/%m/%Y", ",", {"trade_date": "Date", "type": "Op"}),
+        )
         assert result.rows == [] and result.rejected == []
 
     def test_fichier_vide(self):

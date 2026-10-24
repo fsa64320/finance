@@ -1,4 +1,4 @@
-"""FR-018 : l'empreinte d'une ligne importée sert au dédoublonnage ; l'identifiant externe l'emporte."""
+"""FR-018 : l'empreinte d'une ligne sert au dédoublonnage ; l'identifiant externe l'emporte."""
 
 from dataclasses import replace
 from datetime import date
@@ -14,7 +14,7 @@ from finance.domain.fingerprint import (
 BASE = LineFacts(
     trade_date=date(2024, 1, 3),
     type=T.BUY,
-    instrument_key="FR0000000011",
+    instrument_key="FR0000000010",
     quantity=Decimal("2"),
     unit_price=Decimal("40.00"),
     amount=Decimal("80.00"),
@@ -33,7 +33,9 @@ def test_stable_d_un_appel_a_l_autre():
 
 
 def test_zeros_de_fin_sans_effet():
-    other = replace(BASE, quantity=Decimal("2.000"), unit_price=Decimal("40"), amount=Decimal("80.0"))
+    other = replace(
+        BASE, quantity=Decimal("2.000"), unit_price=Decimal("40"), amount=Decimal("80.0")
+    )
     assert one(other) == one(BASE)
 
 
@@ -41,7 +43,7 @@ def test_chaque_champ_change_l_empreinte():
     changes = {
         "trade_date": date(2024, 1, 4),
         "type": T.SELL,
-        "instrument_key": "FR0000000029",
+        "instrument_key": "FR0000000028",
         "quantity": Decimal("3"),
         "unit_price": Decimal("41"),
         "amount": Decimal("81"),
