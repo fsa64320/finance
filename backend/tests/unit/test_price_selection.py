@@ -3,10 +3,10 @@
 from datetime import timedelta
 
 import pytest
-from finance.domain.prices import STALE_AFTER_DAYS, is_stale, select_price
 
 from finance.domain.enums import InstrumentKind as K
 from finance.domain.enums import PriceKind as P
+from finance.domain.prices import STALE_AFTER_DAYS, is_stale, select_price
 from finance.domain.valuation import value_account
 from tests.domain_helpers import buy, d, day, deposit, instrument, price
 
@@ -65,8 +65,8 @@ def test_staleness_thresholds_are_inclusive_of_the_limit(kind: P) -> None:
 
 
 def test_thresholds_follow_how_often_each_kind_of_price_changes() -> None:
-    assert STALE_AFTER_DAYS[P.MARKET] == 14
-    assert STALE_AFTER_DAYS[P.NAV] == 31
+    assert STALE_AFTER_DAYS[P.MARKET] == 30
+    assert STALE_AFTER_DAYS[P.NAV] == 45
     assert STALE_AFTER_DAYS[P.REDEMPTION] == 100
     assert STALE_AFTER_DAYS[P.SUBSCRIPTION] == 100
 

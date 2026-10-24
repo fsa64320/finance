@@ -9,10 +9,9 @@ décembre ; les intérêts réels saisis prévalent. Montants attendus calculés
 from datetime import UTC, datetime
 from decimal import Decimal
 
-from finance.domain.livret_a import Flow, InterestEstimate, LivretASchedule, RateRow
-
 from finance.domain.caps import DEFAULT_LIVRET_A_CAP
 from finance.domain.enums import TransactionType as T
+from finance.domain.livret_a import Flow, InterestEstimate, LivretASchedule, RateRow
 from finance.domain.networth import AccountRef, compute_net_worth
 from finance.domain.valuation import value_account
 from tests.domain_helpers import d, day, deposit, make

@@ -3,11 +3,10 @@ conversions de devises, prix anciens, SCPI et Livret A (FR-022, US4)."""
 
 from datetime import UTC, date, datetime, timedelta
 
-from finance.domain.fx import FxRateRow, FxTable
-from finance.domain.livret_a import RateRow
-
 from finance.domain.enums import InstrumentKind as K
 from finance.domain.enums import PriceKind as P
+from finance.domain.fx import FxRateRow, FxTable
+from finance.domain.livret_a import RateRow
 from finance.domain.networth import AccountRef, compute_net_worth
 from finance.domain.series import net_worth_series
 from tests.domain_helpers import (
@@ -80,7 +79,8 @@ def test_the_sweep_matches_a_full_recomputation_with_every_us4_feature() -> None
     while current <= end:
         dates.append(current)
         current += timedelta(days=9)
-    dates.append(end)
+    if dates[-1] != end:
+        dates.append(end)
 
     points = net_worth_series(
         refs=refs,

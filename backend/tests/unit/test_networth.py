@@ -44,7 +44,7 @@ def test_sum_of_open_accounts_is_exact() -> None:
     result = worth(
         [ref("pea"), ref("livret")],
         pea_and_livret(),
-        prices=[price("etf", "2026-01-10", "90.2")],
+        prices=[price("etf", "2026-12-20", "90.2")],
     )
     assert result.total == d("4000.01")
     assert {a.account_id: a.value for a in result.accounts} == {

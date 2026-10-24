@@ -3,9 +3,8 @@
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 
-from finance.domain.fx import FX_STALE_AFTER_DAYS, FxRateRow, FxTable
-
 from finance.domain.enums import InstrumentKind as K
+from finance.domain.fx import FX_STALE_AFTER_DAYS, FxRateRow, FxTable
 from finance.domain.networth import AccountRef, compute_net_worth
 from finance.domain.valuation import value_account
 from tests.domain_helpers import buy, d, day, deposit, instrument, price
@@ -108,13 +107,13 @@ def valued(fx, prices, on="2026-01-31"):  # type: ignore[no-untyped-def]
 
 class TestValuation:
     def test_a_price_in_another_currency_is_converted_at_the_valuation_date(self) -> None:
-        result = valued(TABLE, [price("etf", "2026-01-20", "120", currency="USD")], on="2026-01-20")
+        result = valued(TABLE, [price("etf", "2026-01-14", "120", currency="USD")], on="2026-01-14")
         holding = result.positions[0]
         assert holding.value == d("1000")  # 10 x 120 USD / 1,20
         assert result.total == d("1100") + d("1000")  # 2000 - 900 en trésorerie
 
     def test_a_fresh_rate_leaves_the_value_unestimated(self) -> None:
-        result = valued(TABLE, [price("etf", "2026-01-20", "120", currency="USD")], on="2026-01-20")
+        result = valued(TABLE, [price("etf", "2026-01-14", "120", currency="USD")], on="2026-01-14")
         assert not result.estimated and result.warnings == ()
 
     def test_a_rate_older_than_the_limit_flags_the_value_as_estimated(self) -> None:

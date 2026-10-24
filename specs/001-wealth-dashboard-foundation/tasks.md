@@ -198,10 +198,10 @@ Règles transverses à respecter dans chaque tâche : montants, quantités, prix
 
 ### Tests for User Story 4 (écrire d'abord) ⚠️
 
-- [ ] T094 [P] [US4] Écrire `backend/tests/unit/test_price_selection.py` : dernier prix antérieur ou égal à la date, valeur marquée estimée si ancien, saisie la plus récente (`recorded_at`) prioritaire à une même date
-- [ ] T095 [P] [US4] Écrire `backend/tests/unit/test_scpi_valuation.py` : prix de revient au prix de souscription, valorisation au prix de retrait, écart initial visible, sans prix valeur estimée au prix de revient ; distributions comptées comme opérations
-- [ ] T096 [P] [US4] Écrire `backend/tests/unit/test_livret_a_interest.py` : cas calculés à la main du solde minimum de la quinzaine × taux annuel / 24, crédit au 31 décembre, table de taux datée, intérêt réel saisi prioritaire, plafond de 22950 paramétrable
-- [ ] T097 [P] [US4] Écrire `backend/tests/unit/test_fx_conversion.py` : conversion au taux de la date de valorisation, report du dernier taux les jours sans publication, valeur « non convertible » si aucun taux
+- [x] T094 [P] [US4] Écrire `backend/tests/unit/test_price_selection.py` : dernier prix antérieur ou égal à la date, valeur marquée estimée si ancien, saisie la plus récente (`recorded_at`) prioritaire à une même date
+- [x] T095 [P] [US4] Écrire `backend/tests/unit/test_scpi_valuation.py` : prix de revient au prix de souscription, valorisation au prix de retrait, écart initial visible, sans prix valeur estimée au prix de revient ; distributions comptées comme opérations
+- [x] T096 [P] [US4] Écrire `backend/tests/unit/test_livret_a_interest.py` : cas calculés à la main du solde minimum de la quinzaine × taux annuel / 24, crédit au 31 décembre, table de taux datée, intérêt réel saisi prioritaire, plafond de 22950 paramétrable
+- [x] T097 [P] [US4] Écrire `backend/tests/unit/test_fx_conversion.py` : conversion au taux de la date de valorisation, report du dernier taux les jours sans publication, valeur « non convertible » si aucun taux
 - [ ] T098 [P] [US4] Écrire `backend/tests/unit/test_price_providers.py` avec `httpx` simulé : lecture du fichier de taux de la BCE, échec de Yahoo Finance avec repli sur les derniers prix, correspondance OpenFIGI ; vérifier que les requêtes sortantes ne contiennent que des tickers, des ISIN et des devises, et aucune quantité, aucun montant, aucun nom de compte ni aucune date d'opération (SC-008, principe I), et qu'aucune requête ne part tant que la récupération automatique n'est pas activée
 - [ ] T099 [P] [US4] Écrire `backend/tests/contract/test_prices_rates_contract.py` pour `/prices`, `/prices/refresh`, `/rates/livret-a`, `/settings`, `/instruments/{instrumentId}/ticker-suggestions`
 
@@ -211,10 +211,10 @@ Règles transverses à respecter dans chaque tâche : montants, quantités, prix
 - [ ] T101 [P] [US4] Implémenter `backend/src/finance/prices/ecb.py` : taux de change de la BCE (publiés en général vers 16 h CET les jours ouvrés)
 - [ ] T102 [P] [US4] Implémenter `backend/src/finance/prices/yahoo.py` : cours et valeurs liquidatives via `yfinance`, désactivable, erreurs absorbées
 - [ ] T103 [P] [US4] Implémenter `backend/src/finance/prices/openfigi.py` : `POST https://api.openfigi.com/v3/mapping`, déclenchée par l'utilisateur, limite de débit respectée
-- [ ] T104 [P] [US4] Implémenter `backend/src/finance/domain/prices.py` : sélection du prix applicable, état « estimé »
-- [ ] T105 [P] [US4] Implémenter `backend/src/finance/domain/fx.py` : conversion à la date de valorisation et report du dernier taux
-- [ ] T106 [P] [US4] Implémenter `backend/src/finance/domain/livret_a.py` : intérêts estimés par quinzaine, arrondi au centime documenté dans le code, plafond
-- [ ] T107 [US4] Étendre `backend/src/finance/domain/valuation.py` : SCPI (souscription pour le revient, retrait pour la valorisation), conversion de devises, intérêts estimés du Livret A (dépend de T104, T105, T106)
+- [x] T104 [P] [US4] Implémenter `backend/src/finance/domain/prices.py` : sélection du prix applicable, état « estimé »
+- [x] T105 [P] [US4] Implémenter `backend/src/finance/domain/fx.py` : conversion à la date de valorisation et report du dernier taux
+- [x] T106 [P] [US4] Implémenter `backend/src/finance/domain/livret_a.py` : intérêts estimés par quinzaine, arrondi au centime documenté dans le code, plafond
+- [x] T107 [US4] Étendre `backend/src/finance/domain/valuation.py` : SCPI (souscription pour le revient, retrait pour la valorisation), conversion de devises, intérêts estimés du Livret A (dépend de T104, T105, T106)
 - [ ] T108 [US4] Implémenter `backend/src/finance/services/prices.py` : saisie manuelle, mise à jour automatique avec repli sur les derniers prix et signalement d'ancienneté, conservation locale
 - [ ] T109 [P] [US4] Implémenter `backend/src/finance/services/rates.py` (taux du Livret A datés et modifiables, taux de change) et `backend/src/finance/services/settings.py` (récupération automatique des prix **désactivée par défaut** jusqu'à un choix explicite, devise de référence, plafonds par défaut)
 - [ ] T110 [US4] Implémenter `backend/src/finance/api/routers/prices.py` (`GET/POST /prices`, `POST /prices/refresh`, suggestions de ticker), `backend/src/finance/api/routers/rates.py` (`GET/POST /rates/livret-a`) et `backend/src/finance/api/routers/settings.py` (`GET/PATCH /settings`)
