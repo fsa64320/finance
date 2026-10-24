@@ -96,6 +96,12 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] T016 [US1] Add validation and error handling
 - [ ] T017 [US1] Add logging for user story 1 operations
 
+### UX and accessibility for User Story 1 (user-visible stories)
+
+- [ ] T0XX [P] [US1] Implement empty, loading, error and success states for each screen in ux.md
+- [ ] T0XX [P] [US1] Accessibility test (keyboard path, labels, contrast) for [screen]
+- [ ] T0XX [US1] UX review against ux.md and docs/ux-discovery/ before the checkpoint
+
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
 
 ---
@@ -156,6 +162,7 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] TXXX Performance optimization across all stories
 - [ ] TXXX [P] Additional unit tests (if requested) in tests/unit/
 - [ ] TXXX Security hardening
+- [ ] TXXX Cross-screen UX consistency pass (tokens, wording, FR formats, WCAG AA audit)
 - [ ] TXXX Run quickstart.md validation
 
 ---

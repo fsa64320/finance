@@ -78,6 +78,23 @@
 - What happens when [boundary condition]?
 - How does system handle [error scenario]?
 
+## User Experience *(mandatory for any user-visible feature)*
+
+<!--
+  Source: docs/ux-discovery/ (personas, journeys, jobs-to-be-done). Reference them, do not
+  duplicate them. Technology-agnostic: describe what users see and do, not components.
+-->
+
+- **Personas and jobs**: [which persona(s) and job(s) from docs/ux-discovery/ each story serves]
+- **Screens and states**: for each screen, list the empty, loading, error and success states and
+  what the user can do next in each
+- **Accessibility**: [WCAG 2.2 AA expectations specific to this feature: keyboard path, labels,
+  contrast, non-color cues]
+- **Content and formats**: [FR number/currency/date formats, error and confirmation wording]
+- **Destructive actions**: [which actions need confirmation or an undo path]
+- **UX success criteria**: [measurable, e.g. "a new user records a first transaction in under
+  2 minutes without help"]
+
 ## Requirements *(mandatory)*
 
 <!--

@@ -36,7 +36,7 @@ Approche technique (détails dans [research.md](research.md)) :
 
 **Testing**: pytest (+ `hypothesis` pour les invariants du journal), Vitest et Testing Library côté interface, Playwright pour le parcours de bout en bout du quickstart
 
-**Target Platform**: Linux (conteneur Docker, amd64 et arm64) ; navigateurs récents sur ordinateur et téléphone
+**Target Platform**: Linux (conteneur Docker, amd64 et arm64) ; navigateurs récents sur ordinateur ; téléphone en consultation seulement (FR-026)
 
 **Project Type**: Application web (backend + frontend)
 
@@ -58,12 +58,23 @@ Approche technique (détails dans [research.md](research.md)) :
 | IV. Ingestion sans scraping | **Réussi** | Saisie, CSV et API publiques de prix uniquement ; aucun identifiant d'établissement stocké. L'importeur reçoit un fichier et renvoie des lignes normalisées sans écrire en base. Imports idempotents par empreinte. |
 | V. Tests chiffrés d'abord | **Réussi** | Chaque calcul du domaine (prix de revient, valorisation, SCPI, Livret A, plafond PEA, séries, répartition) a des cas chiffrés écrits avant le code (voir tests dans la structure). |
 | VI. Simplicité et déploiement trivial | **Réussi, avec un écart justifié** | Une image, un volume, `docker compose up`. SQLite par défaut ; PostgreSQL reporté (le chiffrement dérivé du mot de passe ne s'applique qu'à SQLite). Pas de file de tâches, pas de cache externe. |
+| VII. Expérience utilisateur et accessibilité | **Réussi, une fois les tâches UX livrées** (constitution v1.2.0) | Parcours issus de la [découverte UX](../../docs/ux-discovery/2026-10-24-finance-discovery.md). Quatre états par écran de données (FR-036), WCAG 2.2 AA avec audit automatisé et parcours clavier (FR-034, SC-010), confirmations des actions lourdes (FR-035), formats `fr-FR`, jeu unique de composants et de jetons. Détail par écran dans [ux.md](ux.md). Les tâches T142 à T152 portent ces exigences ; l'UI déjà écrite (T061 à T065, US2) est à reprendre. |
 
 **Contraintes techniques et légales** : stack conforme à la constitution ; interface JSON documentée par OpenAPI ; moteur de performance en fonctions pures ; identité visuelle propre ; avertissement « indicatif » présent dans l'interface ; licence à choisir avant publication (point ouvert, hors de ce lot de code).
 
-**Résultat de la porte** : aucun blocage. Un écart (PostgreSQL) est justifié dans Complexity Tracking.
+**Résultat de la porte** : aucun blocage, sous réserve de livrer les tâches UX (principe VII). Un écart (PostgreSQL) est justifié dans Complexity Tracking.
 
 **Re-vérification après conception (Phase 1)** : conforme. Le modèle de données ([data-model.md](data-model.md)) n'introduit aucun champ dérivé persistant, les contrats ([contracts/openapi.yaml](contracts/openapi.yaml)) échangent les montants en chaînes décimales, et le quickstart ([quickstart.md](quickstart.md)) vérifie l'absence de sortie de données personnelles.
+
+## Design UX
+
+Source : [découverte UX](../../docs/ux-discovery/2026-10-24-finance-discovery.md) (persona « épargnant salarié multi-enveloppes », débutant technique ; job principal J1 : consolider son patrimoine ; North Star : temps jusqu'à un total jugé juste). Le détail écran par écran est dans [ux.md](ux.md).
+
+- **Design system et jetons** : `frontend/src/styles/theme.css` et `components/fields.tsx` existants ; aucun second jeu de composants. Nouveaux composants transverses : `LoadingState`, `ErrorState`, `ConfirmDialog`, `ChartSummary`, `LiveAnnouncer`.
+- **Navigation et mise en page** : latérale sur ordinateur ; sur téléphone, barre basse en consultation seulement, sans défilement horizontal dès 375 px (FR-026).
+- **Écrans** : connexion, tableau de bord, comptes, détail de compte, actifs et prix, import, réglages et export.
+- **Accessibilité** : WCAG 2.2 AA ; vérifiée par `jest-axe` en tests de composants et par un parcours clavier Playwright (SC-010).
+- **Installation** : `docker compose up` comme base, plus une procédure illustrée sans ligne de commande dans le README ; SC-006 mesuré avec un testeur débutant.
 
 ## Project Structure
 
@@ -75,11 +86,13 @@ specs/001-wealth-dashboard-foundation/
 ├── research.md          # Phase 0
 ├── data-model.md        # Phase 1
 ├── quickstart.md        # Phase 1
+├── ux.md                # Phase 1 : écrans, états, parcours clavier, libellés
 ├── contracts/           # Phase 1
 │   ├── openapi.yaml     # Contrat de l'API
 │   └── export-format.md # Format du fichier d'export et de restauration
 ├── checklists/
-│   └── requirements.md
+│   ├── requirements.md
+│   └── ux.md
 └── tasks.md             # Phase 2 (/speckit-tasks, non créé ici)
 ```
 
