@@ -9,7 +9,7 @@ describe('App', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Finance' })).toBeInTheDocument()
   })
 
-  it("rappelle que les valeurs sont indicatives", () => {
+  it('rappelle que les valeurs sont indicatives', () => {
     render(<App />)
     expect(screen.getByText(/ne constituent pas un conseil en investissement/i)).toBeInTheDocument()
   })
