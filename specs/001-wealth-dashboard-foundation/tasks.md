@@ -57,8 +57,8 @@ Règles transverses à respecter dans chaque tâche : montants, quantités, prix
 - [ ] T014 [P] Écrire `backend/tests/unit/test_isin.py` : ISIN valides et invalides (clé de contrôle), 12 caractères alphanumériques
 - [ ] T015 [P] Écrire `backend/tests/integration/test_encrypted_db.py` : le fichier de base n'est pas lisible sans clé, un mauvais mot de passe est refusé, aucune récupération n'existe après oubli (clarification 1)
 - [ ] T016 [P] Écrire `backend/tests/unit/test_append_only.py` : toute tentative d'`UPDATE` ou de `DELETE` sur `transaction_version`, `price`, `declared_balance`, `rate` et `import_batch` lève une erreur
-- [ ] T017 [P] Écrire `backend/tests/integration/test_auth_api.py` : création du mot de passe à la première utilisation, accès refusé sans session, cookie `HttpOnly` et `SameSite=Strict`, délai croissant après des échecs, verrouillage après redémarrage
-- [ ] T018 [P] Écrire `backend/tests/contract/test_openapi_conformance.py` : les chemins et méthodes de l'application correspondent à `specs/001-wealth-dashboard-foundation/contracts/openapi.yaml`
+- [ ] T017 [P] Écrire `backend/tests/integration/test_auth_api.py` : création du mot de passe à la première utilisation, refus d'un mot de passe de moins de 12 caractères, de plus de 128 ou présent dans la liste des mots de passe courants, accès refusé sans session, cookie `HttpOnly` et `SameSite=Strict` (et `Secure` en HTTPS), 5 échecs puis délai doublé à chaque échec jusqu'à 15 minutes, expiration après 30 minutes d'inactivité et 12 heures au plus, verrouillage après redémarrage
+- [ ] T018 [P] Écrire `backend/tests/contract/test_openapi_conformance.py` : pour chaque routeur monté (liste `IMPLEMENTED_TAGS` dans le test), ses chemins et méthodes sont identiques à ceux de `specs/001-wealth-dashboard-foundation/contracts/openapi.yaml` ; Foundational déclare le tag `auth`, chaque histoire ajoute ses tags (US1 : accounts, instruments, transactions, transfers, declared-balances ; US2 : dashboard ; US3 : imports ; US4 : prices, rates, settings ; US5 : data) en complétant la liste dans sa phase
 
 ### Implementation
 
@@ -66,13 +66,13 @@ Règles transverses à respecter dans chaque tâche : montants, quantités, prix
 - [ ] T020 [P] Implémenter `backend/src/finance/domain/enums.py` : types de compte `PEE, PEA, CTO, ASSURANCE_VIE, LIVRET_A` ; types d'actif `EQUITY, ETF, FUND, FCPE, SCPI, EURO_FUND, CASH` ; types d'opération `DEPOSIT, WITHDRAWAL, BUY, SELL, DIVIDEND, DISTRIBUTION, INTEREST, FEE, EMPLOYER_MATCH, TRANSFER_OUT, TRANSFER_IN` ; types de prix `MARKET, NAV, SUBSCRIPTION, REDEMPTION`
 - [ ] T021 [P] Implémenter `backend/src/finance/domain/isin.py` (contrôle de la clé)
 - [ ] T022 Implémenter le type `DecimalText` dans `backend/src/finance/db/types.py` (stockage en texte décimal canonique, point comme séparateur, pas de notation scientifique)
-- [ ] T023 Implémenter `backend/src/finance/db/engine.py` : moteur SQLAlchemy avec `creator` ouvrant `sqlcipher3` puis `PRAGMA key`, vérification du mot de passe par lecture de test
+- [ ] T023 Implémenter `backend/src/finance/db/engine.py` : moteur SQLAlchemy avec `creator` ouvrant `sqlcipher3` puis `PRAGMA key`, vérification du mot de passe par lecture de test ; paramètres SQLCipher 4 par défaut (dérivation PBKDF2-HMAC-SHA512, 256000 itérations) fixés explicitement, avec un test qui échoue si une valeur plus faible est appliquée
 - [ ] T024 Implémenter `backend/src/finance/db/models.py` avec toutes les tables de data-model.md : `account` (nom « Obligatoire, unique parmi les comptes ouverts », `closed_on` « supérieur ou égal à `opened_on` »), `instrument` (ISIN « 12 caractères alphanumériques avec clé de contrôle valide ; unique s'il est présent »), `transaction`, `transaction_version`, `transfer_group`, `price` (valeur « Strictement positif »), `declared_balance` (montant « Positif ou nul »), `rate`, `import_batch`, `import_mapping` (nom « unique »), `setting` ; identifiants UUID texte
 - [ ] T025 Implémenter `backend/src/finance/db/append_only.py` : écouteurs SQLAlchemy qui interdisent `UPDATE` et `DELETE` sur les tables du journal, branchés dans `backend/src/finance/db/session.py`
 - [ ] T026 Créer la configuration Alembic (`backend/alembic.ini`, `backend/migrations/env.py` compatible SQLCipher) et la migration `backend/migrations/versions/0001_initial.py`
 - [ ] T027 Implémenter `backend/src/finance/auth/metadata.py` : petit fichier de métadonnées hors de la base chiffrée indiquant si l'instance est initialisée
-- [ ] T028 Implémenter `backend/src/finance/auth/service.py` : création du mot de passe, déverrouillage (l'ouverture correcte de la base prouve le mot de passe), verrouillage ; aucun mécanisme de récupération
-- [ ] T029 [P] Implémenter `backend/src/finance/auth/sessions.py` (cookie de session aléatoire en mémoire, `HttpOnly`, `SameSite=Strict`) et `backend/src/finance/auth/ratelimit.py` (délai croissant après des échecs)
+- [ ] T028 Implémenter `backend/src/finance/auth/service.py` : création du mot de passe (12 à 128 caractères, hors liste des mots de passe courants), déverrouillage (l'ouverture correcte de la base prouve le mot de passe), verrouillage ; aucun mécanisme de récupération
+- [ ] T029 [P] Implémenter `backend/src/finance/auth/sessions.py` (cookie de session aléatoire en mémoire, `HttpOnly`, `SameSite=Strict`, `Secure` en HTTPS, expiration après 30 minutes d'inactivité et 12 heures au plus) et `backend/src/finance/auth/ratelimit.py` (5 échecs consécutifs puis délai doublé à chaque échec jusqu'à 15 minutes)
 - [ ] T030 [P] Implémenter `backend/src/finance/api/deps.py` (session de base, exigence de déverrouillage), `backend/src/finance/api/errors.py` (format d'erreur commun) et `backend/src/finance/api/schemas.py` (montants échangés en chaînes décimales)
 - [ ] T031 Implémenter `backend/src/finance/api/routers/auth.py` : `GET /auth/status`, `POST /auth/setup`, `POST /auth/unlock`, `POST /auth/lock` conformes à `contracts/openapi.yaml`
 - [ ] T032 Implémenter `backend/src/finance/main.py` : fabrique d'application, montage des routeurs, service du frontend compilé, un seul processus
@@ -81,7 +81,7 @@ Règles transverses à respecter dans chaque tâche : montants, quantités, prix
 - [ ] T035 [P] Créer l'identité visuelle propre dans `frontend/src/brand.ts` (nom, textes) et `frontend/src/styles/theme.css` (palette, typographie, icônes originales, aucun élément d'un tiers)
 - [ ] T036 [P] Créer `frontend/src/lib/format.ts` : formatage `fr-FR` des montants et pourcentages à partir de chaînes décimales (`decimal.js-light`), sans passer par des nombres flottants pour le calcul
 - [ ] T037 Créer le squelette applicatif `frontend/src/main.tsx`, `frontend/src/App.tsx` (routes) et `frontend/src/components/Layout.tsx` (navigation latérale sur ordinateur, barre basse sur téléphone, sans défilement horizontal)
-- [ ] T038 Écrire `frontend/tests/pages/Login.test.tsx` puis implémenter `frontend/src/pages/Login.tsx` : création du mot de passe avec l'avertissement qu'un oubli rend les données irrécupérables et l'invitation à exporter (FR-028), puis déverrouillage
+- [ ] T038 Écrire `frontend/tests/pages/Login.test.tsx` puis implémenter `frontend/src/pages/Login.tsx` : création du mot de passe avec les règles (12 caractères minimum), l'avertissement qu'un oubli rend les données irrécupérables et l'invitation à exporter (FR-028), puis déverrouillage
 
 **Checkpoint**: la base chiffrée s'ouvre avec le mot de passe, l'API répond, le frontend affiche la connexion
 
@@ -202,7 +202,7 @@ Règles transverses à respecter dans chaque tâche : montants, quantités, prix
 - [ ] T095 [P] [US4] Écrire `backend/tests/unit/test_scpi_valuation.py` : prix de revient au prix de souscription, valorisation au prix de retrait, écart initial visible, sans prix valeur estimée au prix de revient ; distributions comptées comme opérations
 - [ ] T096 [P] [US4] Écrire `backend/tests/unit/test_livret_a_interest.py` : cas calculés à la main du solde minimum de la quinzaine × taux annuel / 24, crédit au 31 décembre, table de taux datée, intérêt réel saisi prioritaire, plafond de 22950 paramétrable
 - [ ] T097 [P] [US4] Écrire `backend/tests/unit/test_fx_conversion.py` : conversion au taux de la date de valorisation, report du dernier taux les jours sans publication, valeur « non convertible » si aucun taux
-- [ ] T098 [P] [US4] Écrire `backend/tests/unit/test_price_providers.py` avec `httpx` simulé : lecture du fichier de taux de la BCE, échec de Yahoo Finance avec repli sur les derniers prix, correspondance OpenFIGI ; vérifier que les requêtes sortantes ne contiennent aucune quantité, aucun montant ni aucun nom de compte (SC-008)
+- [ ] T098 [P] [US4] Écrire `backend/tests/unit/test_price_providers.py` avec `httpx` simulé : lecture du fichier de taux de la BCE, échec de Yahoo Finance avec repli sur les derniers prix, correspondance OpenFIGI ; vérifier que les requêtes sortantes ne contiennent que des tickers, des ISIN et des devises, et aucune quantité, aucun montant, aucun nom de compte ni aucune date d'opération (SC-008, principe I), et qu'aucune requête ne part tant que la récupération automatique n'est pas activée
 - [ ] T099 [P] [US4] Écrire `backend/tests/contract/test_prices_rates_contract.py` pour `/prices`, `/prices/refresh`, `/rates/livret-a`, `/settings`, `/instruments/{instrumentId}/ticker-suggestions`
 
 ### Implementation for User Story 4
@@ -216,12 +216,13 @@ Règles transverses à respecter dans chaque tâche : montants, quantités, prix
 - [ ] T106 [P] [US4] Implémenter `backend/src/finance/domain/livret_a.py` : intérêts estimés par quinzaine, arrondi au centime documenté dans le code, plafond
 - [ ] T107 [US4] Étendre `backend/src/finance/domain/valuation.py` : SCPI (souscription pour le revient, retrait pour la valorisation), conversion de devises, intérêts estimés du Livret A (dépend de T104, T105, T106)
 - [ ] T108 [US4] Implémenter `backend/src/finance/services/prices.py` : saisie manuelle, mise à jour automatique avec repli sur les derniers prix et signalement d'ancienneté, conservation locale
-- [ ] T109 [P] [US4] Implémenter `backend/src/finance/services/rates.py` (taux du Livret A datés et modifiables, taux de change) et `backend/src/finance/services/settings.py` (récupération automatique des prix, devise de référence, plafonds par défaut)
+- [ ] T109 [P] [US4] Implémenter `backend/src/finance/services/rates.py` (taux du Livret A datés et modifiables, taux de change) et `backend/src/finance/services/settings.py` (récupération automatique des prix **désactivée par défaut** jusqu'à un choix explicite, devise de référence, plafonds par défaut)
 - [ ] T110 [US4] Implémenter `backend/src/finance/api/routers/prices.py` (`GET/POST /prices`, `POST /prices/refresh`, suggestions de ticker), `backend/src/finance/api/routers/rates.py` (`GET/POST /rates/livret-a`) et `backend/src/finance/api/routers/settings.py` (`GET/PATCH /settings`)
 - [ ] T111 [P] [US4] Écrire `frontend/tests/components/PriceEntryForm.test.tsx` puis implémenter `frontend/src/components/PriceEntryForm.tsx` (prix de souscription et de retrait pour les SCPI, valeur liquidative, date)
 - [ ] T112 [P] [US4] Implémenter `frontend/src/components/StaleBadge.tsx` (prix ancien, solde non déclaré, taux manquant) et l'afficher dans `AccountDetail.tsx` et `AccountList.tsx`
 - [ ] T113 [P] [US4] Ajouter à `frontend/src/pages/Instruments.tsx` le bouton « Mettre à jour les cours », la saisie du ticker et les suggestions OpenFIGI
 - [ ] T114 [P] [US4] Implémenter `frontend/src/components/LivretARatesEditor.tsx` (table des taux datés, plafond)
+- [ ] T137 [P] [US4] Écrire `frontend/tests/components/PriceFetchConsent.test.tsx` puis implémenter `frontend/src/components/PriceFetchConsent.tsx` : choix explicite à la première utilisation, récupération désactivée tant que rien n'est choisi, liste des services contactés et des données envoyées (FR-029)
 
 **Checkpoint**: US1 à US4 fonctionnent : les positions sont valorisées, les SCPI et le Livret A suivent leurs règles
 
@@ -239,15 +240,18 @@ Règles transverses à respecter dans chaque tâche : montants, quantités, prix
 - [ ] T116 [P] [US5] Écrire `backend/tests/integration/test_restore_rules.py` : la restauration n'est acceptée que sur une instance vide, un fichier de version inconnue est refusé
 - [ ] T117 [P] [US5] Écrire `backend/tests/integration/test_protected_endpoints.py` : tous les endpoints sauf `/auth/*` répondent 401 sans session et 423 sur une instance verrouillée
 - [ ] T118 [P] [US5] Écrire `backend/tests/contract/test_data_contract.py` pour `GET /data/export` et `POST /data/restore`
+- [ ] T138 [P] [US5] Écrire `backend/tests/integration/test_change_password.py` : l'ancien mot de passe est exigé, le nouveau respecte les règles de FR-028, les données restent lisibles avec le nouveau, l'ancien est refusé ensuite (FR-033)
 - [ ] T119 [P] [US5] Écrire `scripts/smoke.sh` : construit l'image, démarre le conteneur avec un volume temporaire, crée l'accès, enregistre une donnée, redémarre et la relit
 
 ### Implementation for User Story 5
 
 - [ ] T120 [US5] Implémenter `backend/src/finance/services/export.py` : export JSON versionné non chiffré et restauration sur instance vide, selon `contracts/export-format.md`
 - [ ] T121 [US5] Implémenter `backend/src/finance/api/routers/data.py` : `GET /data/export`, `POST /data/restore`
+- [ ] T139 [US5] Implémenter le changement de mot de passe : `backend/src/finance/auth/service.py` (rechiffrement de la base par `PRAGMA rekey`) et `POST /auth/change-password` dans `backend/src/finance/api/routers/auth.py`, avec le tag `auth` déjà couvert par `IMPLEMENTED_TAGS`
+- [ ] T140 [US5] Implémenter `frontend/src/components/ChangePasswordForm.tsx` et l'intégrer à `frontend/src/pages/Settings.tsx`, avec un test dans `frontend/tests/components/ChangePasswordForm.test.tsx`
 - [ ] T122 [P] [US5] Créer `Dockerfile` à la racine : étape de build du frontend puis image d'exécution Python, utilisateur non root, un seul processus `uvicorn`, volume `/data`
 - [ ] T123 [P] [US5] Créer `compose.yaml` à la racine : un service, un volume de données, port exposé uniquement sur la boucle locale par défaut, redémarrage automatique
-- [ ] T124 [US5] Implémenter `frontend/src/pages/Settings.tsx` : export et restauration avec avertissement (le fichier n'est pas chiffré), bascule de récupération automatique des prix, liste des services contactés, rappel d'export, taux du Livret A
+- [ ] T124 [US5] Implémenter `frontend/src/pages/Settings.tsx` : export et restauration avec avertissement (le fichier n'est pas chiffré), bascule de récupération automatique des prix, liste des services contactés (BCE, Yahoo Finance, OpenFIGI) avec les données envoyées à chacun, rappel d'export, taux du Livret A, changement de mot de passe
 - [ ] T125 [US5] Ajouter un rappel d'export périodique (réglage de fréquence, bannière dans `frontend/src/components/Layout.tsx`)
 - [ ] T126 [P] [US5] Écrire `README.md` à la racine : prérequis, installation avec `docker compose up`, création de l'accès, sauvegarde et restauration, avertissement sur le mot de passe oublié
 
@@ -266,8 +270,9 @@ Règles transverses à respecter dans chaque tâche : montants, quantités, prix
 - [ ] T131 [P] Vérifier qu'aucune requête sortante ne contient un montant ou un nom de compte (`quickstart.md` section 7, SC-008) et consigner le résultat
 - [ ] T132 Revue de sécurité : en-têtes, contrôle `Origin`, limites de taille, absence de secrets, dépendances à jour ; compléter `SECURITY.md` si besoin
 - [ ] T133 [P] Mettre à jour `.github/CODEOWNERS` si de nouveaux dossiers sensibles apparaissent, et ajouter le check de chaque job de code à la liste des checks requis de la règle `protect-main`
-- [ ] T134 Choisir la licence du dépôt (décision de l'utilisateur) puis ajouter `LICENSE` et la mention dans `README.md`
+- [x] T134 Choisir la licence du dépôt puis ajouter `LICENSE` et la mention dans `README.md` (fait : AGPL-3.0, PR `chore/license`)
 - [ ] T135 Valider l'arrondi des intérêts du Livret A sur de vrais relevés et ajuster `backend/src/finance/domain/livret_a.py` (point ouvert de research.md §13)
+- [ ] T141 Passer `IMPLEMENTED_TAGS` de `backend/tests/contract/test_openapi_conformance.py` à la liste complète des tags du contrat : le test échoue si le contrat contient un chemin sans routeur
 - [ ] T136 Exécuter `quickstart.md` de bout en bout, mettre à jour `docs/design-brief.md` si le périmètre a bougé, puis lancer `graphify update .` pour rafraîchir le graphe
 
 ---
@@ -348,5 +353,13 @@ Task: "Implémenter backend/src/finance/domain/caps.py"
 
 - Chaque tâche vise une PR de taille raisonnable ; fusion sur `main` uniquement par pull request avec `ci-gate` vert
 - Vérifier que les tests échouent avant d'implémenter, puis committer après chaque tâche ou groupe logique
+- Les identifiants T137 à T141 ont été ajoutés après `/speckit-analyze` pour ne pas renuméroter ; ils sont placés dans la phase concernée et non dans l'ordre numérique
+
+### Règle de livraison (tests d'abord)
+
+- Les tests précèdent le code dans l'ordre des **commits**, pas dans l'ordre des **PR**.
+- Une PR regroupe les tests d'un ensemble cohérent et leur implémentation. Le premier commit contient les tests (rouges), le dernier est vert ; `ci-gate` s'évalue sur le dernier commit.
+- Aucune PR ne fusionne de test rouge ni de test désactivé pour passer la CI.
+- Découpage conseillé : Setup ; Foundational-base (T012 à T026) ; Foundational-auth (T027 à T038) ; puis, par histoire, domaine et services, API, interface.
 - Aucune donnée personnelle réelle dans les fixtures, aucun `float` dans `domain/`, aucun `UPDATE` ni `DELETE` sur les tables du journal
-- Tâches qui attendent une décision de l'utilisateur : T134 (licence) ; T135 demande de vrais relevés du Livret A
+- Tâche qui attend l'utilisateur : T135 demande de vrais relevés du Livret A

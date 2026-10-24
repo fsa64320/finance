@@ -5,7 +5,7 @@
 ## Vérifications
 
 - [ ] La branche suit la convention (`feat/`, `fix/`, `chore/`, `docs/`) et les commits sont conventionnels
-- [ ] Les calculs financiers ont des tests chiffrés écrits avant le code (principe V)
+- [ ] Les calculs financiers ont des tests chiffrés écrits avant le code : premier commit rouge, dernier commit vert (principe V)
 - [ ] Aucun montant ou taux n'utilise de flottant (principe III)
 - [ ] Aucune opération du journal n'est modifiée ni supprimée en base, les corrections ajoutent une version (principe II)
 - [ ] Aucune donnée personnelle réelle, aucun secret, aucun identifiant bancaire dans le code, les fixtures ou l'historique

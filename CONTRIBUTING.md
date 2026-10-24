@@ -14,7 +14,7 @@ Aucun commit direct sur `main`. Tout passe par une branche et une pull request.
 
 ## Règles de qualité
 
-- Les calculs financiers sont écrits test d'abord, avec des cas chiffrés (principe V).
+- Les calculs financiers sont écrits test d'abord, avec des cas chiffrés (principe V) : le premier commit d'une PR contient les tests rouges, le dernier est vert. Aucune PR ne fusionne de test rouge.
 - Montants en décimaux exacts, jamais en flottants (principe III).
 - Aucune donnée personnelle réelle ni aucun secret dans le dépôt, les fixtures ou les commits.
 - Aucun scraping ni stockage d'identifiants d'établissements (principe IV).
