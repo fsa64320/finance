@@ -1,8 +1,16 @@
 """FR-028 : 12 à 128 caractères, hors liste des mots de passe courants."""
 
+import time
+
 import pytest
 
-from finance.auth.passwords import MAX_LENGTH, MIN_LENGTH, PasswordPolicyError, validate_password
+from finance.auth.passwords import (
+    MAX_LENGTH,
+    MIN_LENGTH,
+    PasswordPolicyError,
+    strip_edges,
+    validate_password,
+)
 
 
 def test_bounds_are_the_ones_of_the_specification() -> None:
@@ -71,3 +79,27 @@ def test_error_message_never_contains_the_password() -> None:
     with pytest.raises(PasswordPolicyError) as raised:
         validate_password(secret)
     assert secret not in str(raised.value)
+
+
+@pytest.mark.parametrize(
+    ("given", "expected"),
+    [
+        ("password1234", "password"),
+        ("1234password", "password"),
+        ("--pass word!!", "pass word"),
+        ("p@ssw0rd99", "p@ssw0rd"),
+        ("12345", ""),
+        ("", ""),
+        ("é-motdepasse-é", "é-motdepasse-é"),
+    ],
+)
+def test_strip_edges_removes_non_letters_at_both_ends(given: str, expected: str) -> None:
+    assert strip_edges(given) == expected
+
+
+def test_strip_edges_is_linear_on_adversarial_input() -> None:
+    """Réponse à l'alerte CodeQL py/polynomial-redos : pas d'expression rationnelle en tête/queue."""
+    started = time.perf_counter()
+    for text in ("0" * 200_000 + "a", "a" + "0" * 200_000, "0!" * 100_000 + "a"):
+        strip_edges(text)
+    assert time.perf_counter() - started < 1.0
