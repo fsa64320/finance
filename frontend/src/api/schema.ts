@@ -490,6 +490,9 @@ export interface paths {
                         }[];
                     };
                 };
+                404: components["responses"]["NotFound"];
+                409: components["responses"]["Conflict"];
+                422: components["responses"]["Validation"];
                 502: components["responses"]["ExternalSourceFailed"];
             };
         };
@@ -742,6 +745,7 @@ export interface paths {
                         "application/json": components["schemas"]["Price"][];
                     };
                 };
+                422: components["responses"]["Validation"];
             };
         };
         put?: never;
@@ -918,6 +922,7 @@ export interface paths {
                         "application/json": components["schemas"]["LivretARate"];
                     };
                 };
+                422: components["responses"]["Validation"];
             };
         };
         delete?: never;
@@ -1360,6 +1365,7 @@ export interface paths {
                         "application/json": components["schemas"]["Settings"];
                     };
                 };
+                422: components["responses"]["Validation"];
             };
         };
         trace?: never;
@@ -1440,6 +1446,8 @@ export interface components {
             price?: components["schemas"]["Decimal"] | null;
             /** Format: date */
             price_date?: string | null;
+            /** @description SCPI, dernier prix de souscription connu (l'écart avec le prix de retrait est l'écart initial) */
+            subscription_price?: components["schemas"]["Decimal"];
             estimated: boolean;
         };
         AccountDetail: components["schemas"]["AccountSummary"] & {

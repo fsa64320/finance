@@ -197,3 +197,49 @@ export function importResult(overrides: Record<string, unknown> = {}) {
     ...overrides,
   }
 }
+
+export const SERVICES = [
+  {
+    name: 'BCE',
+    purpose: 'Taux de change de référence, contre l’euro',
+    data_sent: 'Une requête sans paramètre : ni compte, ni montant, ni actif.',
+  },
+  {
+    name: 'Yahoo Finance',
+    purpose: 'Cours et valeurs liquidatives',
+    data_sent: 'Le ticker de chaque actif suivi et une période grossière.',
+  },
+  {
+    name: 'OpenFIGI',
+    purpose: 'Recherche d’un ticker à partir d’un code ISIN',
+    data_sent: 'Le code ISIN de l’actif concerné, rien d’autre.',
+  },
+]
+
+export function settingsBody(overrides: Record<string, unknown> = {}) {
+  return {
+    reference_currency: 'EUR',
+    auto_fetch_prices: false,
+    export_reminder_days: 30,
+    last_export_at: null,
+    external_services: SERVICES,
+    ...overrides,
+  }
+}
+
+export function priceBody(overrides: Record<string, unknown> = {}) {
+  return {
+    instrument_id: ETF_ID,
+    price_date: '2026-10-20',
+    kind: 'MARKET',
+    value: '98.4',
+    currency: 'EUR',
+    source: 'MANUAL',
+    ...overrides,
+  }
+}
+
+export const LIVRET_RATES = [
+  { effective_from: '2025-02-01', value: '2.4' },
+  { effective_from: '2025-08-01', value: '1.7' },
+]
