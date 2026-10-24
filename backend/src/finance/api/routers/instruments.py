@@ -18,13 +18,15 @@ router = APIRouter(tags=["instruments"])
 
 
 @router.get("/instruments")
-def list_instruments(session: Session = Depends(get_db_session)) -> list[dict[str, Any]]:
+def list_instruments(
+    session: Session = Depends(get_db_session, scope="function"),
+) -> list[dict[str, Any]]:
     return [serializers.instrument(row) for row in instruments.list_instruments(session)]
 
 
 @router.post("/instruments", status_code=201, responses={409: {"description": "ISIN déjà utilisé"}})
 def create_instrument(
-    body: InstrumentInput, session: Session = Depends(get_db_session)
+    body: InstrumentInput, session: Session = Depends(get_db_session, scope="function")
 ) -> dict[str, Any]:
     row = instruments.create_instrument(
         session,
@@ -42,7 +44,7 @@ def create_instrument(
 def patch_instrument(
     instrumentId: UUID,
     body: InstrumentPatch,
-    session: Session = Depends(get_db_session),
+    session: Session = Depends(get_db_session, scope="function"),
 ) -> dict[str, Any]:
     changes = body.model_dump(exclude_unset=True)
     return serializers.instrument(
@@ -60,7 +62,7 @@ def patch_instrument(
 )
 def ticker_suggestions(
     instrumentId: UUID,
-    session: Session = Depends(get_db_session),
+    session: Session = Depends(get_db_session, scope="function"),
     providers: Providers = Depends(get_providers),
 ) -> list[dict[str, str]]:
     found = prices.suggest_tickers(session, providers, str(instrumentId))

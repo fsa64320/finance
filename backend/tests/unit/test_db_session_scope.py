@@ -5,14 +5,16 @@ client pouvait donc recevoir « 201 » puis relire des données encore non valid
 à 0 alors qu'un versement venait d'être enregistré). La session doit être validée avant l'envoi.
 """
 
+import importlib
+import pkgutil
 from typing import Any
 
+from fastapi import APIRouter
 from fastapi.dependencies.models import Dependant
 from fastapi.routing import APIRoute
 
+import finance.api.routers as routers_package
 from finance.api.deps import get_db_session
-from finance.config import Settings
-from finance.main import create_app
 
 
 def session_dependencies(dependant: Dependant) -> list[Any]:
@@ -24,13 +26,17 @@ def session_dependencies(dependant: Dependant) -> list[Any]:
     return found
 
 
-def test_every_route_commits_before_the_response_is_sent(tmp_path) -> None:  # type: ignore[no-untyped-def]
-    app = create_app(Settings(data_dir=tmp_path, host="127.0.0.1", port=8000))
+def test_every_route_commits_before_the_response_is_sent() -> None:
     checked = 0
-    for route in app.routes:
-        if not isinstance(route, APIRoute):
+    for module_info in pkgutil.iter_modules(routers_package.__path__):
+        module = importlib.import_module(f"finance.api.routers.{module_info.name}")
+        router = getattr(module, "router", None)
+        if not isinstance(router, APIRouter):
             continue
-        for dependency in session_dependencies(route.dependant):
-            checked += 1
-            assert dependency.scope == "function", f"{route.methods} {route.path}"
+        for route in router.routes:
+            if not isinstance(route, APIRoute):
+                continue
+            for dependency in session_dependencies(route.dependant):
+                checked += 1
+                assert dependency.scope == "function", f"{route.methods} {route.path}"
     assert checked >= 30

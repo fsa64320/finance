@@ -14,13 +14,13 @@ router = APIRouter(tags=["settings"])
 
 
 @router.get("/settings")
-def read_settings(session: Session = Depends(get_db_session)) -> dict[str, Any]:
+def read_settings(session: Session = Depends(get_db_session, scope="function")) -> dict[str, Any]:
     return serializers.settings_body(settings_service.get_settings(session))
 
 
 @router.patch("/settings")
 def patch_settings(
-    body: SettingsPatch, session: Session = Depends(get_db_session)
+    body: SettingsPatch, session: Session = Depends(get_db_session, scope="function")
 ) -> dict[str, Any]:
     changed = settings_service.update_settings(
         session,

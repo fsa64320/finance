@@ -13,7 +13,7 @@ router = APIRouter(tags=["data"])
 
 
 @router.get("/data/export")
-def export_data(session: Session = Depends(get_db_session)) -> JSONResponse:
+def export_data(session: Session = Depends(get_db_session, scope="function")) -> JSONResponse:
     body = export.export_data(session)
     day = str(body["exported_at"])[:10]
     return JSONResponse(
@@ -32,7 +32,8 @@ def export_data(session: Session = Depends(get_db_session)) -> JSONResponse:
     responses={409: {"description": "L'instance n'est pas vide"}},
 )
 def restore_data(
-    payload: dict[str, Any] = Body(...), session: Session = Depends(get_db_session)
+    payload: dict[str, Any] = Body(...),
+    session: Session = Depends(get_db_session, scope="function"),
 ) -> Response:
     export.restore_data(session, payload)
     return Response(status_code=204)
