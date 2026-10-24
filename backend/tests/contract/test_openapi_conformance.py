@@ -152,7 +152,7 @@ def test_request_constraints_match_the_contract(
         if wanted is None or got is None:
             continue
         assert set(got.get("required", [])) == set(wanted.get("required", [])), key
-        for name, spec in wanted["properties"].items():
+        for name, spec in wanted.get("properties", {}).items():
             expected_property = simplified(resolve(contract, spec))
             actual_property = simplified(resolve(served, got["properties"][name]))
             for constraint in ("minLength", "maxLength", "type"):

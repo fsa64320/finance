@@ -91,7 +91,7 @@ def test_the_throttle_clears_after_the_delay(tmp_path: Path, clock: FakeClock) -
         client.post(f"{API}/auth/setup", json={"password": API_PASSWORD})
         for i in range(6):
             change(client, current=f"mauvais-mot-de-passe-{i}")
-        clock.advance(3600)
+        clock.advance(60)
         assert change(client).status_code == 204
 
 

@@ -3,8 +3,10 @@
 from fastapi import APIRouter, Depends, Request, Response
 
 from finance.api.deps import COOKIE_NAME, get_auth, require_session
-from finance.api.schemas import AuthStatus, PasswordRequest, UnlockRequest
+from finance.api.schemas import AuthStatus, ChangePasswordRequest, PasswordRequest, UnlockRequest
+from finance.auth.passwords import PasswordPolicyError
 from finance.auth.service import AuthService
+from finance.services.errors import ValidationFailed
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -77,4 +79,29 @@ def lock(token: str = Depends(require_session), auth: AuthService = Depends(get_
     auth.lock(token)
     reply = Response(status_code=204)
     reply.delete_cookie(COOKIE_NAME, path="/")
+    return reply
+
+
+@router.post(
+    "/change-password",
+    status_code=204,
+    response_class=Response,
+    responses={
+        401: {"description": "Session absente ou mot de passe actuel incorrect"},
+        422: {"description": "Nouveau mot de passe refusé"},
+        429: {"description": "Trop d'essais"},
+    },
+)
+def change_password(
+    body: ChangePasswordRequest,
+    request: Request,
+    _: str = Depends(require_session),
+    auth: AuthService = Depends(get_auth),
+) -> Response:
+    try:
+        token = auth.change_password(body.current_password, body.new_password)
+    except PasswordPolicyError as error:
+        raise ValidationFailed.single("new_password", str(error)) from error
+    reply = Response(status_code=204)
+    _open_session(request, reply, token)
     return reply

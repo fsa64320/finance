@@ -4,7 +4,7 @@ from fastapi.testclient import TestClient
 
 from tests.api_helpers import API
 from tests.data_helpers import populate
-from tests.integration.test_restore_rules import MINIMAL
+from tests.integration.test_restore_rules import MINIMAL, account
 
 
 def test_export_is_a_json_object_with_the_documented_sections(authed_client: TestClient) -> None:
@@ -32,11 +32,12 @@ def test_export_is_a_json_object_with_the_documented_sections(authed_client: Tes
 
 def test_restore_answers_with_the_documented_statuses(authed_client: TestClient) -> None:
     assert authed_client.post(f"{API}/data/restore", json={"format_version": 9}).status_code == 422
-    assert authed_client.post(f"{API}/data/restore", json=MINIMAL).status_code == 204
-    assert authed_client.post(f"{API}/data/restore", json=MINIMAL).status_code == 409
-    empty = authed_client.post(f"{API}/data/restore", json=MINIMAL)
-    assert empty.headers["content-type"].startswith("application/json")
-    assert {"code", "message"} <= set(empty.json())
+    filled = {**MINIMAL, "accounts": [account()]}
+    assert authed_client.post(f"{API}/data/restore", json=filled).status_code == 204
+    refused = authed_client.post(f"{API}/data/restore", json=filled)
+    assert refused.status_code == 409
+    assert refused.headers["content-type"].startswith("application/json")
+    assert {"code", "message"} <= set(refused.json())
 
 
 def test_the_error_format_is_the_common_one(authed_client: TestClient) -> None:

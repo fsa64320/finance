@@ -236,18 +236,18 @@ Règles transverses à respecter dans chaque tâche : montants, quantités, prix
 
 ### Tests for User Story 5 (écrire d'abord) ⚠️
 
-- [ ] T115 [P] [US5] Écrire `backend/tests/integration/test_export_restore_roundtrip.py` : export puis restauration redonnent des valeurs identiques pour tous les comptes et le patrimoine net (SC-009), selon `contracts/export-format.md`
-- [ ] T116 [P] [US5] Écrire `backend/tests/integration/test_restore_rules.py` : la restauration n'est acceptée que sur une instance vide, un fichier de version inconnue est refusé
-- [ ] T117 [P] [US5] Écrire `backend/tests/integration/test_protected_endpoints.py` : tous les endpoints sauf `/auth/*` répondent 401 sans session et 423 sur une instance verrouillée
-- [ ] T118 [P] [US5] Écrire `backend/tests/contract/test_data_contract.py` pour `GET /data/export` et `POST /data/restore`
-- [ ] T138 [P] [US5] Écrire `backend/tests/integration/test_change_password.py` : l'ancien mot de passe est exigé, le nouveau respecte les règles de FR-028, les données restent lisibles avec le nouveau, l'ancien est refusé ensuite (FR-033)
+- [x] T115 [P] [US5] Écrire `backend/tests/integration/test_export_restore_roundtrip.py` : export puis restauration redonnent des valeurs identiques pour tous les comptes et le patrimoine net (SC-009), selon `contracts/export-format.md`
+- [x] T116 [P] [US5] Écrire `backend/tests/integration/test_restore_rules.py` : la restauration n'est acceptée que sur une instance vide, un fichier de version inconnue est refusé
+- [x] T117 [P] [US5] Écrire `backend/tests/integration/test_protected_endpoints.py` : tous les endpoints sauf `/auth/*` répondent 401 sans session et 423 sur une instance verrouillée
+- [x] T118 [P] [US5] Écrire `backend/tests/contract/test_data_contract.py` pour `GET /data/export` et `POST /data/restore`
+- [x] T138 [P] [US5] Écrire `backend/tests/integration/test_change_password.py` : l'ancien mot de passe est exigé, le nouveau respecte les règles de FR-028, les données restent lisibles avec le nouveau, l'ancien est refusé ensuite (FR-033)
 - [ ] T119 [P] [US5] Écrire `scripts/smoke.sh` : construit l'image, démarre le conteneur avec un volume temporaire, crée l'accès, enregistre une donnée, redémarre et la relit
 
 ### Implementation for User Story 5
 
-- [ ] T120 [US5] Implémenter `backend/src/finance/services/export.py` : export JSON versionné non chiffré et restauration sur instance vide, selon `contracts/export-format.md`
-- [ ] T121 [US5] Implémenter `backend/src/finance/api/routers/data.py` : `GET /data/export`, `POST /data/restore`
-- [ ] T139 [US5] Implémenter le changement de mot de passe : `backend/src/finance/auth/service.py` (rechiffrement de la base par `PRAGMA rekey`) et `POST /auth/change-password` dans `backend/src/finance/api/routers/auth.py`, avec le tag `auth` déjà couvert par `IMPLEMENTED_TAGS`
+- [x] T120 [US5] Implémenter `backend/src/finance/services/export.py` : export JSON versionné non chiffré et restauration sur instance vide, selon `contracts/export-format.md`
+- [x] T121 [US5] Implémenter `backend/src/finance/api/routers/data.py` : `GET /data/export`, `POST /data/restore`
+- [x] T139 [US5] Implémenter le changement de mot de passe : `backend/src/finance/auth/service.py` (rechiffrement de la base par `PRAGMA rekey`) et `POST /auth/change-password` dans `backend/src/finance/api/routers/auth.py`, avec le tag `auth` déjà couvert par `IMPLEMENTED_TAGS`
 - [ ] T140 [US5] Implémenter `frontend/src/components/ChangePasswordForm.tsx` et l'intégrer à `frontend/src/pages/Settings.tsx`, avec un test dans `frontend/tests/components/ChangePasswordForm.test.tsx`
 - [ ] T122 [P] [US5] Créer `Dockerfile` à la racine, ajouter l'entrée `docker` à `.github/dependabot.yml` et créer `.dockerignore` : étape de build du frontend puis image d'exécution Python, utilisateur non root, un seul processus `uvicorn`, volume `/data`
 - [ ] T123 [P] [US5] Créer `compose.yaml` à la racine : un service, un volume de données, port exposé uniquement sur la boucle locale par défaut, redémarrage automatique
