@@ -320,6 +320,7 @@ export default function AccountDetail() {
     Promise.all([
       queryClient.invalidateQueries({ queryKey: keys.accounts }),
       queryClient.invalidateQueries({ queryKey: keys.transactions }),
+      queryClient.invalidateQueries({ queryKey: keys.dashboard }),
     ])
 
   const patch = useMutation({

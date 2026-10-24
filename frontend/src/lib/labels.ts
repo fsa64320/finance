@@ -70,3 +70,22 @@ export const INSTRUMENT_TYPES: readonly TransactionType[] = [
   'DIVIDEND',
   'DISTRIBUTION',
 ]
+
+export type AssetClass = 'equities_etf' | 'funds' | 'scpi' | 'euro_funds' | 'cash'
+
+export const ASSET_CLASS_LABELS: Record<AssetClass, string> = {
+  equities_etf: 'Actions et ETF',
+  funds: 'Fonds',
+  scpi: 'SCPI',
+  euro_funds: 'Fonds en euros',
+  cash: 'Liquidités',
+}
+
+/** Couleurs des classes d'actifs ; l'information passe aussi par le libellé et le poids. */
+export const ASSET_CLASS_COLORS: Record<AssetClass, string> = {
+  equities_etf: '#0f766e',
+  funds: '#2563eb',
+  scpi: '#b45309',
+  euro_funds: '#7c3aed',
+  cash: '#64748b',
+}
