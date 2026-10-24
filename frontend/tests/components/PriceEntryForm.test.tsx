@@ -5,8 +5,8 @@ import { describe, expect, it, vi } from 'vitest'
 import PriceEntryForm from '../../src/components/PriceEntryForm'
 import { ETF_ID, instrument } from '../fixtures'
 
-const SCPI = instrument({ id: 'scpi-1', kind: 'SCPI', name: 'SCPI Exemple', isin: null })
-const FUND = instrument({ id: 'fund-1', kind: 'FUND', name: 'Fonds Exemple', isin: null })
+const SCPI = instrument({ id: 'scpi-1', kind: 'SCPI', name: 'SCPI Exemple', isin: undefined })
+const FUND = instrument({ id: 'fund-1', kind: 'FUND', name: 'Fonds Exemple', isin: undefined })
 
 function setup(item = instrument(), onSubmit = vi.fn().mockResolvedValue(undefined)) {
   render(<PriceEntryForm instrument={item} onSubmit={onSubmit} onCancel={() => {}} />)

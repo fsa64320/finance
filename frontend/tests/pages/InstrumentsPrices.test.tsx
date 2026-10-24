@@ -135,7 +135,7 @@ describe('mise à jour des cours', () => {
 describe('ticker', () => {
   it('enregistre le ticker saisi', async () => {
     const user = await open('ETF Monde')
-    const field = screen.getByLabelText('Ticker de cotation')
+    const field = screen.getByLabelText('Ticker de cotation de cet actif')
     expect(field).toHaveValue('CW8.PA')
     await user.clear(field)
     await user.type(field, 'IWDA.AS')

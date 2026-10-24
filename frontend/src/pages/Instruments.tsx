@@ -1,13 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { type FormEvent, useState } from 'react'
 
+import { Link } from 'react-router-dom'
+
 import { createInstrument, listInstruments } from '../api/instruments'
 import { keys } from '../api/keys'
-import type { InstrumentInput, InstrumentKind } from '../api/types'
-import { SelectField, TextField, buttonClass } from '../components/fields'
+import { refreshPrices } from '../api/prices'
+import type { Instrument, InstrumentInput, InstrumentKind, RefreshSource } from '../api/types'
+import InstrumentPanel from '../components/InstrumentPanel'
+import { SelectField, TextField, buttonClass, secondaryButtonClass } from '../components/fields'
 import { splitApiError } from '../lib/form-errors'
 import { INSTRUMENT_KIND_LABELS, PRICE_MODE_LABELS } from '../lib/labels'
 
+const SOURCE_NAMES: Record<string, string> = { ecb: 'BCE', yahoo: 'Yahoo Finance' }
 const ISIN_SHAPE = /^[A-Z]{2}[A-Z0-9]{9}[0-9]$/
 const FIELDS = ['kind', 'name', 'isin', 'currency', 'price_ticker'] as const
 const KIND_OPTIONS = (Object.keys(INSTRUMENT_KIND_LABELS) as InstrumentKind[]).map((kind) => ({
@@ -26,6 +31,18 @@ export default function Instruments() {
   const [ticker, setTicker] = useState('')
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [general, setGeneral] = useState<string | null>(null)
+  const [managedId, setManagedId] = useState<string | null>(null)
+
+  const refresh = useMutation({
+    mutationFn: () => refreshPrices(),
+    onSuccess: async () => {
+      await Promise.all(
+        [keys.dashboard, keys.accounts, keys.instruments].map((queryKey) =>
+          queryClient.invalidateQueries({ queryKey }),
+        ),
+      )
+    },
+  })
 
   const create = useMutation({
     mutationFn: (input: InstrumentInput) => createInstrument(input),
@@ -63,12 +80,30 @@ export default function Instruments() {
     create.mutate(input)
   }
 
+  const managed = instruments.data?.find((item: Instrument) => item.id === managedId)
+
   return (
     <section>
       <h2 className="text-xl font-semibold">Actifs</h2>
       <p className="mt-1 text-sm text-muted">
         Les actions, ETF, fonds, SCPI et fonds en euros que vous détenez dans vos comptes.
       </p>
+      <div className="mt-3">
+        <button
+          type="button"
+          className={secondaryButtonClass}
+          disabled={refresh.isPending}
+          onClick={() => refresh.mutate()}
+        >
+          {refresh.isPending ? 'Mise à jour…' : 'Mettre à jour les cours'}
+        </button>
+        {refresh.isError && (
+          <p role="alert" className="mt-2 text-danger">
+            La mise à jour a échoué : les derniers prix connus restent utilisés.
+          </p>
+        )}
+        {refresh.data && <RefreshSummary sources={refresh.data.sources} />}
+      </div>
 
       {instruments.isPending && <p className="mt-4 text-muted">Chargement…</p>}
       {instruments.isError && (
@@ -90,7 +125,11 @@ export default function Instruments() {
                 <th className="py-2 pr-4 font-medium">Type</th>
                 <th className="py-2 pr-4 font-medium">ISIN</th>
                 <th className="py-2 pr-4 font-medium">Devise</th>
-                <th className="py-2 font-medium">Prix</th>
+                <th className="py-2 pr-4 font-medium">Prix</th>
+                <th className="py-2 pr-4 font-medium">Ticker</th>
+                <th className="py-2 font-medium">
+                  <span className="sr-only">Actions</span>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -102,12 +141,27 @@ export default function Instruments() {
                   <td className="py-2 pr-4">{INSTRUMENT_KIND_LABELS[item.kind]}</td>
                   <td className="py-2 pr-4">{item.isin ?? '—'}</td>
                   <td className="py-2 pr-4">{item.currency}</td>
-                  <td className="py-2">{PRICE_MODE_LABELS[item.price_mode ?? 'MANUAL']}</td>
+                  <td className="py-2 pr-4">{PRICE_MODE_LABELS[item.price_mode ?? 'MANUAL']}</td>
+                  <td className="py-2 pr-4">{item.price_ticker ?? '—'}</td>
+                  <td className="py-2">
+                    <button
+                      type="button"
+                      className="text-brand underline"
+                      aria-label={`Gérer ${item.name}`}
+                      onClick={() => setManagedId(item.id)}
+                    >
+                      Gérer
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+      )}
+
+      {managed && (
+        <InstrumentPanel key={managed.id} instrument={managed} onClose={() => setManagedId(null)} />
       )}
 
       <form
@@ -159,5 +213,34 @@ export default function Instruments() {
         </button>
       </form>
     </section>
+  )
+}
+
+function describe(source: RefreshSource): string {
+  const name = SOURCE_NAMES[source.source] ?? source.source
+  if (source.status === 'disabled') return `${name} : récupération désactivée.`
+  if (source.status === 'failed') {
+    return `${name} : échec — ${source.message ?? 'source indisponible'}. Les derniers prix connus restent utilisés.`
+  }
+  const count = source.updated ?? 0
+  const done = `${name} : ${count} ${count > 1 ? 'mises à jour' : 'mise à jour'}`
+  return source.status === 'partial' ? `${done}. ${source.message ?? ''}`.trim() : done
+}
+
+function RefreshSummary({ sources }: { sources: RefreshSource[] }) {
+  const disabled = sources.some((source) => source.status === 'disabled')
+  return (
+    <div role="status" className="mt-2 text-sm">
+      <ul className="space-y-1">
+        {sources.map((source) => (
+          <li key={source.source}>{describe(source)}</li>
+        ))}
+      </ul>
+      {disabled && (
+        <Link className="text-brand underline" to="/reglages">
+          Activer dans les réglages
+        </Link>
+      )}
+    </div>
   )
 }

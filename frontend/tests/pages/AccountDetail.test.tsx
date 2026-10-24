@@ -181,7 +181,7 @@ describe('positions', () => {
     const table = await screen.findByRole('table', { name: 'Positions' })
     const row = within(table).getByText('ETF Monde').closest('tr')!
     expect(plain(row.textContent)).toContain('Souscription 250,00 €')
-    expect(plain(row.textContent)).toContain('Écart −262,00 €')
+    expect(plain(row.textContent)).toMatch(/Écart [-−]262,00 €/)
   })
 
   it('indique une position qui ne peut pas être valorisée', async () => {

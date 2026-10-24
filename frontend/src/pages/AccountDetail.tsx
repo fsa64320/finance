@@ -1,4 +1,5 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import Decimal from 'decimal.js-light'
 import { type FormEvent, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
@@ -22,6 +23,7 @@ import type {
 } from '../api/types'
 import BalanceForm from '../components/BalanceForm'
 import ModificationHistory from '../components/ModificationHistory'
+import StaleBadge from '../components/StaleBadge'
 import TransactionForm from '../components/TransactionForm'
 import TransferForm from '../components/TransferForm'
 import {
@@ -125,10 +127,28 @@ function PositionsTable({
                   <span>{formatMoney(position.value, detail.currency)}</span>
                 )}{' '}
                 {position.estimated && (
-                  <span className="rounded bg-warn-bg px-1.5 py-0.5 text-xs text-warn-ink">
-                    estimé
-                  </span>
+                  <StaleBadge
+                    code={
+                      detail.warnings?.find(
+                        (warning) =>
+                          warning.instrument_id === position.instrument_id &&
+                          warning.code !== 'price_missing',
+                      )?.code
+                    }
+                  />
                 )}
+                {position.subscription_price &&
+                  position.value != null &&
+                  position.total_cost != null && (
+                    <span className="mt-1 block text-xs text-muted">
+                      Souscription {formatUnitPrice(position.subscription_price, detail.currency)}
+                      {' · '}Écart{' '}
+                      {formatMoney(
+                        new Decimal(position.value).minus(position.total_cost).toFixed(),
+                        detail.currency,
+                      )}
+                    </span>
+                  )}
               </td>
             </tr>
           ))}

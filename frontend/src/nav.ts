@@ -9,4 +9,5 @@ export const NAV_ITEMS: NavItem[] = [
   { to: '/comptes', label: 'Comptes' },
   { to: '/actifs', label: 'Actifs' },
   { to: '/import', label: 'Importer' },
+  { to: '/reglages', label: 'Réglages' },
 ]
