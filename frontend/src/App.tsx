@@ -1,11 +1,59 @@
-export default function App() {
-  return (
-    <main className="mx-auto max-w-3xl p-4">
-      <h1 className="text-2xl font-semibold">Finance</h1>
-      <p className="mt-2 text-sm text-gray-600">
-        Les valeurs et analyses affichées sont indicatives et ne constituent pas un conseil en
-        investissement.
+import { QueryClient, QueryClientProvider, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useState } from 'react'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
+
+import { AUTH_STATUS_KEY, getAuthStatus } from './api/auth'
+import Layout from './components/Layout'
+import Dashboard from './pages/Dashboard'
+import Login from './pages/Login'
+import NotFound from './pages/NotFound'
+
+function AuthGate() {
+  const queryClient = useQueryClient()
+  const status = useQuery({ queryKey: AUTH_STATUS_KEY, queryFn: getAuthStatus, retry: false })
+  const refresh = () => queryClient.invalidateQueries({ queryKey: AUTH_STATUS_KEY })
+
+  if (status.isPending) {
+    return (
+      <p role="status" className="p-8 text-muted">
+        Chargement…
       </p>
-    </main>
+    )
+  }
+  if (status.isError) {
+    return (
+      <div role="alert" className="mx-auto max-w-md p-8">
+        <p>Impossible de joindre le serveur. Vérifiez qu'il est démarré, puis réessayez.</p>
+        <button
+          type="button"
+          className="mt-4 rounded-lg border border-line px-3 py-1.5"
+          onClick={() => void status.refetch()}
+        >
+          Réessayer
+        </button>
+      </div>
+    )
+  }
+  if (status.data === 'uninitialized') return <Login mode="setup" onSuccess={refresh} />
+  if (status.data === 'locked') return <Login mode="unlock" onSuccess={refresh} />
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route element={<Layout />}>
+          <Route index element={<Dashboard />} />
+          <Route path="*" element={<NotFound />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  )
+}
+
+export default function App() {
+  const [queryClient] = useState(() => new QueryClient())
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthGate />
+    </QueryClientProvider>
   )
 }

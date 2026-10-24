@@ -64,6 +64,7 @@ def test_metadata_describes_the_cipher_without_any_secret(tmp_path: Path, clock:
     if os.name == "posix":
         assert stat.S_IMODE(path.stat().st_mode) == 0o600
         assert stat.S_IMODE((tmp_path / "data").stat().st_mode) == 0o700
+        assert stat.S_IMODE((tmp_path / "data" / "finance.db").stat().st_mode) == 0o600
 
 
 def test_setup_twice_is_refused(tmp_path: Path, clock: FakeClock) -> None:

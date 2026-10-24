@@ -1,6 +1,63 @@
 @import 'tailwindcss';
 
-/* Identité visuelle propre au projet : palette et typographie définies ici (voir T035). */
-@theme {
+/*
+ * Identité visuelle propre au projet : palette, typographie et formes définies ici.
+ * Les jetons sémantiques suivent le thème du système (clair ou sombre).
+ */
+:root {
+  --surface: #f6f7f4;
+  --card: #ffffff;
+  --ink: #17262b;
+  --muted: #55666b;
+  --line: #d9e0dd;
+  --brand: #0f766e;
+  --brand-ink: #ffffff;
+  --brand-soft: #dff1ee;
+  --danger: #b42318;
+  --warn-bg: #fff4e0;
+  --warn-ink: #7a4300;
+  --focus: #0b5ed7;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --surface: #0f1a1d;
+    --card: #16262a;
+    --ink: #e8efee;
+    --muted: #a3b4b8;
+    --line: #29403f;
+    --brand: #2dd4bf;
+    --brand-ink: #062a27;
+    --brand-soft: #123835;
+    --danger: #ff8a80;
+    --warn-bg: #3a2a10;
+    --warn-ink: #ffd699;
+    --focus: #8ab4ff;
+  }
+}
+
+@theme inline {
   --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --color-surface: var(--surface);
+  --color-card: var(--card);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-brand: var(--brand);
+  --color-brand-ink: var(--brand-ink);
+  --color-brand-soft: var(--brand-soft);
+  --color-danger: var(--danger);
+  --color-warn-bg: var(--warn-bg);
+  --color-warn-ink: var(--warn-ink);
+}
+
+body {
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-sans);
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
 }

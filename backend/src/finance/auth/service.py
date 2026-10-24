@@ -89,6 +89,7 @@ class AuthService:
             except DatabaseExistsError as error:
                 raise AlreadyInitializedError("une base existe déjà") from error
             try:
+                database.chmod(0o600)
                 upgrade(engine)
                 metadata.write_metadata(self._data_dir, cipher_settings(engine))
             except BaseException:

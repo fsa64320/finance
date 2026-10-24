@@ -134,9 +134,15 @@ describe('Login en déverrouillage', () => {
       await vi.advanceTimersByTimeAsync(1000)
     })
     expect(screen.getByRole('alert')).toHaveTextContent(/2 secondes/i)
+    // Une seconde à la fois : React ne programme le minuteur suivant qu'après le rendu.
     await act(async () => {
-      await vi.advanceTimersByTimeAsync(2000)
+      await vi.advanceTimersByTimeAsync(1000)
     })
+    expect(screen.getByRole('alert')).toHaveTextContent(/1 seconde\./i)
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1000)
+    })
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: /déverrouiller/i })).toBeEnabled()
   })
 

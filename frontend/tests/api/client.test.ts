@@ -4,6 +4,10 @@ import { ApiError, request } from '../../src/api/client'
 
 const fetchMock = vi.fn()
 
+// Dernier appel à fetch : [url, options].
+const lastCall = () =>
+  fetchMock.mock.calls.at(-1) as [string, RequestInit & { headers: Record<string, string> }]
+
 beforeEach(() => {
   vi.stubGlobal('fetch', fetchMock)
 })
@@ -23,7 +27,7 @@ describe('request', () => {
   it('appelle /api/v1 avec les cookies de même origine', async () => {
     fetchMock.mockResolvedValue(json({ state: 'locked' }))
     await request('GET', '/auth/status')
-    const [url, options] = fetchMock.mock.calls[0]
+    const [url, options] = lastCall()
     expect(url).toBe('/api/v1/auth/status')
     expect(options.method).toBe('GET')
     expect(options.credentials).toBe('same-origin')
@@ -42,7 +46,7 @@ describe('request', () => {
   it('envoie le corps en JSON', async () => {
     fetchMock.mockResolvedValue(new Response(null, { status: 204 }))
     await request('POST', '/auth/unlock', { password: 'secret-de-test' })
-    const options = fetchMock.mock.calls[0][1]
+    const options = lastCall()[1]
     expect(options.headers['content-type']).toBe('application/json')
     expect(options.body).toBe(JSON.stringify({ password: 'secret-de-test' }))
   })
