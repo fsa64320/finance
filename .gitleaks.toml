@@ -10,4 +10,5 @@ regexes = [
   '''tulipe-bleue-47-horizon''',
   '''autre-mot-de-passe-91''',
   '''test-passphrase-not-a-secret''',
+  '''mauvais-mot-de-passe-12''',
 ]
