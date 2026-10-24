@@ -92,6 +92,43 @@ jobs:
       - name: Build (types et bundle)
         run: npm run build
 
+  e2e:
+    name: Bout en bout
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Installer uv
+        uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+        with:
+          python-version: "3.12"
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+      - name: Installer Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Dépendances du backend (lockfile figé)
+        working-directory: backend
+        run: uv sync --frozen --no-dev
+      - name: Dépendances de l'interface (lockfile figé)
+        working-directory: frontend
+        run: npm ci --no-audit --no-fund
+      - name: Construire l'interface
+        working-directory: frontend
+        run: npm run build
+      - name: Installer le navigateur
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Parcours du quickstart et parcours au clavier
+        working-directory: frontend
+        run: npm run e2e
+
   docker:
     name: Docker
     runs-on: ubuntu-latest
@@ -109,7 +146,7 @@ jobs:
   ci-gate:
     name: ci-gate
     if: always()
-    needs: [secret-scan, backend, frontend, docker]
+    needs: [secret-scan, backend, frontend, e2e, docker]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

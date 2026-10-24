@@ -223,7 +223,9 @@ test('parcours du quickstart, de l’installation à la sauvegarde', async ({ pa
     await expect(page.getByRole('alert')).toContainText('Mot de passe incorrect')
     await page.getByLabel('Mot de passe', { exact: true }).fill(next)
     await page.getByRole('button', { name: 'Déverrouiller' }).click()
-    await expect(page.getByRole('heading', { level: 2, name: 'Tableau de bord' })).toBeVisible()
+    // L'application revient là où l'on était : les données sont lisibles avec le nouveau mot de passe.
+    await expect(page.getByRole('heading', { level: 2, name: 'Réglages' })).toBeVisible()
+    await page.getByRole('link', { name: 'Tableau de bord' }).click()
     expect(plain(await page.getByTestId('net-worth').innerText())).toMatch(/\d/)
   })
 })

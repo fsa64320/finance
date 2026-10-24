@@ -16,6 +16,7 @@ export function daysAgo(days: number): string {
 /** Capture pour le README, seulement quand `E2E_SCREENSHOTS=1`. */
 export async function shot(page: Page, name: string): Promise<void> {
   if (!process.env.E2E_SCREENSHOTS) return
+  await page.evaluate(() => window.scrollTo(0, 0))
   await page.screenshot({
     path: path.resolve(import.meta.dirname, `../../../docs/images/${name}.png`),
     animations: 'disabled',
