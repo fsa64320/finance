@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react'
+import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
@@ -22,12 +22,40 @@ async function fill(
   await user.type(screen.getByLabelText('Nouveau mot de passe'), next)
   await user.type(screen.getByLabelText('Confirmer le nouveau mot de passe'), again)
   await user.click(screen.getByRole('button', { name: 'Changer le mot de passe' }))
+  const dialog = screen.queryByRole('dialog', { name: 'Changer le mot de passe ?' })
+  if (dialog)
+    await user.click(within(dialog).getByRole('button', { name: 'Changer le mot de passe' }))
 }
 
 function setup(onSubmit = vi.fn().mockResolvedValue(undefined)) {
   render(<ChangePasswordForm onSubmit={onSubmit} />)
   return onSubmit
 }
+
+describe('confirmation', () => {
+  it('demande confirmation et prévient que l’ancien mot de passe cessera de fonctionner', async () => {
+    const onSubmit = setup()
+    const user = userEvent.setup()
+    await user.type(screen.getByLabelText('Mot de passe actuel'), OLD)
+    await user.type(screen.getByLabelText('Nouveau mot de passe'), NEW)
+    await user.type(screen.getByLabelText('Confirmer le nouveau mot de passe'), NEW)
+    await user.click(screen.getByRole('button', { name: 'Changer le mot de passe' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Changer le mot de passe ?' })
+    expect(dialog).toHaveTextContent(/ancien mot de passe/i)
+    expect(dialog).toHaveTextContent(/récupér/i)
+    expect(onSubmit).not.toHaveBeenCalled()
+    await user.click(within(dialog).getByRole('button', { name: 'Annuler' }))
+    expect(onSubmit).not.toHaveBeenCalled()
+    expect(screen.getByLabelText('Nouveau mot de passe')).toHaveValue(NEW)
+  })
+
+  it('n’ouvre pas la confirmation tant que le formulaire est invalide', async () => {
+    setup()
+    await userEvent.click(screen.getByRole('button', { name: 'Changer le mot de passe' }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(await screen.findByRole('alert')).toBeInTheDocument()
+  })
+})
 
 describe('ChangePasswordForm', () => {
   it('utilise les bons attributs de saisie et rappelle les règles', () => {

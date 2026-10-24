@@ -304,12 +304,12 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "alembic", specifier = ">=1.20.0" },
-    { name = "charset-normalizer", specifier = ">=3.3" },
+    { name = "charset-normalizer", specifier = ">=3.5.2" },
     { name = "fastapi", specifier = ">=0.115" },
-    { name = "httpx", specifier = ">=0.27" },
-    { name = "pydantic", specifier = ">=2.8" },
+    { name = "httpx", specifier = ">=0.28.1" },
+    { name = "pydantic", specifier = ">=2.14.1" },
     { name = "python-multipart", specifier = ">=0.0.32" },
-    { name = "sqlalchemy", specifier = ">=2.0" },
+    { name = "sqlalchemy", specifier = ">=2.1.6" },
     { name = "sqlcipher3-wheels", specifier = "==0.5.7" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.54.0" },
     { name = "yfinance", specifier = "==1.7.0" },
@@ -319,7 +319,7 @@ requires-dist = [
 dev = [
     { name = "hypothesis", specifier = ">=6.170.5" },
     { name = "jsonschema", specifier = ">=4" },
-    { name = "mypy", specifier = ">=1.11" },
+    { name = "mypy", specifier = ">=2.4.0" },
     { name = "pytest", specifier = ">=8" },
     { name = "pytest-cov", specifier = ">=7.1.0" },
     { name = "pyyaml", specifier = ">=6" },
