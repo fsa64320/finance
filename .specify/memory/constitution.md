@@ -1,11 +1,11 @@
 <!--
 Sync Impact Report
-- Version change: (template non renseigné) → 1.0.0
-- Principes ajoutés: I. Données locales d'abord; II. Journal immuable, source de vérité;
-  III. Exactitude monétaire; IV. Ingestion sans scraping; V. Tests chiffrés d'abord
-  (NON-NEGOTIABLE); VI. Simplicité et déploiement trivial
-- Sections ajoutées: Contraintes techniques et légales; Workflow de développement; Governance
-- Sections retirées: aucune
+- Version change: 1.0.0 → 1.1.0 (MINOR : extension substantielle du principe I)
+- Principes modifiés: I. Données locales d'abord (appels sortants précisés : identifiants d'actifs
+  et devises autorisés, récupération désactivée par défaut, services contactés affichés)
+- Principes ajoutés / sections ajoutées / sections retirées: aucun
+- Historique : 1.0.0 (2026-10-24) a ajouté les principes I à VI, les sections Contraintes
+  techniques et légales, Workflow de développement et Governance
 - Templates dépendants: lus à l'exécution, non modifiés par cette commande
 - TODO différés: aucun
 -->
@@ -17,9 +17,13 @@ Sync Impact Report
 ### I. Données locales d'abord
 Les données financières de l'utilisateur ne quittent jamais sa machine ou son serveur sans action
 explicite de sa part. Aucune télémétrie, aucun service tiers obligatoire, aucun compte en ligne
-requis. Les seuls appels sortants autorisés sont les récupérations de cours et de taux, et ils ne
-transmettent aucune donnée personnelle. Les données sont chiffrées au repos et l'authentification
-est locale.
+requis. Les seuls appels sortants autorisés sont les récupérations de cours et de taux et la
+recherche de ticker à partir d'un code ISIN. Ils ne transmettent que des identifiants d'actifs et
+des devises, jamais de quantités, de montants, de noms de comptes ni de dates d'opérations. Ces
+identifiants révèlent néanmoins ce qui est détenu : la récupération automatique MUST être
+désactivée tant que l'utilisateur ne l'a pas activée par un choix explicite, MUST pouvoir être
+coupée à tout moment, et l'application MUST afficher la liste des services contactés et ce que
+chacun reçoit. Les données sont chiffrées au repos et l'authentification est locale.
 *Raison d'être : l'argument central du projet face aux solutions hébergées est la souveraineté des
 données.*
 
@@ -107,4 +111,4 @@ Toute revue de plan ou de code vérifie la conformité aux principes ci-dessus. 
 d'exécution propres à l'agent de développement se trouvent dans les skills du dossier
 `.claude/skills`, et le contexte produit dans `docs/design-brief.md`.
 
-**Version**: 1.0.0 | **Ratified**: 2026-10-24 | **Last Amended**: 2026-10-24
+**Version**: 1.1.0 | **Ratified**: 2026-10-24 | **Last Amended**: 2026-10-24
