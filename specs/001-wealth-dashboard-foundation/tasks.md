@@ -30,17 +30,17 @@ Règles transverses à respecter dans chaque tâche : montants, quantités, prix
 
 **Purpose**: structure du projet, outillage et CI du code
 
-- [ ] T001 Créer l'arborescence `backend/src/finance/{auth,db,domain,services,importers,prices,api}/` et `backend/tests/{unit,integration,contract,fixtures}/` avec des `__init__.py`, conformément à plan.md
-- [ ] T002 Créer `backend/pyproject.toml` (Python 3.12) avec FastAPI, SQLAlchemy 2.x, Alembic, Pydantic v2, `sqlcipher3-wheels==0.5.7`, `httpx`, `yfinance==1.7.0`, `charset-normalizer`, `python-multipart`, `uvicorn` ; groupe de développement `pytest`, `hypothesis`, `pytest-cov`, `ruff`, `mypy`
-- [ ] T003 [P] Configurer `ruff` et `mypy` (mode strict sur `finance.domain`) dans `backend/pyproject.toml`
-- [ ] T004 Créer le projet `frontend/` (Vite, React 18, TypeScript 5) : `frontend/package.json`, `frontend/vite.config.ts`, `frontend/tsconfig.json`, `frontend/index.html`, avec React Router, TanStack Query, Recharts, `decimal.js-light`
-- [ ] T005 [P] Configurer Tailwind CSS, ESLint et Prettier dans `frontend/tailwind.config.ts`, `frontend/eslint.config.js`, `frontend/.prettierrc`
-- [ ] T006 [P] Configurer Vitest et Testing Library dans `frontend/vitest.config.ts` et `frontend/tests/setup.ts`
-- [ ] T007 Étendre `.github/workflows/ci.yml` : job `backend` (ruff, mypy, pytest avec couverture) et job `frontend` (lint, `tsc --noEmit`, vitest, build), actions épinglées par empreinte de commit, et les ajouter à `needs` du job `ci-gate`
-- [ ] T008 [P] Ajouter les entrées `pip` (`/backend`), `npm` (`/frontend`) et `docker` (`/`) à `.github/dependabot.yml`
-- [ ] T009 [P] Ajouter `.github/workflows/codeql.yml` (langages Python et JavaScript/TypeScript, actions épinglées par empreinte, permissions `security-events: write` limitées à ce workflow)
-- [ ] T010 [P] Créer `backend/src/finance/config.py` (dossier de données `FINANCE_DATA_DIR` par défaut `/data`, port, récupération de prix activable) et `.env.example` à la racine, sans aucune valeur secrète
-- [ ] T011 [P] Écrire en premier `backend/tests/unit/test_no_float_in_domain.py` : analyse AST de `backend/src/finance/domain/` qui échoue sur tout littéral flottant, appel à `float(` ou annotation `float`
+- [x] T001 Créer l'arborescence `backend/src/finance/{auth,db,domain,services,importers,prices,api}/` et `backend/tests/{unit,integration,contract,fixtures}/` avec des `__init__.py`, conformément à plan.md
+- [x] T002 Créer `backend/pyproject.toml` (Python 3.12) avec FastAPI, SQLAlchemy 2.x, Alembic, Pydantic v2, `sqlcipher3-wheels==0.5.7`, `httpx`, `yfinance==1.7.0`, `charset-normalizer`, `python-multipart`, `uvicorn` ; groupe de développement `pytest`, `hypothesis`, `pytest-cov`, `ruff`, `mypy`
+- [x] T003 [P] Configurer `ruff` et `mypy` (mode strict sur `finance.domain`) dans `backend/pyproject.toml`
+- [x] T004 Créer le projet `frontend/` (Vite, React 18, TypeScript 5) : `frontend/package.json`, `frontend/vite.config.ts`, `frontend/tsconfig.json`, `frontend/index.html`, avec React Router, TanStack Query, Recharts, `decimal.js-light`
+- [x] T005 [P] Configurer Tailwind CSS 4 (plugin Vite, configuration dans `frontend/src/styles/theme.css`, pas de `tailwind.config.ts`), ESLint dans `frontend/eslint.config.js` et Prettier dans `frontend/.prettierrc`
+- [x] T006 [P] Configurer Vitest et Testing Library dans `frontend/vitest.config.ts` et `frontend/tests/setup.ts`
+- [x] T007 Étendre `.github/workflows/ci.yml` : job `backend` (ruff, mypy, pytest avec couverture) et job `frontend` (lint, `tsc --noEmit`, vitest, build), actions épinglées par empreinte de commit, et les ajouter à `needs` du job `ci-gate`
+- [x] T008 [P] Ajouter les entrées `pip` (`/backend`) et `npm` (`/frontend`) à `.github/dependabot.yml` ; l'entrée `docker` (`/`) s'ajoute avec le `Dockerfile` en T122 (Dependabot échoue si le fichier n'existe pas)
+- [x] T009 [P] Ajouter `.github/workflows/codeql.yml` (langages Python et JavaScript/TypeScript, actions épinglées par empreinte, permissions `security-events: write` limitées à ce workflow)
+- [x] T010 [P] Créer `backend/src/finance/config.py` (dossier de données `FINANCE_DATA_DIR` par défaut `/data`, port, récupération de prix activable) et `.env.example` à la racine, sans aucune valeur secrète
+- [x] T011 [P] Écrire en premier `backend/tests/unit/test_no_float_in_domain.py` : analyse AST de `backend/src/finance/domain/` qui échoue sur tout littéral flottant, appel à `float(` ou annotation `float`
 
 ---
 
@@ -249,7 +249,7 @@ Règles transverses à respecter dans chaque tâche : montants, quantités, prix
 - [ ] T121 [US5] Implémenter `backend/src/finance/api/routers/data.py` : `GET /data/export`, `POST /data/restore`
 - [ ] T139 [US5] Implémenter le changement de mot de passe : `backend/src/finance/auth/service.py` (rechiffrement de la base par `PRAGMA rekey`) et `POST /auth/change-password` dans `backend/src/finance/api/routers/auth.py`, avec le tag `auth` déjà couvert par `IMPLEMENTED_TAGS`
 - [ ] T140 [US5] Implémenter `frontend/src/components/ChangePasswordForm.tsx` et l'intégrer à `frontend/src/pages/Settings.tsx`, avec un test dans `frontend/tests/components/ChangePasswordForm.test.tsx`
-- [ ] T122 [P] [US5] Créer `Dockerfile` à la racine : étape de build du frontend puis image d'exécution Python, utilisateur non root, un seul processus `uvicorn`, volume `/data`
+- [ ] T122 [P] [US5] Créer `Dockerfile` à la racine, ajouter l'entrée `docker` à `.github/dependabot.yml` et créer `.dockerignore` : étape de build du frontend puis image d'exécution Python, utilisateur non root, un seul processus `uvicorn`, volume `/data`
 - [ ] T123 [P] [US5] Créer `compose.yaml` à la racine : un service, un volume de données, port exposé uniquement sur la boucle locale par défaut, redémarrage automatique
 - [ ] T124 [US5] Implémenter `frontend/src/pages/Settings.tsx` : export et restauration avec avertissement (le fichier n'est pas chiffré), bascule de récupération automatique des prix, liste des services contactés (BCE, Yahoo Finance, OpenFIGI) avec les données envoyées à chacun, rappel d'export, taux du Livret A, changement de mot de passe
 - [ ] T125 [US5] Ajouter un rappel d'export périodique (réglage de fréquence, bannière dans `frontend/src/components/Layout.tsx`)
