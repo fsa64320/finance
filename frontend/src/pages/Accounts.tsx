@@ -1,13 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { type FormEvent, useState } from 'react'
-import { Link } from 'react-router-dom'
 
 import { createAccount, listAccounts } from '../api/accounts'
 import { keys } from '../api/keys'
 import type { AccountInput, AccountType } from '../api/types'
+import AccountList from '../components/AccountList'
 import { SelectField, TextField, buttonClass } from '../components/fields'
 import { splitApiError } from '../lib/form-errors'
-import { formatDate, formatMoney } from '../lib/format'
 import { ACCOUNT_TYPE_LABELS } from '../lib/labels'
 
 const FIELDS = ['type', 'name', 'institution', 'opened_on', 'currency'] as const
@@ -39,6 +38,7 @@ export default function Accounts() {
       setOpenedOn('')
       setErrors({})
       await queryClient.invalidateQueries({ queryKey: keys.accounts })
+      await queryClient.invalidateQueries({ queryKey: keys.dashboard })
     },
     onError: (failure) => {
       const split = splitApiError(failure, FIELDS)
@@ -85,42 +85,8 @@ export default function Accounts() {
         </p>
       )}
       {accounts.data && accounts.data.length > 0 && (
-        <div className="mt-4 overflow-x-auto">
-          <table aria-label="Comptes" className="w-full text-left text-sm">
-            <thead className="text-muted">
-              <tr>
-                <th className="py-2 pr-4 font-medium">Compte</th>
-                <th className="py-2 pr-4 font-medium">Type</th>
-                <th className="py-2 pr-4 font-medium">Établissement</th>
-                <th className="py-2 pr-4 font-medium">Valeur</th>
-                <th className="py-2 font-medium">Statut</th>
-              </tr>
-            </thead>
-            <tbody>
-              {accounts.data.map((item) => (
-                <tr key={item.id} className="border-t border-line">
-                  <td className="py-2 pr-4 font-medium">
-                    <Link className="text-brand underline" to={`/comptes/${item.id}`}>
-                      {item.name}
-                    </Link>
-                  </td>
-                  <td className="py-2 pr-4">{ACCOUNT_TYPE_LABELS[item.type]}</td>
-                  <td className="py-2 pr-4">{item.institution ?? '—'}</td>
-                  <td className="py-2 pr-4">
-                    <span>{formatMoney(item.value, item.currency)}</span>{' '}
-                    {item.estimated && (
-                      <span className="rounded bg-warn-bg px-1.5 py-0.5 text-xs text-warn-ink">
-                        Estimé
-                      </span>
-                    )}
-                  </td>
-                  <td className="py-2">
-                    {item.closed_on ? `Clos le ${formatDate(item.closed_on)}` : 'Ouvert'}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="mt-4">
+          <AccountList accounts={accounts.data} showStatus />
         </div>
       )}
 

@@ -151,10 +151,10 @@ Règles transverses à respecter dans chaque tâche : montants, quantités, prix
 - [x] T073 [US2] Implémenter `backend/src/finance/domain/series.py` : balayage unique des opérations et des prix triés, échantillonnage quotidien puis hebdomadaire (dépend de T051) *(`cost_basis.apply_trade` est partagée avec le calcul ponctuel ; un test de propriété vérifie que la série égale un recalcul complet à chaque date)*
 - [x] T074 [US2] Implémenter `backend/src/finance/services/dashboard.py` avec un cache mémoire invalidé à chaque écriture, reconstructible à l'identique (dépend de T071, T072, T073) *(cache par moteur, vidé à chaque validation d'une écriture ; mesuré à 0,1 s pour la série complète de 5 000 opérations sur 10 ans)*
 - [x] T075 [US2] Implémenter `backend/src/finance/api/routers/dashboard.py` : `GET /dashboard/summary`, `GET /dashboard/series` (période 1 mois, 1 an, depuis le début), `GET /dashboard/allocation`
-- [ ] T076 [P] [US2] Implémenter `frontend/src/components/NetWorthChart.tsx` (Recharts) et `frontend/src/components/AllocationChart.tsx`
-- [ ] T077 [P] [US2] Implémenter `frontend/src/components/AccountList.tsx` (type, établissement, valeur, pastille « estimé ») et `frontend/src/components/EmptyState.tsx` guidant vers la création d'un premier compte
-- [ ] T078 [US2] Écrire `frontend/tests/pages/Dashboard.test.tsx` puis implémenter `frontend/src/pages/Dashboard.tsx` : synthèse en haut avec la mention « hors dettes », courbe avec sélecteur de période, répartition, liste des comptes ; ouverture d'un compte vers `AccountDetail`
-- [ ] T079 [P] [US2] Écrire `frontend/tests/layout/no-horizontal-scroll.test.tsx` : le tableau de bord et la liste des comptes tiennent à 375 px de large sans défilement horizontal (FR-026)
+- [x] T076 [P] [US2] Implémenter `frontend/src/components/NetWorthChart.tsx` (Recharts) et `frontend/src/components/AllocationChart.tsx`
+- [x] T077 [P] [US2] Implémenter `frontend/src/components/AccountList.tsx` (type, établissement, valeur, pastille « estimé ») et `frontend/src/components/EmptyState.tsx` guidant vers la création d'un premier compte
+- [x] T078 [US2] Écrire `frontend/tests/pages/Dashboard.test.tsx` puis implémenter `frontend/src/pages/Dashboard.tsx` : synthèse en haut avec la mention « hors dettes », courbe avec sélecteur de période, répartition, liste des comptes ; ouverture d'un compte vers `AccountDetail`
+- [x] T079 [P] [US2] Écrire `frontend/tests/layout/no-horizontal-scroll.test.tsx` : le tableau de bord et la liste des comptes tiennent à 375 px de large sans défilement horizontal (FR-026)
 
 **Checkpoint**: US1 et US2 fonctionnent ensemble : la valeur du tableau de bord correspond aux calculs de référence
 
