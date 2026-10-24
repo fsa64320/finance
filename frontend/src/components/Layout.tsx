@@ -42,7 +42,7 @@ export default function Layout() {
           className="fixed inset-x-0 bottom-0 z-10 flex justify-around border-t border-line bg-card p-2 md:static md:mt-6 md:flex-col md:justify-start md:border-0 md:p-0"
         >
           {NAV_ITEMS.map((item) => (
-            <NavLink key={item.to} to={item.to} end className={linkClass}>
+            <NavLink key={item.to} to={item.to} end={item.to === '/'} className={linkClass}>
               {item.label}
             </NavLink>
           ))}

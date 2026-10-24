@@ -1,0 +1,21 @@
+import type { components } from './schema'
+
+type Schemas = components['schemas']
+
+export type Account = Schemas['Account']
+export type AccountInput = Schemas['AccountInput']
+export type AccountPatch = Schemas['AccountPatch']
+export type AccountSummary = Schemas['AccountSummary']
+export type AccountDetail = Schemas['AccountDetail']
+export type AccountType = Schemas['AccountType']
+export type Position = Schemas['Position']
+export type Instrument = Schemas['Instrument']
+export type InstrumentInput = Schemas['InstrumentInput']
+export type InstrumentKind = Schemas['InstrumentKind']
+export type Transaction = Schemas['Transaction']
+export type TransactionInput = Schemas['TransactionInput']
+export type TransactionResult = Schemas['TransactionResult']
+export type TransactionWithHistory = Schemas['TransactionWithHistory']
+export type TransferInput = Schemas['TransferInput']
+export type DeclaredBalance = Schemas['DeclaredBalance']
+export type DeclaredBalanceInput = Schemas['DeclaredBalanceInput']

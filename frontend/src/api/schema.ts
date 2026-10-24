@@ -233,6 +233,7 @@ export interface paths {
                         "application/json": components["schemas"]["AccountSummary"][];
                     };
                 };
+                422: components["responses"]["Validation"];
             };
         };
         put?: never;
@@ -259,6 +260,7 @@ export interface paths {
                         "application/json": components["schemas"]["Account"];
                     };
                 };
+                409: components["responses"]["Conflict"];
                 422: components["responses"]["Validation"];
             };
         };
@@ -301,6 +303,7 @@ export interface paths {
                     };
                 };
                 404: components["responses"]["NotFound"];
+                422: components["responses"]["Validation"];
             };
         };
         put?: never;
@@ -333,6 +336,8 @@ export interface paths {
                         "application/json": components["schemas"]["Account"];
                     };
                 };
+                404: components["responses"]["NotFound"];
+                409: components["responses"]["Conflict"];
                 422: components["responses"]["Validation"];
             };
         };
@@ -390,6 +395,7 @@ export interface paths {
                         "application/json": components["schemas"]["Instrument"];
                     };
                 };
+                409: components["responses"]["Conflict"];
                 422: components["responses"]["Validation"];
             };
         };
@@ -440,6 +446,7 @@ export interface paths {
                     };
                 };
                 404: components["responses"]["NotFound"];
+                422: components["responses"]["Validation"];
             };
         };
         trace?: never;
@@ -529,6 +536,7 @@ export interface paths {
                         };
                     };
                 };
+                422: components["responses"]["Validation"];
             };
         };
         put?: never;
@@ -595,6 +603,7 @@ export interface paths {
                     };
                 };
                 404: components["responses"]["NotFound"];
+                422: components["responses"]["Validation"];
             };
         };
         /** Modifie une opération (ajoute une version, l'ancienne est conservée) */
@@ -622,6 +631,7 @@ export interface paths {
                         "application/json": components["schemas"]["TransactionResult"];
                     };
                 };
+                404: components["responses"]["NotFound"];
                 422: components["responses"]["Validation"];
             };
         };
@@ -638,7 +648,7 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description Version d'annulation */
+                /** @description Version d'annulation (un virement s'annule avec ses deux jambes) */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -647,6 +657,8 @@ export interface paths {
                         "application/json": components["schemas"]["TransactionResult"];
                     };
                 };
+                404: components["responses"]["NotFound"];
+                422: components["responses"]["Validation"];
             };
         };
         options?: never;
@@ -1401,6 +1413,7 @@ export interface components {
         Account: components["schemas"]["AccountInput"] & {
             /** Format: uuid */
             id: string;
+            currency: components["schemas"]["Currency"];
             /** Format: date */
             closed_on?: string | null;
         };
@@ -1413,8 +1426,13 @@ export interface components {
             /** Format: uuid */
             instrument_id: string;
             quantity: components["schemas"]["Decimal"];
-            unit_cost?: components["schemas"]["Decimal"];
-            value: components["schemas"]["Decimal"];
+            kind?: components["schemas"]["InstrumentKind"];
+            /** @description Prix de revient unitaire moyen (null si aucune part n'est détenue) */
+            unit_cost?: components["schemas"]["Decimal"] | null;
+            total_cost?: components["schemas"]["Decimal"];
+            /** @description Valeur de la position (null si elle ne peut pas être valorisée) */
+            value: components["schemas"]["Decimal"] | null;
+            price?: components["schemas"]["Decimal"] | null;
             /** Format: date */
             price_date?: string | null;
             estimated: boolean;
@@ -1426,8 +1444,17 @@ export interface components {
             deposit_cap_usage?: {
                 deposited?: components["schemas"]["Decimal"];
                 cap?: components["schemas"]["Decimal"];
+                remaining?: components["schemas"]["Decimal"];
+                exceeded?: boolean;
             };
             locked_amount?: components["schemas"]["Decimal"];
+            /** @description Prix manquant, solde non déclaré, position négative, devise non convertible */
+            warnings?: {
+                code: string;
+                /** Format: uuid */
+                instrument_id?: string | null;
+                message: string;
+            }[];
         };
         /** @enum {string} */
         InstrumentKind: "EQUITY" | "ETF" | "FUND" | "FCPE" | "SCPI" | "EURO_FUND" | "CASH";
