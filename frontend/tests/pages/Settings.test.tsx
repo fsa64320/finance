@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -142,6 +142,8 @@ describe('Sauvegarde et sécurité', () => {
     const file = new File(['pas du json'], 'export.json', { type: 'application/json' })
     await user.upload(await screen.findByLabelText('Fichier d’export à restaurer'), file)
     await user.click(screen.getByRole('button', { name: 'Restaurer' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Restaurer ces données ?' })
+    await user.click(within(dialog).getByRole('button', { name: 'Restaurer les données' }))
     expect(await screen.findByRole('alert')).toHaveTextContent(/n’est pas un export valide/i)
     expect(dataApi.restoreData).not.toHaveBeenCalled()
   })
@@ -168,6 +170,8 @@ describe('Sauvegarde et sécurité', () => {
       'nouveau-mot-de-passe-2',
     )
     await user.click(screen.getByRole('button', { name: 'Changer le mot de passe' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Changer le mot de passe ?' })
+    await user.click(within(dialog).getByRole('button', { name: 'Changer le mot de passe' }))
     await waitFor(() =>
       expect(authApi.changePassword).toHaveBeenCalledWith(
         'ancien-mot-de-passe-1',
