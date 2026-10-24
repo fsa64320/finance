@@ -8,6 +8,7 @@ from pathlib import Path
 
 import httpx
 import pytest
+
 from finance.prices.base import FetchedPrice, ProviderError
 from finance.prices.ecb import ECB_URL, EcbRates
 from finance.prices.openfigi import OPENFIGI_URL, OpenFigi

@@ -22,6 +22,7 @@ from finance.domain.caps import (
     lock_status,
 )
 from finance.domain.enums import AccountType
+from finance.domain.livret_a import LivretASchedule
 from finance.domain.valuation import AccountValue, value_account
 from finance.services import loaders
 from finance.services.errors import ConflictError, NotFoundError, ValidationFailed
@@ -186,8 +187,15 @@ def account_overviews(
     infos = loaders.load_instrument_infos(session)
     prices = loaders.load_prices(session)
     balances = loaders.load_declared_balances(session)
+    fx = loaders.load_fx_table(session)
+    livret_rates = loaders.load_livret_rates(session)
     overviews: list[AccountOverview] = []
     for account in accounts:
+        schedule = (
+            LivretASchedule.from_entries(entries, account.id, livret_rates, until=as_of)
+            if account.type is AccountType.LIVRET_A
+            else None
+        )
         value = value_account(
             account_id=account.id,
             entries=entries,
@@ -196,6 +204,8 @@ def account_overviews(
             balances=balances,
             as_of=as_of,
             currency=account.currency,
+            fx=fx,
+            livret=schedule,
         )
         usage: CapStatus | None = None
         locked: Decimal | None = None

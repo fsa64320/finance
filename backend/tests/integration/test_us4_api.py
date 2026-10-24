@@ -5,8 +5,8 @@ from decimal import Decimal
 
 import pytest
 from fastapi.testclient import TestClient
-from finance.prices.base import FetchedRate
 
+from finance.prices.base import FetchedRate
 from tests.api_helpers import API, create_account, create_instrument, post_transaction
 from tests.provider_fakes import FakePrices, FakeRates, FakeTickers, install, recent
 
@@ -285,22 +285,32 @@ class TestLivretA:
         )
         return account
 
+    def test_the_rate_table_starts_with_the_published_history(
+        self, authed_client: TestClient
+    ) -> None:
+        table = authed_client.get(f"{API}/rates/livret-a").json()
+        assert table[0] == {"effective_from": "2020-02-01", "value": "0.5"}
+        assert {"effective_from": "2025-08-01", "value": "1.7"} in table
+
     def test_the_rate_table_is_dated_and_editable(self, authed_client: TestClient) -> None:
-        for on, value in (("2026-02-01", "1.7"), ("2025-08-01", "2.4"), ("2025-01-01", "3")):
+        for on, value in (("2026-02-01", "1.7"), ("2026-08-01", "2.4"), ("2026-01-01", "3")):
             created = authed_client.post(
                 f"{API}/rates/livret-a", json={"effective_from": on, "value": value}
             )
             assert created.status_code == 201, created.text
             assert created.json() == {"effective_from": on, "value": value}
         authed_client.post(
-            f"{API}/rates/livret-a", json={"effective_from": "2025-08-01", "value": "2.5"}
+            f"{API}/rates/livret-a", json={"effective_from": "2026-08-01", "value": "2.5"}
         )
         table = authed_client.get(f"{API}/rates/livret-a").json()
-        assert table == [
-            {"effective_from": "2025-01-01", "value": "3"},
-            {"effective_from": "2025-08-01", "value": "2.5"},
+        assert table[-3:] == [
+            {"effective_from": "2026-01-01", "value": "3"},
             {"effective_from": "2026-02-01", "value": "1.7"},
+            {"effective_from": "2026-08-01", "value": "2.5"},
         ]
+        assert [row["effective_from"] for row in table] == sorted(
+            row["effective_from"] for row in table
+        )
 
     @pytest.mark.parametrize("value", ["-1", "101", "0.0.1"])
     def test_a_rate_must_be_a_sensible_percentage(
@@ -316,7 +326,7 @@ class TestLivretA:
     ) -> None:
         account = self.livret(authed_client)
         authed_client.post(
-            f"{API}/rates/livret-a", json={"effective_from": "2025-01-01", "value": "3"}
+            f"{API}/rates/livret-a", json={"effective_from": "2026-01-01", "value": "3"}
         )
         body = detail(authed_client, account["id"], "2026-01-31")
         assert body["value"] == "1002.5" and body["cash"] == "1000" and body["estimated"] is True
@@ -325,14 +335,14 @@ class TestLivretA:
     def test_interest_is_credited_on_the_31st_of_december(self, authed_client: TestClient) -> None:
         account = self.livret(authed_client)
         authed_client.post(
-            f"{API}/rates/livret-a", json={"effective_from": "2025-01-01", "value": "3"}
+            f"{API}/rates/livret-a", json={"effective_from": "2026-01-01", "value": "3"}
         )
         assert detail(authed_client, account["id"], "2026-12-31")["value"] == "1030"
 
     def test_real_interest_replaces_the_estimate(self, authed_client: TestClient) -> None:
         account = self.livret(authed_client)
         authed_client.post(
-            f"{API}/rates/livret-a", json={"effective_from": "2025-01-01", "value": "3"}
+            f"{API}/rates/livret-a", json={"effective_from": "2026-01-01", "value": "3"}
         )
         post_transaction(
             authed_client,
@@ -344,11 +354,24 @@ class TestLivretA:
         assert detail(authed_client, account["id"], "2026-12-31")["value"] == "1028.5"
 
     def test_a_missing_rate_is_reported_as_such(self, authed_client: TestClient) -> None:
-        account = self.livret(authed_client)
-        body = detail(authed_client, account["id"], "2026-01-31")
+        account = create_account(
+            authed_client,
+            type="LIVRET_A",
+            name="Vieux livret",
+            institution=None,
+            opened_on="2019-01-01",
+        )
+        post_transaction(
+            authed_client,
+            account_id=account["id"],
+            type="DEPOSIT",
+            trade_date="2019-12-31",
+            amount="1000",
+        )
+        body = detail(authed_client, account["id"], "2020-01-31")  # avant le premier taux livré
         assert body["value"] == "1000" and body["estimated"] is True
         assert "rate_missing" in [w["code"] for w in body["warnings"]]
-        assert [n["kind"] for n in summary(authed_client, "2026-01-31")["notices"]] == [
+        assert [n["kind"] for n in summary(authed_client, "2020-01-31")["notices"]] == [
             "missing_rate"
         ]
 

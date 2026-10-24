@@ -123,10 +123,11 @@ def test_raw_sql_is_refused_by_the_database(
 def test_inserting_is_allowed_and_rows_are_kept(
     session: Session, table: str, model: type, factory: Factory, column: str, value: object
 ) -> None:
+    before = session.scalar(sa.select(sa.func.count()).select_from(model))  # taux livrés compris
     factory(session)
     factory(session)
     session.commit()
-    assert session.scalar(sa.select(sa.func.count()).select_from(model)) == 2
+    assert session.scalar(sa.select(sa.func.count()).select_from(model)) == (before or 0) + 2
 
 
 def test_account_table_stays_editable(session: Session) -> None:
