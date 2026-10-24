@@ -1,0 +1,1005 @@
+openapi: 3.1.0
+info:
+  title: Finance API
+  version: 0.1.0
+  description: >
+    API du lot 001. Tous les montants, quantités, prix et taux sont des chaînes décimales
+    (ex. "90.199"), jamais des nombres JSON. Dates au format ISO 8601 (AAAA-MM-JJ).
+    Toutes les routes sauf /auth/* exigent une session déverrouillée.
+servers:
+  - url: /api/v1
+
+tags:
+  - name: auth
+  - name: accounts
+  - name: instruments
+  - name: transactions
+  - name: prices
+  - name: imports
+  - name: dashboard
+  - name: data
+  - name: settings
+
+paths:
+  /auth/status:
+    get:
+      tags: [auth]
+      summary: État de l'instance
+      security: []
+      responses:
+        "200":
+          description: Instance non initialisée, verrouillée ou déverrouillée
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [state]
+                properties:
+                  state: { type: string, enum: [uninitialized, locked, unlocked] }
+  /auth/setup:
+    post:
+      tags: [auth]
+      summary: Crée le mot de passe à la première utilisation
+      description: Aucune récupération n'est possible en cas d'oubli ; l'interface doit l'indiquer.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PasswordRequest" }
+      responses:
+        "204": { description: Instance créée et session ouverte }
+        "409": { $ref: "#/components/responses/Conflict" }
+  /auth/unlock:
+    post:
+      tags: [auth]
+      summary: Déverrouille l'instance et ouvre une session
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PasswordRequest" }
+      responses:
+        "204": { description: Session ouverte }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "429": { $ref: "#/components/responses/TooManyAttempts" }
+  /auth/lock:
+    post:
+      tags: [auth]
+      summary: Ferme la session
+      responses:
+        "204": { description: Session fermée }
+
+  /accounts:
+    get:
+      tags: [accounts]
+      summary: Liste les comptes avec leur valeur
+      parameters:
+        - { name: include_closed, in: query, schema: { type: boolean, default: false } }
+        - { name: as_of, in: query, schema: { type: string, format: date } }
+      responses:
+        "200":
+          description: Comptes
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/AccountSummary" }
+    post:
+      tags: [accounts]
+      summary: Crée un compte
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AccountInput" }
+      responses:
+        "201":
+          description: Compte créé
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Account" }
+        "422": { $ref: "#/components/responses/Validation" }
+  /accounts/{accountId}:
+    parameters:
+      - { $ref: "#/components/parameters/AccountId" }
+    get:
+      tags: [accounts]
+      summary: Détail d'un compte (positions, prix de revient, valeur)
+      parameters:
+        - { name: as_of, in: query, schema: { type: string, format: date } }
+      responses:
+        "200":
+          description: Détail
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AccountDetail" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    patch:
+      tags: [accounts]
+      summary: Modifie ou clôture un compte
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AccountPatch" }
+      responses:
+        "200":
+          description: Compte modifié
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Account" }
+        "422": { $ref: "#/components/responses/Validation" }
+
+  /instruments:
+    get:
+      tags: [instruments]
+      summary: Liste les actifs
+      responses:
+        "200":
+          description: Actifs
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Instrument" }
+    post:
+      tags: [instruments]
+      summary: Crée un actif
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/InstrumentInput" }
+      responses:
+        "201":
+          description: Actif créé
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Instrument" }
+        "422": { $ref: "#/components/responses/Validation" }
+  /instruments/{instrumentId}:
+    parameters:
+      - { name: instrumentId, in: path, required: true, schema: { type: string, format: uuid } }
+    patch:
+      tags: [instruments]
+      summary: Modifie un actif (nom, ticker, mode de prix)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/InstrumentPatch" }
+      responses:
+        "200":
+          description: Actif modifié
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Instrument" }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /instruments/{instrumentId}/ticker-suggestions:
+    parameters:
+      - { name: instrumentId, in: path, required: true, schema: { type: string, format: uuid } }
+    post:
+      tags: [instruments]
+      summary: Propose des tickers à partir de l'ISIN (OpenFIGI), à la demande de l'utilisateur
+      description: Envoie uniquement l'ISIN au service externe.
+      responses:
+        "200":
+          description: Suggestions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required: [ticker, exchange, name]
+                  properties:
+                    ticker: { type: string }
+                    exchange: { type: string }
+                    name: { type: string }
+        "502": { $ref: "#/components/responses/ExternalSourceFailed" }
+
+  /transactions:
+    get:
+      tags: [transactions]
+      summary: Liste les opérations courantes (dernière version non annulée)
+      parameters:
+        - { name: account_id, in: query, schema: { type: string, format: uuid } }
+        - { name: instrument_id, in: query, schema: { type: string, format: uuid } }
+        - { name: from, in: query, schema: { type: string, format: date } }
+        - { name: to, in: query, schema: { type: string, format: date } }
+        - { name: include_voided, in: query, schema: { type: boolean, default: false } }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 500, default: 100 } }
+        - { name: cursor, in: query, schema: { type: string } }
+      responses:
+        "200":
+          description: Page d'opérations
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/Transaction" }
+                  next_cursor: { type: [string, "null"] }
+    post:
+      tags: [transactions]
+      summary: Saisit une opération
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/TransactionInput" }
+      responses:
+        "201":
+          description: Opération créée (version 1)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TransactionResult" }
+        "422": { $ref: "#/components/responses/Validation" }
+  /transactions/{transactionId}:
+    parameters:
+      - { $ref: "#/components/parameters/TransactionId" }
+    get:
+      tags: [transactions]
+      summary: Détail d'une opération avec son historique de versions
+      responses:
+        "200":
+          description: Opération et versions
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TransactionWithHistory" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    put:
+      tags: [transactions]
+      summary: Modifie une opération (ajoute une version, l'ancienne est conservée)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/TransactionInput" }
+      responses:
+        "200":
+          description: Nouvelle version
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TransactionResult" }
+        "422": { $ref: "#/components/responses/Validation" }
+    delete:
+      tags: [transactions]
+      summary: Annule une opération (ajoute une version annulée, rien n'est effacé)
+      responses:
+        "200":
+          description: Version d'annulation
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TransactionResult" }
+  /transfers:
+    post:
+      tags: [transactions]
+      summary: Saisit un virement entre deux comptes (deux jambes liées)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/TransferInput" }
+      responses:
+        "201":
+          description: Virement créé
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [transfer_group_id, out, in]
+                properties:
+                  transfer_group_id: { type: string, format: uuid }
+                  out: { $ref: "#/components/schemas/TransactionResult" }
+                  in: { $ref: "#/components/schemas/TransactionResult" }
+        "422": { $ref: "#/components/responses/Validation" }
+
+  /prices:
+    get:
+      tags: [prices]
+      summary: Liste les prix d'un actif
+      parameters:
+        - { name: instrument_id, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: from, in: query, schema: { type: string, format: date } }
+        - { name: to, in: query, schema: { type: string, format: date } }
+      responses:
+        "200":
+          description: Prix
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Price" }
+    post:
+      tags: [prices]
+      summary: Saisit un prix ou une valeur liquidative à la main
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PriceInput" }
+      responses:
+        "201":
+          description: Prix enregistré
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Price" }
+        "422": { $ref: "#/components/responses/Validation" }
+  /prices/refresh:
+    post:
+      tags: [prices]
+      summary: Met à jour les cours et taux de change depuis les sources externes
+      description: >
+        N'envoie que des identifiants d'actifs et des devises. Sans effet si la récupération
+        automatique est désactivée. Un échec ne modifie aucune donnée existante.
+      responses:
+        "200":
+          description: Résultat par source
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [sources]
+                properties:
+                  sources:
+                    type: array
+                    items:
+                      type: object
+                      required: [source, status]
+                      properties:
+                        source: { type: string, enum: [ecb, yahoo] }
+                        status: { type: string, enum: [ok, partial, failed, disabled] }
+                        updated: { type: integer, minimum: 0 }
+                        message: { type: string }
+  /declared-balances:
+    post:
+      tags: [prices]
+      summary: Déclare un solde (fonds en euros, Livret A)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DeclaredBalanceInput" }
+      responses:
+        "201":
+          description: Solde enregistré
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DeclaredBalance" }
+        "422": { $ref: "#/components/responses/Validation" }
+  /rates/livret-a:
+    get:
+      tags: [prices]
+      summary: Table des taux du Livret A
+      responses:
+        "200":
+          description: Taux datés
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/LivretARate" }
+    post:
+      tags: [prices]
+      summary: Ajoute un taux du Livret A
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/LivretARate" }
+      responses:
+        "201":
+          description: Taux ajouté
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LivretARate" }
+
+  /import-mappings:
+    get:
+      tags: [imports]
+      summary: Paramétrages d'import enregistrés
+      responses:
+        "200":
+          description: Paramétrages
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/ImportMapping" }
+    post:
+      tags: [imports]
+      summary: Enregistre un paramétrage d'import
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ImportMappingInput" }
+      responses:
+        "201":
+          description: Paramétrage enregistré
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ImportMapping" }
+  /imports/preview:
+    post:
+      tags: [imports]
+      summary: Analyse un fichier CSV sans rien écrire
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file, account_id]
+              properties:
+                file: { type: string, format: binary }
+                account_id: { type: string, format: uuid }
+                mapping_id: { type: string, format: uuid }
+                delimiter: { type: string, maxLength: 1 }
+                encoding: { type: string }
+                date_format: { type: string }
+                decimal_separator: { type: string, enum: [",", "."] }
+                columns:
+                  type: string
+                  description: JSON de correspondance colonne → donnée d'opération
+      responses:
+        "200":
+          description: Aperçu
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ImportPreview" }
+        "422": { $ref: "#/components/responses/Validation" }
+  /imports/commit:
+    post:
+      tags: [imports]
+      summary: Écrit les lignes validées d'un aperçu
+      description: Idempotent ; rien n'est créé (y compris les actifs) avant cet appel.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ImportCommit" }
+      responses:
+        "201":
+          description: Résumé
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ImportResult" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/Validation" }
+
+  /dashboard/summary:
+    get:
+      tags: [dashboard]
+      summary: Patrimoine net (hors dettes) et alertes de valeurs estimées
+      parameters:
+        - { name: as_of, in: query, schema: { type: string, format: date } }
+      responses:
+        "200":
+          description: Synthèse
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DashboardSummary" }
+  /dashboard/series:
+    get:
+      tags: [dashboard]
+      summary: Évolution du patrimoine
+      parameters:
+        - { name: period, in: query, schema: { type: string, enum: ["1m", "3m", "1y", "5y", all], default: "1y" } }
+      responses:
+        "200":
+          description: Série (quotidienne jusqu'à 1 an, hebdomadaire au-delà)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [currency, points]
+                properties:
+                  currency: { type: string }
+                  points:
+                    type: array
+                    items:
+                      type: object
+                      required: [date, value, estimated]
+                      properties:
+                        date: { type: string, format: date }
+                        value: { $ref: "#/components/schemas/Decimal" }
+                        estimated: { type: boolean }
+  /dashboard/allocation:
+    get:
+      tags: [dashboard]
+      summary: Répartition par classe d'actifs
+      parameters:
+        - { name: as_of, in: query, schema: { type: string, format: date } }
+      responses:
+        "200":
+          description: Répartition (la somme des poids vaut 100)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [currency, slices]
+                properties:
+                  currency: { type: string }
+                  slices:
+                    type: array
+                    items:
+                      type: object
+                      required: [asset_class, value, weight_percent]
+                      properties:
+                        asset_class:
+                          type: string
+                          enum: [equities_etf, funds, scpi, euro_funds, cash]
+                        value: { $ref: "#/components/schemas/Decimal" }
+                        weight_percent: { $ref: "#/components/schemas/Decimal" }
+
+  /data/export:
+    get:
+      tags: [data]
+      summary: Exporte toutes les données (JSON non chiffré)
+      description: Le fichier est lisible par quiconque le détient. Format décrit dans export-format.md.
+      responses:
+        "200":
+          description: Fichier d'export
+          content:
+            application/json:
+              schema: { type: object, additionalProperties: true }
+  /data/restore:
+    post:
+      tags: [data]
+      summary: Restaure un export dans une instance vide
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, additionalProperties: true }
+      responses:
+        "204": { description: Données restaurées }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/Validation" }
+
+  /settings:
+    get:
+      tags: [settings]
+      summary: Réglages et liste des services externes contactés
+      responses:
+        "200":
+          description: Réglages
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Settings" }
+    patch:
+      tags: [settings]
+      summary: Modifie les réglages
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SettingsPatch" }
+      responses:
+        "200":
+          description: Réglages mis à jour
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Settings" }
+
+components:
+  parameters:
+    AccountId:
+      name: accountId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    TransactionId:
+      name: transactionId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+
+  responses:
+    Unauthorized:
+      description: Mot de passe incorrect ou session absente
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    TooManyAttempts:
+      description: Trop d'essais ; réessayer après le délai indiqué
+      headers:
+        Retry-After: { schema: { type: integer } }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    NotFound:
+      description: Ressource introuvable
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    Conflict:
+      description: État incompatible avec la demande
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    Validation:
+      description: Données invalides
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    ExternalSourceFailed:
+      description: Source externe indisponible ; aucune donnée existante n'est modifiée
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+
+  schemas:
+    Decimal:
+      type: string
+      pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+      description: Décimal exact en notation positionnelle
+      examples: ["90.199", "98.01"]
+    Currency:
+      type: string
+      pattern: "^[A-Z]{3}$"
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: string }
+        message: { type: string }
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              field: { type: string }
+              message: { type: string }
+    PasswordRequest:
+      type: object
+      required: [password]
+      properties:
+        password: { type: string, minLength: 12 }
+
+    AccountType:
+      type: string
+      enum: [PEE, PEA, CTO, ASSURANCE_VIE, LIVRET_A]
+    AccountInput:
+      type: object
+      required: [type, name, opened_on]
+      properties:
+        type: { $ref: "#/components/schemas/AccountType" }
+        name: { type: string, minLength: 1 }
+        institution: { type: string }
+        currency: { $ref: "#/components/schemas/Currency" }
+        opened_on: { type: string, format: date }
+        settings: { type: object, additionalProperties: true }
+    AccountPatch:
+      type: object
+      properties:
+        name: { type: string }
+        institution: { type: string }
+        closed_on: { type: [string, "null"], format: date }
+        settings: { type: object, additionalProperties: true }
+    Account:
+      allOf:
+        - { $ref: "#/components/schemas/AccountInput" }
+        - type: object
+          required: [id, currency]
+          properties:
+            id: { type: string, format: uuid }
+            closed_on: { type: [string, "null"], format: date }
+    AccountSummary:
+      allOf:
+        - { $ref: "#/components/schemas/Account" }
+        - type: object
+          required: [value, estimated]
+          properties:
+            value: { $ref: "#/components/schemas/Decimal" }
+            estimated: { type: boolean, description: "Vrai si un prix ancien ou un solde manquant intervient" }
+    Position:
+      type: object
+      required: [instrument_id, quantity, value, estimated]
+      properties:
+        instrument_id: { type: string, format: uuid }
+        quantity: { $ref: "#/components/schemas/Decimal" }
+        unit_cost: { $ref: "#/components/schemas/Decimal" }
+        value: { $ref: "#/components/schemas/Decimal" }
+        price_date: { type: [string, "null"], format: date }
+        estimated: { type: boolean }
+    AccountDetail:
+      allOf:
+        - { $ref: "#/components/schemas/AccountSummary" }
+        - type: object
+          required: [positions, cash]
+          properties:
+            cash: { $ref: "#/components/schemas/Decimal" }
+            positions:
+              type: array
+              items: { $ref: "#/components/schemas/Position" }
+            deposit_cap_usage:
+              type: object
+              description: Cumul des versements et plafond (PEA, Livret A)
+              properties:
+                deposited: { $ref: "#/components/schemas/Decimal" }
+                cap: { $ref: "#/components/schemas/Decimal" }
+            locked_amount:
+              { $ref: "#/components/schemas/Decimal" }
+
+    InstrumentKind:
+      type: string
+      enum: [EQUITY, ETF, FUND, FCPE, SCPI, EURO_FUND, CASH]
+    InstrumentInput:
+      type: object
+      required: [kind, name, currency]
+      properties:
+        kind: { $ref: "#/components/schemas/InstrumentKind" }
+        name: { type: string, minLength: 1 }
+        isin: { type: string, pattern: "^[A-Z]{2}[A-Z0-9]{9}[0-9]$" }
+        currency: { $ref: "#/components/schemas/Currency" }
+        price_ticker: { type: string }
+        price_mode: { type: string, enum: [AUTO, MANUAL] }
+    InstrumentPatch:
+      type: object
+      properties:
+        name: { type: string }
+        price_ticker: { type: [string, "null"] }
+        price_mode: { type: string, enum: [AUTO, MANUAL] }
+    Instrument:
+      allOf:
+        - { $ref: "#/components/schemas/InstrumentInput" }
+        - type: object
+          required: [id, price_mode]
+          properties:
+            id: { type: string, format: uuid }
+
+    TransactionType:
+      type: string
+      enum: [DEPOSIT, WITHDRAWAL, BUY, SELL, DIVIDEND, DISTRIBUTION, INTEREST, FEE, EMPLOYER_MATCH]
+    TransactionInput:
+      type: object
+      required: [account_id, type, trade_date, currency]
+      properties:
+        account_id: { type: string, format: uuid }
+        type: { $ref: "#/components/schemas/TransactionType" }
+        trade_date: { type: string, format: date }
+        instrument_id: { type: string, format: uuid }
+        quantity: { $ref: "#/components/schemas/Decimal" }
+        unit_price: { $ref: "#/components/schemas/Decimal" }
+        amount:
+          { $ref: "#/components/schemas/Decimal" }
+        fees: { $ref: "#/components/schemas/Decimal" }
+        currency: { $ref: "#/components/schemas/Currency" }
+        unlock_date: { type: string, format: date }
+        label: { type: string }
+    Transaction:
+      type: object
+      required: [id, version, voided, account_id, type, trade_date, cash_amount, currency]
+      properties:
+        id: { type: string, format: uuid }
+        version: { type: integer, minimum: 1 }
+        voided: { type: boolean }
+        account_id: { type: string, format: uuid }
+        type:
+          type: string
+          enum: [DEPOSIT, WITHDRAWAL, BUY, SELL, DIVIDEND, DISTRIBUTION, INTEREST, FEE, EMPLOYER_MATCH, TRANSFER_OUT, TRANSFER_IN]
+        trade_date: { type: string, format: date }
+        instrument_id: { type: [string, "null"], format: uuid }
+        quantity: { $ref: "#/components/schemas/Decimal" }
+        unit_price: { $ref: "#/components/schemas/Decimal" }
+        fees: { $ref: "#/components/schemas/Decimal" }
+        cash_amount: { $ref: "#/components/schemas/Decimal" }
+        currency: { $ref: "#/components/schemas/Currency" }
+        unlock_date: { type: [string, "null"], format: date }
+        transfer_group_id: { type: [string, "null"], format: uuid }
+        label: { type: string }
+        import_id: { type: [string, "null"], format: uuid }
+        created_at: { type: string, format: date-time }
+    TransactionResult:
+      type: object
+      required: [transaction, warnings]
+      properties:
+        transaction: { $ref: "#/components/schemas/Transaction" }
+        warnings:
+          type: array
+          description: Avertissements non bloquants (quantité ou liquidités négatives)
+          items: { type: string }
+    TransactionWithHistory:
+      type: object
+      required: [current, versions]
+      properties:
+        current: { $ref: "#/components/schemas/Transaction" }
+        versions:
+          type: array
+          items: { $ref: "#/components/schemas/Transaction" }
+    TransferInput:
+      type: object
+      required: [from_account_id, to_account_id, trade_date, amount, currency]
+      properties:
+        from_account_id: { type: string, format: uuid }
+        to_account_id: { type: string, format: uuid }
+        trade_date: { type: string, format: date }
+        amount: { $ref: "#/components/schemas/Decimal" }
+        currency: { $ref: "#/components/schemas/Currency" }
+        label: { type: string }
+
+    PriceKind:
+      type: string
+      enum: [MARKET, NAV, SUBSCRIPTION, REDEMPTION]
+    PriceInput:
+      type: object
+      required: [instrument_id, price_date, kind, value, currency]
+      properties:
+        instrument_id: { type: string, format: uuid }
+        price_date: { type: string, format: date }
+        kind: { $ref: "#/components/schemas/PriceKind" }
+        value: { $ref: "#/components/schemas/Decimal" }
+        currency: { $ref: "#/components/schemas/Currency" }
+    Price:
+      allOf:
+        - { $ref: "#/components/schemas/PriceInput" }
+        - type: object
+          required: [source]
+          properties:
+            source: { type: string, enum: [PROVIDER, MANUAL] }
+    DeclaredBalanceInput:
+      type: object
+      required: [account_id, instrument_id, balance_date, amount, currency]
+      properties:
+        account_id: { type: string, format: uuid }
+        instrument_id: { type: string, format: uuid }
+        balance_date: { type: string, format: date }
+        amount: { $ref: "#/components/schemas/Decimal" }
+        currency: { $ref: "#/components/schemas/Currency" }
+    DeclaredBalance:
+      allOf:
+        - { $ref: "#/components/schemas/DeclaredBalanceInput" }
+    LivretARate:
+      type: object
+      required: [effective_from, value]
+      properties:
+        effective_from: { type: string, format: date }
+        value:
+          { $ref: "#/components/schemas/Decimal" }
+
+    ImportColumns:
+      type: object
+      description: Associe un nom de colonne du fichier à chaque donnée d'opération
+      additionalProperties: { type: string }
+      examples:
+        - { trade_date: "Date", type: "Opération", instrument_name: "Libellé", isin: "ISIN", quantity: "Quantité", unit_price: "Cours", amount: "Montant", fees: "Frais", external_id: "Référence" }
+    ImportMappingInput:
+      type: object
+      required: [name, delimiter, encoding, date_format, decimal_separator, columns]
+      properties:
+        name: { type: string }
+        delimiter: { type: string, maxLength: 1 }
+        encoding: { type: string }
+        date_format: { type: string }
+        decimal_separator: { type: string, enum: [",", "."] }
+        columns: { $ref: "#/components/schemas/ImportColumns" }
+    ImportMapping:
+      allOf:
+        - { $ref: "#/components/schemas/ImportMappingInput" }
+        - type: object
+          required: [id]
+          properties:
+            id: { type: string, format: uuid }
+    ImportPreview:
+      type: object
+      required: [preview_id, detected, rows_valid, rows_duplicate, rows_rejected, unknown_instruments, sample]
+      properties:
+        preview_id: { type: string, description: "Jeton à rejouer dans /imports/commit ; expire" }
+        detected:
+          type: object
+          properties:
+            delimiter: { type: string }
+            encoding: { type: string }
+            date_format: { type: string }
+            decimal_separator: { type: string }
+            headers:
+              type: array
+              items: { type: string }
+        rows_valid: { type: integer }
+        rows_duplicate: { type: integer, description: "Lignes déjà présentes, ignorées" }
+        rows_rejected:
+          type: array
+          items:
+            type: object
+            required: [line, reason]
+            properties:
+              line: { type: integer }
+              reason: { type: string }
+        unknown_instruments:
+          type: array
+          items:
+            type: object
+            required: [key, name]
+            properties:
+              key: { type: string, description: "Identifiant de l'actif inconnu dans l'aperçu" }
+              name: { type: string }
+              isin: { type: [string, "null"] }
+              rows: { type: integer }
+        sample:
+          type: array
+          description: Premières lignes normalisées
+          items: { type: object, additionalProperties: true }
+    ImportCommit:
+      type: object
+      required: [preview_id, confirm_rejected]
+      properties:
+        preview_id: { type: string }
+        confirm_rejected:
+          type: boolean
+          description: Vrai pour importer les lignes valides malgré des lignes rejetées
+        instrument_resolutions:
+          type: array
+          items:
+            type: object
+            required: [key, action]
+            properties:
+              key: { type: string }
+              action: { type: string, enum: [create, link, skip] }
+              kind: { $ref: "#/components/schemas/InstrumentKind" }
+              instrument_id: { type: string, format: uuid }
+        save_mapping_as: { type: string }
+    ImportResult:
+      type: object
+      required: [import_id, rows_added, rows_skipped, rows_rejected]
+      properties:
+        import_id: { type: string, format: uuid }
+        rows_added: { type: integer }
+        rows_skipped: { type: integer }
+        rows_rejected: { type: integer }
+        instruments_created: { type: integer }
+
+    DashboardSummary:
+      type: object
+      required: [currency, net_worth, excludes_debts, estimated, notices]
+      properties:
+        currency: { $ref: "#/components/schemas/Currency" }
+        net_worth: { $ref: "#/components/schemas/Decimal" }
+        excludes_debts:
+          type: boolean
+          const: true
+          description: Toujours vrai dans ce lot ; l'interface affiche « hors dettes »
+        estimated: { type: boolean }
+        as_of: { type: string, format: date }
+        notices:
+          type: array
+          items:
+            type: object
+            required: [kind, message]
+            properties:
+              kind: { type: string, enum: [stale_price, missing_balance, missing_rate, missing_fx, price_source_disabled] }
+              message: { type: string }
+              instrument_id: { type: [string, "null"], format: uuid }
+              account_id: { type: [string, "null"], format: uuid }
+
+    Settings:
+      type: object
+      required: [reference_currency, auto_fetch_prices, external_services, export_reminder_days]
+      properties:
+        reference_currency: { $ref: "#/components/schemas/Currency" }
+        auto_fetch_prices: { type: boolean }
+        export_reminder_days: { type: integer, minimum: 0 }
+        last_export_at: { type: [string, "null"], format: date-time }
+        external_services:
+          type: array
+          description: Services contactés et données envoyées, affichés à l'utilisateur
+          items:
+            type: object
+            required: [name, purpose, data_sent]
+            properties:
+              name: { type: string }
+              purpose: { type: string }
+              data_sent: { type: string }
+    SettingsPatch:
+      type: object
+      properties:
+        reference_currency: { $ref: "#/components/schemas/Currency" }
+        auto_fetch_prices: { type: boolean }
+        export_reminder_days: { type: integer, minimum: 0 }
