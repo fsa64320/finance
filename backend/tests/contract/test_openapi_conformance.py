@@ -141,6 +141,6 @@ def test_session_cookie_scheme_matches_the_contract(
 
 
 def test_contract_has_no_operation_without_a_tag_we_track(contract: dict[str, Any]) -> None:
-    """Garde : chaque opération du contrat porte un tag, sinon elle échapperait à la vérification."""
+    """Garde : une opération sans tag échapperait à la vérification."""
     untagged = [key for key, op in operations(contract).items() if not op.get("tags")]
     assert untagged == []

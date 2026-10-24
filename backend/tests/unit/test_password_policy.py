@@ -66,7 +66,7 @@ def test_rejects_trivial_patterns(password: str) -> None:
 
 
 def test_error_message_never_contains_the_password() -> None:
-    secret = "motdepasse123"
+    secret = "motdepasse123"  # noqa: S105 - mot de passe volontairement faible
     with pytest.raises(PasswordPolicyError) as raised:
         validate_password(secret)
     assert secret not in str(raised.value)

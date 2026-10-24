@@ -226,7 +226,7 @@ def test_session_ends_twelve_hours_after_login_despite_activity(
     client: TestClient, clock: FakeClock
 ) -> None:
     setup(client)
-    for _ in range(35):
+    for _ in range(40):
         clock.advance(20 * MINUTE)
         if status(client) == "locked":
             break
