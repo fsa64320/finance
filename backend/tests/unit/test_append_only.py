@@ -6,11 +6,11 @@ from decimal import Decimal
 
 import pytest
 import sqlalchemy as sa
-from finance.db.append_only import PROTECTED_TABLES, AppendOnlyError
 from sqlalchemy.exc import DatabaseError
 from sqlalchemy.orm import Session
 
 from finance.db import models
+from finance.db.append_only import PROTECTED_TABLES, AppendOnlyError
 from tests import helpers
 
 Factory = Callable[[Session], object]

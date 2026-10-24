@@ -1,4 +1,4 @@
-"""FR-028 et clarification 1 : sans le mot de passe, les données sont illisibles, sans récupération."""
+"""FR-028, clarification 1 : sans le mot de passe, données illisibles et sans récupération."""
 
 import sqlite3
 import threading
@@ -6,6 +6,8 @@ from pathlib import Path
 
 import pytest
 import sqlalchemy as sa
+
+from finance.db import engine as engine_module
 from finance.db.engine import (
     DatabaseExistsError,
     DatabaseNotFoundError,
@@ -14,8 +16,6 @@ from finance.db.engine import (
     cipher_settings,
     open_database,
 )
-
-from finance.db import engine as engine_module
 from tests.conftest import TEST_PASSWORD
 
 SQLITE_HEADER = b"SQLite format 3\x00"

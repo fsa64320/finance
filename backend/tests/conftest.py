@@ -2,14 +2,15 @@ from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
-from finance.db.engine import open_database
-from finance.db.migrate import upgrade
-from finance.db.session import make_session_factory
 from sqlalchemy import Engine
 from sqlalchemy.orm import Session
 
+from finance.db.engine import open_database
+from finance.db.migrate import upgrade
+from finance.db.session import make_session_factory
+
 # Mot de passe de test : valeur jetable, jamais utilisée hors de la suite de tests.
-TEST_PASSWORD = "test-passphrase-not-a-secret"
+TEST_PASSWORD = "test-passphrase-not-a-secret"  # noqa: S105
 
 
 @pytest.fixture

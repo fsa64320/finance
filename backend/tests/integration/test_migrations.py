@@ -3,6 +3,7 @@
 import sqlalchemy as sa
 from alembic.autogenerate import compare_metadata
 from alembic.migration import MigrationContext
+
 from finance.db.append_only import PROTECTED_TABLES
 from finance.db.migrate import upgrade
 from finance.db.models import Base

@@ -60,7 +60,8 @@ class UtcDateTime(TypeDecorator[datetime]):
             return None
         if value.tzinfo is None:
             raise ValueError("horodatage sans fuseau horaire refusé")
-        return value.astimezone(UTC).replace(tzinfo=None)
+        naive: datetime = value.astimezone(UTC).replace(tzinfo=None)
+        return naive
 
     def process_result_value(self, value: Any, dialect: Dialect) -> datetime | None:
         if value is None:

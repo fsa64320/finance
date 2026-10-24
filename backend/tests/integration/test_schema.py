@@ -88,8 +88,10 @@ def test_unknown_enum_values_are_refused_by_the_database(session: Session) -> No
     with pytest.raises(IntegrityError):
         session.execute(
             sa.text(
-                "INSERT INTO account (id, type, name, currency, opened_on, settings, created_at, updated_at) "
-                "VALUES ('a1', 'LIVRET_B', 'x', 'EUR', '2026-01-02', '{}', '2026-01-02', '2026-01-02')"
+                "INSERT INTO account "
+                "(id, type, name, currency, opened_on, settings, created_at, updated_at) "
+                "VALUES ('a1', 'LIVRET_B', 'x', 'EUR', '2026-01-02', '{}', "
+                "'2026-01-02', '2026-01-02')"
             )
         )
     session.rollback()

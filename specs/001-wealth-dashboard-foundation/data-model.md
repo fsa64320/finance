@@ -8,8 +8,9 @@
 - **Décimaux** : montants, quantités, prix et taux sont des textes décimaux canoniques (pas de notation
   scientifique, point comme séparateur), lus en `Decimal`. Aucun flottant.
 - **Devises** : code ISO 4217 en trois lettres. Chaque montant garde sa devise d'origine.
-- **Journal en ajout seul** : les tables `transaction_version`, `price`, `declared_balance`, `rate` et
-  `import_batch` ne reçoivent ni `UPDATE` ni `DELETE`. Une correction ajoute une ligne.
+- **Journal en ajout seul** : les tables `transaction`, `transaction_version`, `transfer_group`, `price`,
+  `declared_balance`, `rate` et `import_batch` ne reçoivent ni `UPDATE` ni `DELETE` (garde-fous ORM et
+  déclencheurs SQLite). Une correction ajoute une ligne.
 - **Aucune valeur dérivée n'est stockée** : valeurs de comptes, patrimoine, répartition, prix de revient
   se recalculent depuis ces tables.
 
@@ -143,6 +144,7 @@ Sert de valeur de référence pour les actifs sans cours et de point de contrôl
 | effective_from | date | Début de validité ; le taux en vigueur est le plus récent antérieur ou égal à la date |
 | value | décimal | Pour `LIVRET_A` : taux annuel en pourcentage ; pour `FX` : taux de change |
 | source | énumération | `ECB` ou `MANUAL` |
+| recorded_at | horodatage | Pour départager deux saisies à la même date d'effet : la plus récente fait foi (table en ajout seul) |
 
 ### ImportBatch (import)
 
