@@ -9,6 +9,7 @@ import Accounts from './pages/Accounts'
 import Dashboard from './pages/Dashboard'
 import Import from './pages/Import'
 import Instruments from './pages/Instruments'
+import Settings from './pages/Settings'
 import Login from './pages/Login'
 import NotFound from './pages/NotFound'
 
@@ -50,6 +51,7 @@ function AuthGate() {
           <Route path="comptes/:accountId" element={<AccountDetail />} />
           <Route path="actifs" element={<Instruments />} />
           <Route path="import" element={<Import />} />
+          <Route path="reglages" element={<Settings />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>

@@ -143,6 +143,47 @@ describe('positions', () => {
     expect(within(row).getByText('estimé')).toBeInTheDocument()
   })
 
+  it('nomme la cause quand un prix est ancien', async () => {
+    vi.mocked(accountsApi.getAccount).mockResolvedValue(
+      detail({
+        warnings: [
+          { code: 'price_stale', instrument_id: ETF_ID, message: 'Prix ancien (du 10/01/2026).' },
+        ],
+      }),
+    )
+    show()
+    const table = await screen.findByRole('table', { name: 'Positions' })
+    const row = within(table).getByText('ETF Monde').closest('tr')!
+    expect(within(row).getByText('prix ancien')).toBeInTheDocument()
+  })
+
+  it('montre le prix de souscription et l’écart d’une SCPI', async () => {
+    vi.mocked(accountsApi.getAccount).mockResolvedValue(
+      detail({
+        positions: [
+          {
+            instrument_id: ETF_ID,
+            kind: 'SCPI',
+            quantity: '10',
+            unit_cost: '251.2',
+            total_cost: '2512',
+            value: '2250',
+            price: '225',
+            price_date: '2026-01-20',
+            estimated: false,
+            subscription_price: '250',
+          },
+        ],
+        warnings: [],
+      }),
+    )
+    show()
+    const table = await screen.findByRole('table', { name: 'Positions' })
+    const row = within(table).getByText('ETF Monde').closest('tr')!
+    expect(plain(row.textContent)).toContain('Souscription 250,00 €')
+    expect(plain(row.textContent)).toMatch(/Écart [-−]262,00 €/)
+  })
+
   it('indique une position qui ne peut pas être valorisée', async () => {
     vi.mocked(accountsApi.getAccount).mockResolvedValue(
       detail({

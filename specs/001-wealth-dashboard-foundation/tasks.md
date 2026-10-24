@@ -218,11 +218,11 @@ Règles transverses à respecter dans chaque tâche : montants, quantités, prix
 - [x] T108 [US4] Implémenter `backend/src/finance/services/prices.py` : saisie manuelle, mise à jour automatique avec repli sur les derniers prix et signalement d'ancienneté, conservation locale
 - [x] T109 [P] [US4] Implémenter `backend/src/finance/services/rates.py` (taux du Livret A datés et modifiables, taux de change) et `backend/src/finance/services/settings.py` (récupération automatique des prix **désactivée par défaut** jusqu'à un choix explicite, devise de référence, plafonds par défaut)
 - [x] T110 [US4] Implémenter `backend/src/finance/api/routers/prices.py` (`GET/POST /prices`, `POST /prices/refresh`, suggestions de ticker), `backend/src/finance/api/routers/rates.py` (`GET/POST /rates/livret-a`) et `backend/src/finance/api/routers/settings.py` (`GET/PATCH /settings`)
-- [ ] T111 [P] [US4] Écrire `frontend/tests/components/PriceEntryForm.test.tsx` puis implémenter `frontend/src/components/PriceEntryForm.tsx` (prix de souscription et de retrait pour les SCPI, valeur liquidative, date)
-- [ ] T112 [P] [US4] Implémenter `frontend/src/components/StaleBadge.tsx` (prix ancien, solde non déclaré, taux manquant) et l'afficher dans `AccountDetail.tsx` et `AccountList.tsx`
-- [ ] T113 [P] [US4] Ajouter à `frontend/src/pages/Instruments.tsx` le bouton « Mettre à jour les cours », la saisie du ticker et les suggestions OpenFIGI
-- [ ] T114 [P] [US4] Implémenter `frontend/src/components/LivretARatesEditor.tsx` (table des taux datés, plafond)
-- [ ] T137 [P] [US4] Écrire `frontend/tests/components/PriceFetchConsent.test.tsx` puis implémenter `frontend/src/components/PriceFetchConsent.tsx` : choix explicite à la première utilisation, récupération désactivée tant que rien n'est choisi, liste des services contactés et des données envoyées (FR-029)
+- [x] T111 [P] [US4] Écrire `frontend/tests/components/PriceEntryForm.test.tsx` puis implémenter `frontend/src/components/PriceEntryForm.tsx` (prix de souscription et de retrait pour les SCPI, valeur liquidative, date)
+- [x] T112 [P] [US4] Implémenter `frontend/src/components/StaleBadge.tsx` (prix ancien, solde non déclaré, taux manquant) et l'afficher dans `AccountDetail.tsx` et `AccountList.tsx`
+- [x] T113 [P] [US4] Ajouter à `frontend/src/pages/Instruments.tsx` le bouton « Mettre à jour les cours », la saisie du ticker et les suggestions OpenFIGI
+- [x] T114 [P] [US4] Implémenter `frontend/src/components/LivretARatesEditor.tsx` (table des taux datés, plafond)
+- [x] T137 [P] [US4] Écrire `frontend/tests/components/PriceFetchConsent.test.tsx` puis implémenter `frontend/src/components/PriceFetchConsent.tsx` : choix explicite à la première utilisation, récupération désactivée tant que rien n'est choisi, liste des services contactés et des données envoyées (FR-029)
 
 **Checkpoint**: US1 à US4 fonctionnent : les positions sont valorisées, les SCPI et le Livret A suivent leurs règles
 

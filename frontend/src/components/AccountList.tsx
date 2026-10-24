@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import type { AccountSummary } from '../api/types'
 import { formatDate, formatMoney } from '../lib/format'
 import { ACCOUNT_TYPE_LABELS } from '../lib/labels'
+import StaleBadge from './StaleBadge'
 
 interface AccountListProps {
   accounts: AccountSummary[]
@@ -54,11 +55,7 @@ export default function AccountList({
               <td className="py-2 pr-4">{account.institution ?? '—'}</td>
               <td className="py-2 pr-4 text-right whitespace-nowrap">
                 <span>{formatMoney(account.value, account.currency)}</span>{' '}
-                {account.estimated && (
-                  <span className="rounded bg-warn-bg px-1.5 py-0.5 text-xs text-warn-ink">
-                    Estimé
-                  </span>
-                )}
+                {account.estimated && <StaleBadge label="Estimé" />}
               </td>
               {showStatus && (
                 <td className="py-2">
