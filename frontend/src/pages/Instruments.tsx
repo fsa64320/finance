@@ -124,7 +124,7 @@ export default function Instruments() {
         </p>
       )}
       {instruments.data && instruments.data.length > 0 && (
-        <div className="mt-4 overflow-x-auto">
+        <div className="relative mt-4 overflow-x-auto">
           <table aria-label="Actifs" className="w-full text-left text-sm">
             <thead className="text-muted">
               <tr>
