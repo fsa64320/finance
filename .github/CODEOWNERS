@@ -1,0 +1,20 @@
+# Propriétaire par défaut
+*                                   @fsa64320
+
+# Fichiers qui exécutent des commandes ou changent la chaîne de livraison :
+# toute modification demande une relecture explicite.
+/.github/                           @fsa64320
+/.claude/                           @fsa64320
+/.specify/                          @fsa64320
+/CLAUDE.md                          @fsa64320
+/Dockerfile                         @fsa64320
+/compose.yaml                       @fsa64320
+/SECURITY.md                        @fsa64320
+
+# Code sensible : authentification, chiffrement et base de données
+/backend/src/finance/auth/          @fsa64320
+/backend/src/finance/db/            @fsa64320
+/backend/migrations/                @fsa64320
+
+# Principes du projet
+/.specify/memory/constitution.md    @fsa64320

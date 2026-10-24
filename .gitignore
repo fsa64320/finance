@@ -1,2 +1,33 @@
 # Graphe de connaissances généré localement par graphify
 graphify-out/
+
+# Secrets et configuration locale
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Données locales de l'application : ne jamais versionner
+/data/
+/exports/
+*.db
+*.sqlite
+*.sqlite3
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Node
+node_modules/
+frontend/dist/
+
+# Système
+.DS_Store
