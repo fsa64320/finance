@@ -15,7 +15,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "gen:api": "npx --yes openapi-typescript@7.13.0 ../specs/001-wealth-dashboard-foundation/contracts/openapi.yaml -o src/api/schema.ts"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.104.5",

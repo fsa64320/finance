@@ -37,3 +37,19 @@ def test_port_out_of_range_is_rejected(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_price_fetch_is_off_by_default() -> None:
     """Constitution v1.1.0, principe I : rien ne sort avant un choix explicite."""
     assert PRICE_FETCH_DEFAULT is False
+
+
+def test_allowed_origins_and_static_dir_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("FINANCE_ALLOWED_ORIGINS", raising=False)
+    monkeypatch.delenv("FINANCE_STATIC_DIR", raising=False)
+    settings = load_settings()
+    assert settings.allowed_origins == ()
+    assert settings.static_dir is None
+
+
+def test_allowed_origins_and_static_dir_from_environment(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("FINANCE_ALLOWED_ORIGINS", " https://a.example , https://b.example ,, ")
+    monkeypatch.setenv("FINANCE_STATIC_DIR", "/srv/static")
+    settings = load_settings()
+    assert settings.allowed_origins == ("https://a.example", "https://b.example")
+    assert settings.static_dir == Path("/srv/static")

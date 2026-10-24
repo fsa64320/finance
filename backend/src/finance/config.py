@@ -21,6 +21,11 @@ class Settings:
     data_dir: Path
     host: str
     port: int
+    # Origines supplémentaires autorisées pour les requêtes qui modifient des données
+    # (utile derrière un proxy inverse dont le nom d'hôte diffère).
+    allowed_origins: tuple[str, ...] = ()
+    # Dossier du frontend compilé servi par le backend ; None en développement (serveur Vite).
+    static_dir: Path | None = None
 
 
 def _read_port(raw: str | None) -> int:
@@ -35,9 +40,18 @@ def _read_port(raw: str | None) -> int:
     return port
 
 
+def _read_origins(raw: str | None) -> tuple[str, ...]:
+    if not raw:
+        return ()
+    return tuple(origin.strip().rstrip("/") for origin in raw.split(",") if origin.strip())
+
+
 def load_settings() -> Settings:
+    static = os.environ.get("FINANCE_STATIC_DIR")
     return Settings(
         data_dir=Path(os.environ.get("FINANCE_DATA_DIR", DEFAULT_DATA_DIR)),
         host=os.environ.get("FINANCE_HOST", DEFAULT_HOST),
         port=_read_port(os.environ.get("FINANCE_PORT")),
+        allowed_origins=_read_origins(os.environ.get("FINANCE_ALLOWED_ORIGINS")),
+        static_dir=Path(static) if static else None,
     )
