@@ -17,6 +17,9 @@
 - Q: Comment corriger une opération saisie par erreur ? → A: L'utilisateur modifie ou annule l'opération directement ; le système conserve l'ancienne version dans un historique des modifications, et les écrans courants montrent la version à jour.
 - Q: Que faire d'une ligne CSV qui porte sur un actif inconnu ? → A: L'aperçu liste les actifs inconnus avec les informations lues dans le fichier ; l'utilisateur peut les créer, les rattacher à un actif existant ou ignorer les lignes concernées, et rien n'est créé avant sa validation.
 - Q: Le patrimoine net déduit-il des dettes dans ce lot ? → A: Non. Le libellé « patrimoine net » est conservé avec la mention « hors dettes » ; la gestion des dettes est reportée à un lot ultérieur.
+- Q: Quelles règles pour le mot de passe et les sessions ? → A: 12 caractères minimum (128 maximum) et absent de la liste des mots de passe courants ; après 5 échecs consécutifs le délai avant un nouvel essai double à chaque échec jusqu'à 15 minutes ; la session expire après 30 minutes d'inactivité et au plus 12 heures après la connexion ; le cookie est `Secure` en HTTPS.
+- Q: La récupération automatique des prix est-elle active par défaut ? → A: Non. Elle reste désactivée jusqu'à un choix explicite de l'utilisateur à la première utilisation, peut être coupée à tout moment, et la liste des services contactés et des données envoyées est affichée (constitution v1.1.0, principe I).
+- Q: Peut-on changer le mot de passe ? → A: Oui, depuis les réglages, en saisissant l'ancien mot de passe ; les données sont rechiffrées (FR-033).
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -90,6 +93,7 @@ Pour les actions, ETF et fonds, la personne obtient des cours et valeurs liquida
 3. **Given** une SCPI, **When** la personne saisit un prix de souscription et un prix de retrait, **Then** le prix de revient s'appuie sur le prix de souscription (frais d'entrée inclus), la valorisation sur le prix de retrait, et l'écart initial est visible.
 4. **Given** un actif sans prix pour une date, **When** le patrimoine est calculé à cette date, **Then** le dernier prix connu antérieur est utilisé et la valeur est signalée comme estimée.
 5. **Given** un actif coté dans une autre devise que l'euro, **When** il est valorisé, **Then** sa valeur est convertie dans la devise de référence avec le taux de change de la date de valorisation.
+6. **Given** une première utilisation, **When** la personne atteint la configuration des prix, **Then** la récupération automatique est désactivée, la liste des services contactés (BCE pour les taux, Yahoo Finance pour les cours, OpenFIGI pour la recherche de ticker) et les données envoyées à chacun sont affichées, et rien ne sort tant qu'elle n'a pas activé la récupération.
 
 ---
 
@@ -108,6 +112,9 @@ Une personne un peu technique installe l'application sur sa propre machine ou so
 3. **Given** une session non authentifiée, **When** quelqu'un tente d'ouvrir une page de données, **Then** l'accès est refusé.
 4. **Given** le choix du mot de passe, **When** la personne le crée, **Then** l'application lui indique qu'un oubli rend les données irrécupérables et l'invite à exporter ses données.
 5. **Given** des données saisies, **When** la personne demande un export, **Then** elle obtient un fichier contenant l'intégralité de ses comptes, instruments, opérations et prix, réutilisable pour restaurer ses données.
+6. **Given** le choix du mot de passe, **When** la personne en saisit un de moins de 12 caractères ou présent dans la liste des mots de passe courants, **Then** il est refusé avec la règle à respecter.
+7. **Given** une session ouverte, **When** 30 minutes passent sans activité, **Then** la session expire et le mot de passe est redemandé.
+8. **Given** les réglages, **When** la personne saisit l'ancien mot de passe puis un nouveau valide, **Then** les données restent lisibles avec le nouveau mot de passe et l'ancien est refusé.
 
 ---
 
@@ -122,6 +129,7 @@ Une personne un peu technique installe l'application sur sa propre machine ou so
 - Le fonds en euros sans solde déclaré : la valeur affichée est nulle avec un message qui invite à déclarer un solde.
 - Une SCPI sans prix saisi : la valeur est estimée au prix de revient et signalée comme telle.
 - Un PEE avec des sommes bloquées : la date de déblocage est affichée et les montants indisponibles sont distingués des disponibles.
+- Cinq échecs de connexion consécutifs : les essais suivants sont retardés (doublement jusqu'à 15 minutes) et l'application indique le délai restant.
 - Mot de passe oublié : les données sont irrécupérables ; seule la restauration d'un export antérieur permet de repartir.
 - Un patrimoine sans aucune donnée : le tableau de bord présente un état vide qui guide vers la création d'un premier compte.
 
@@ -148,7 +156,7 @@ Une personne un peu technique installe l'application sur sa propre machine ou so
 **Prix et devises**
 
 - **FR-011**: Le système MUST permettre de saisir manuellement un prix ou une valeur liquidative pour n'importe quel actif à n'importe quelle date.
-- **FR-012**: Le système MUST récupérer automatiquement les cours des actions et ETF et les valeurs liquidatives des fonds identifiés par un code ISIN, quand une source publique les fournit, et conserver ces prix localement.
+- **FR-012**: Lorsque l'utilisateur a activé la récupération automatique (FR-029), le système MUST récupérer automatiquement les cours des actions et ETF et les valeurs liquidatives des fonds identifiés par un code ISIN, quand une source publique les fournit, et conserver ces prix localement.
 - **FR-013**: Le système MUST rester pleinement utilisable lorsque la récupération de prix échoue, en utilisant les derniers prix connus et en signalant leur ancienneté.
 - **FR-014**: Le système MUST valoriser en tenant compte de la devise d'origine de chaque montant et convertir dans la devise de référence avec le taux de la date de valorisation.
 
@@ -173,11 +181,12 @@ Une personne un peu technique installe l'application sur sa propre machine ou so
 
 **Socle**
 
-- **FR-028**: Le système MUST exiger un mot de passe défini à la première utilisation avant tout accès aux données. Les données MUST être illisibles sans ce mot de passe ; il n'existe aucun mécanisme de récupération en cas d'oubli, et l'application MUST l'indiquer à la création du mot de passe et rappeler régulièrement d'exporter les données.
-- **FR-029**: Le système MUST conserver toutes les données localement, sans envoyer de donnée personnelle à un service tiers ; seules les demandes de prix et de taux de change sortent, et elles ne contiennent aucune donnée de l'utilisateur.
+- **FR-028**: Le système MUST exiger un mot de passe défini à la première utilisation avant tout accès aux données. Les données MUST être illisibles sans ce mot de passe ; il n'existe aucun mécanisme de récupération en cas d'oubli, et l'application MUST l'indiquer à la création du mot de passe et rappeler régulièrement d'exporter les données. Le mot de passe MUST faire au moins 12 caractères (128 au maximum) et ne pas figurer dans la liste des mots de passe courants livrée avec l'application. Après 5 échecs consécutifs, le délai avant un nouvel essai double à chaque échec, jusqu'à 15 minutes. La session MUST expirer après 30 minutes d'inactivité et au plus 12 heures après la connexion ; le cookie de session est marqué `Secure` dès que l'accès se fait en HTTPS.
+- **FR-029**: Le système MUST conserver toutes les données localement. Seules les demandes de cours, de taux de change et de recherche de ticker à partir d'un code ISIN sortent ; elles ne contiennent que des identifiants d'actifs et des devises, jamais de quantités, de montants, de noms de comptes ni de dates d'opérations. Comme ces identifiants révèlent ce qui est détenu, la récupération automatique MUST être désactivée tant que l'utilisateur ne l'a pas activée par un choix explicite à la première utilisation, MUST pouvoir être coupée à tout moment, et l'application MUST afficher la liste des services contactés et ce que chacun reçoit.
 - **FR-030**: Le système MUST permettre d'exporter l'intégralité des données dans un format ouvert et de les restaurer.
 - **FR-031**: Tous les montants et quantités MUST être calculés avec une précision décimale exacte ; les arrondis ne s'appliquent qu'à l'affichage.
 - **FR-032**: Le système MUST afficher un avertissement indiquant que les valeurs et analyses sont indicatives et ne constituent pas un conseil en investissement.
+- **FR-033**: Le système MUST permettre de changer le mot de passe depuis les réglages en saisissant l'ancien ; les données sont alors rechiffrées avec le nouveau, qui doit respecter les règles de FR-028. L'ancien mot de passe cesse immédiatement de fonctionner.
 
 ### Key Entities
 

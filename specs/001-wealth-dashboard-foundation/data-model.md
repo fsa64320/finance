@@ -172,7 +172,7 @@ Sert de valeur de référence pour les actifs sans cours et de point de contrôl
 
 ### Setting (réglage)
 
-Clé / valeur modifiable : devise de référence, récupération automatique des prix (oui/non), plafonds par
+Clé / valeur modifiable : devise de référence, récupération automatique des prix (oui/non, **non** par défaut tant que l'utilisateur n'a pas choisi), plafonds par
 défaut, rappel d'export. Un enregistrement de configuration d'authentification (sel, paramètres de
 dérivation) vit hors de la base chiffrée dans un petit fichier de métadonnées, car il est nécessaire
 avant le déverrouillage.

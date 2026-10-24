@@ -70,6 +70,20 @@ paths:
       summary: Ferme la session
       responses:
         "204": { description: Session fermée }
+  /auth/change-password:
+    post:
+      tags: [auth]
+      summary: Change le mot de passe et rechiffre les données (FR-033)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ChangePasswordRequest" }
+      responses:
+        "204": { description: "Mot de passe changé ; l'ancien est refusé ensuite" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "422": { $ref: "#/components/responses/Validation" }
+        "429": { $ref: "#/components/responses/TooManyAttempts" }
 
   /accounts:
     get:
@@ -662,7 +676,14 @@ components:
       type: object
       required: [password]
       properties:
-        password: { type: string, minLength: 12 }
+        password: { type: string, minLength: 12, maxLength: 128 }
+
+    ChangePasswordRequest:
+      type: object
+      required: [current_password, new_password]
+      properties:
+        current_password: { type: string }
+        new_password: { type: string, minLength: 12, maxLength: 128 }
 
     AccountType:
       type: string
@@ -984,7 +1005,7 @@ components:
       required: [reference_currency, auto_fetch_prices, external_services, export_reminder_days]
       properties:
         reference_currency: { $ref: "#/components/schemas/Currency" }
-        auto_fetch_prices: { type: boolean }
+        auto_fetch_prices: { type: boolean, default: false, description: "Désactivée tant que l'utilisateur ne l'a pas activée" }
         export_reminder_days: { type: integer, minimum: 0 }
         last_export_at: { type: [string, "null"], format: date-time }
         external_services:

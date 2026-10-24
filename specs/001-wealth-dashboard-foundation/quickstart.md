@@ -81,6 +81,9 @@ automatisés du domaine contiennent ces mêmes scénarios.
 
 ## 6. Prix et valeurs liquidatives (User Story 4, SC-007)
 
+0. Vérifier que la récupération automatique est **désactivée** à la première utilisation et qu'aucune
+   connexion sortante n'a lieu, puis l'activer dans l'écran de choix (la liste des services contactés y
+   est affichée).
 1. Renseigner le ticker de l'ETF (aide à la suggestion à partir de l'ISIN) puis lancer la mise à jour des
    prix. **Attendu** : valeur de la position = quantité × dernier cours, avec sa date affichée.
 2. Couper le réseau ou désactiver la récupération automatique, relancer la mise à jour.

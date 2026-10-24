@@ -93,7 +93,7 @@ Toutes les inconnues du contexte technique sont résolues ci-dessous. Aucun marq
   - **Saisie manuelle** toujours possible, et seule voie prévue pour les SCPI et la plupart des FCPE.
 - **Vie privée (principe I)**: seuls des identifiants d'actifs (ticker, ISIN) et des devises sortent ; jamais
   de quantités, de montants ni de noms de comptes. Ces identifiants révèlent néanmoins ce qui est
-  détenu : la récupération est désactivable dans les réglages et la liste des services contactés y
+  détenu : la récupération est désactivée par défaut jusqu'à un choix explicite (constitution v1.1.0), coupable à tout moment dans les réglages, et la liste des services contactés y
   est affichée.
 - **Rationale**: aucune source officielle gratuite ne couvre les cours des actifs européens. L'interface
   de fournisseur isole le risque de rupture, et l'application reste utilisable avec des prix saisis.
