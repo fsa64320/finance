@@ -266,14 +266,14 @@ Règles transverses à respecter dans chaque tâche : montants, quantités, prix
 - [x] T127 [P] Ajouter `frontend/src/components/Disclaimer.tsx` (valeurs indicatives, aucun conseil en investissement, FR-032) dans `frontend/src/components/Layout.tsx`
 - [x] T128 [P] Écrire `frontend/tests/e2e/quickstart.spec.ts` (Playwright) qui déroule les sections 3 à 8 de `quickstart.md`
 - [x] T129 Étendre `frontend/tests/layout/no-horizontal-scroll.test.tsx` (T079) aux pages de consultation restantes (détail de compte, actifs) à 375 px, et corriger `frontend/src/components/*.tsx` en conséquence (FR-026)
-- [ ] T130 [P] Mesurer SC-001, SC-004 et SC-005 (avec un testeur débutant) et consigner les résultats dans `specs/001-wealth-dashboard-foundation/quickstart.md` section 9
-- [ ] T131 [P] Vérifier qu'aucune requête sortante ne contient un montant ou un nom de compte (`quickstart.md` section 7, SC-008) et consigner le résultat
-- [ ] T132 Revue de sécurité : en-têtes, contrôle `Origin`, limites de taille, absence de secrets, dépendances à jour ; compléter `SECURITY.md` si besoin
+- [ ] T130 [P] Mesurer SC-001, SC-004 et SC-005 (avec un testeur débutant) et consigner les résultats dans `specs/001-wealth-dashboard-foundation/quickstart.md` section 9 *(à faire avec une personne extérieure ; état consigné dans le quickstart, section 9)*
+- [x] T131 [P] Vérifier qu'aucune requête sortante ne contient un montant ou un nom de compte (`quickstart.md` section 7, SC-008) et consigner le résultat
+- [x] T132 Revue de sécurité : en-têtes, contrôle `Origin`, limites de taille, absence de secrets, dépendances à jour ; compléter `SECURITY.md` si besoin
 - [ ] T133 [P] Mettre à jour `.github/CODEOWNERS` si de nouveaux dossiers sensibles apparaissent, et ajouter le check de chaque job de code à la liste des checks requis de la règle `protect-main` *(CODEOWNERS à jour ; seul `ci-gate` est exigé par la règle `protect-main`, et il agrège les jobs de code)*
 - [x] T134 Choisir la licence du dépôt puis ajouter `LICENSE` et la mention dans `README.md` (fait : AGPL-3.0, PR `chore/license`)
-- [ ] T135 Valider l'arrondi des intérêts du Livret A sur de vrais relevés et ajuster `backend/src/finance/domain/livret_a.py` (point ouvert de research.md §13)
+- [ ] T135 Valider l'arrondi des intérêts du Livret A sur de vrais relevés et ajuster `backend/src/finance/domain/livret_a.py` (point ouvert de research.md §13) *(en attente de relevés réels ; état consigné dans le quickstart, section 9)*
 - [x] T141 Passer `IMPLEMENTED_TAGS` de `backend/tests/contract/test_openapi_conformance.py` à la liste complète des tags du contrat : le test échoue si le contrat contient un chemin sans routeur
-- [ ] T136 Exécuter `quickstart.md` de bout en bout, mettre à jour `docs/design-brief.md` si le périmètre a bougé, puis lancer `graphify update .` pour rafraîchir le graphe
+- [x] T136 Exécuter `quickstart.md` de bout en bout, mettre à jour `docs/design-brief.md` si le périmètre a bougé, puis lancer `graphify update .` pour rafraîchir le graphe *(sections 1 à 8 par `smoke.sh` et les tests de bout en bout, exécutés en CI ; périmètre inchangé, `design-brief.md` à jour ; graphe rafraîchi par le hook)*
 
 ---
 
@@ -291,7 +291,7 @@ Règles transverses à respecter dans chaque tâche : montants, quantités, prix
 - [x] T149 [P] Compléter `frontend/tests/lib/format.test.ts` : `1 234,56 €`, `24/10/2026`, alignement des montants (FR-036) *(formats déjà couverts par `format.test.ts` ; ajout du test d'alignement et de la classe `tabular-nums`)*
 - [x] T150 [P] Implémenter `frontend/src/components/ConfirmDialog.tsx` (focus piégé, fermeture par Échap), avec test (FR-035) *(`ConfirmDialog.tsx`, utilisé pour la clôture de compte)*
 - [x] T151 Appliquer `ConfirmDialog` à la restauration (T124, avec rappel que les données actuelles seront remplacées), à la clôture d'un compte (T065) et au changement de mot de passe (T140), avec un test par cas (FR-035) *(clôture de compte faite ; restauration et changement de mot de passe à brancher avec T124 et T140)*
-- [ ] T152 Mesurer SC-006 avec un testeur débutant (installation et premier tableau de bord en moins de 10 minutes, sans ligne de commande) et consigner le résultat dans `specs/001-wealth-dashboard-foundation/quickstart.md` section 9
+- [ ] T152 Mesurer SC-006 avec un testeur débutant (installation et premier tableau de bord en moins de 10 minutes, sans ligne de commande) et consigner le résultat dans `specs/001-wealth-dashboard-foundation/quickstart.md` section 9 *(à faire avec une personne extérieure ; état consigné dans le quickstart, section 9)*
 
 ---
 

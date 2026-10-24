@@ -133,6 +133,14 @@ environment:
   FINANCE_ALLOWED_ORIGINS: "https://finance.exemple.fr"
 ```
 
+Pour que le cookie de session soit marqué `Secure` derrière votre proxy, indiquez à l'application
+de faire confiance à son adresse (`FORWARDED_ALLOW_IPS`, variable d'uvicorn) :
+
+```yaml
+environment:
+  FORWARDED_ALLOW_IPS: "172.18.0.1"   # adresse du proxy vue depuis le conteneur
+```
+
 N'exposez jamais l'application directement sur Internet sans HTTPS.
 
 ## Contribuer
