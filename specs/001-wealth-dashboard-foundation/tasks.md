@@ -138,19 +138,19 @@ Règles transverses à respecter dans chaque tâche : montants, quantités, prix
 
 ### Tests for User Story 2 (écrire d'abord) ⚠️
 
-- [ ] T066 [P] [US2] Écrire `backend/tests/unit/test_networth.py` : somme exacte des comptes ouverts ; un compte clôturé sort du total courant mais reste dans la série passée
-- [ ] T067 [P] [US2] Écrire `backend/tests/unit/test_series.py` : la valeur à chaque date est recalculée depuis le journal et les prix ; points quotidiens jusqu'à 1 an, hebdomadaires au-delà ; dernier prix connu utilisé et valeur marquée estimée
-- [ ] T068 [P] [US2] Écrire `backend/tests/unit/test_allocation.py` : classes dérivées (`EQUITY, ETF` → Actions & ETF ; `FUND, FCPE` → Fonds ; `SCPI` ; `EURO_FUND` → Fonds en euros ; `CASH` → Liquidités), poids dont la somme vaut exactement 100 %
-- [ ] T069 [P] [US2] Écrire `backend/tests/contract/test_dashboard_contract.py` pour `GET /dashboard/summary`, `/dashboard/series`, `/dashboard/allocation`
-- [ ] T070 [P] [US2] Écrire `backend/tests/integration/test_dashboard_performance.py` : 10 ans d'historique et 5 000 opérations, réponse de la série en moins de 3 s (SC-004)
+- [x] T066 [P] [US2] Écrire `backend/tests/unit/test_networth.py` : somme exacte des comptes ouverts ; un compte clôturé sort du total courant mais reste dans la série passée
+- [x] T067 [P] [US2] Écrire `backend/tests/unit/test_series.py` : la valeur à chaque date est recalculée depuis le journal et les prix ; points quotidiens jusqu'à 1 an, hebdomadaires au-delà ; dernier prix connu utilisé et valeur marquée estimée
+- [x] T068 [P] [US2] Écrire `backend/tests/unit/test_allocation.py` : classes dérivées (`EQUITY, ETF` → Actions & ETF ; `FUND, FCPE` → Fonds ; `SCPI` ; `EURO_FUND` → Fonds en euros ; `CASH` → Liquidités), poids dont la somme vaut exactement 100 %
+- [x] T069 [P] [US2] Écrire `backend/tests/contract/test_dashboard_contract.py` pour `GET /dashboard/summary`, `/dashboard/series`, `/dashboard/allocation`
+- [x] T070 [P] [US2] Écrire `backend/tests/integration/test_dashboard_performance.py` : 10 ans d'historique et 5 000 opérations, réponse de la série en moins de 3 s (SC-004)
 
 ### Implementation for User Story 2
 
-- [ ] T071 [P] [US2] Implémenter `backend/src/finance/domain/networth.py` (patrimoine net hors dettes, comptes ouverts)
-- [ ] T072 [P] [US2] Implémenter `backend/src/finance/domain/allocation.py` (classes d'actifs, répartition des arrondis pour que la somme des poids fasse 100 %)
-- [ ] T073 [US2] Implémenter `backend/src/finance/domain/series.py` : balayage unique des opérations et des prix triés, échantillonnage quotidien puis hebdomadaire (dépend de T051)
-- [ ] T074 [US2] Implémenter `backend/src/finance/services/dashboard.py` avec un cache mémoire invalidé à chaque écriture, reconstructible à l'identique (dépend de T071, T072, T073)
-- [ ] T075 [US2] Implémenter `backend/src/finance/api/routers/dashboard.py` : `GET /dashboard/summary`, `GET /dashboard/series` (période 1 mois, 1 an, depuis le début), `GET /dashboard/allocation`
+- [x] T071 [P] [US2] Implémenter `backend/src/finance/domain/networth.py` (patrimoine net hors dettes, comptes ouverts)
+- [x] T072 [P] [US2] Implémenter `backend/src/finance/domain/allocation.py` (classes d'actifs, répartition des arrondis pour que la somme des poids fasse 100 %)
+- [x] T073 [US2] Implémenter `backend/src/finance/domain/series.py` : balayage unique des opérations et des prix triés, échantillonnage quotidien puis hebdomadaire (dépend de T051) *(`cost_basis.apply_trade` est partagée avec le calcul ponctuel ; un test de propriété vérifie que la série égale un recalcul complet à chaque date)*
+- [x] T074 [US2] Implémenter `backend/src/finance/services/dashboard.py` avec un cache mémoire invalidé à chaque écriture, reconstructible à l'identique (dépend de T071, T072, T073) *(cache par moteur, vidé à chaque validation d'une écriture ; mesuré à 0,1 s pour la série complète de 5 000 opérations sur 10 ans)*
+- [x] T075 [US2] Implémenter `backend/src/finance/api/routers/dashboard.py` : `GET /dashboard/summary`, `GET /dashboard/series` (période 1 mois, 1 an, depuis le début), `GET /dashboard/allocation`
 - [x] T076 [P] [US2] Implémenter `frontend/src/components/NetWorthChart.tsx` (Recharts) et `frontend/src/components/AllocationChart.tsx`
 - [x] T077 [P] [US2] Implémenter `frontend/src/components/AccountList.tsx` (type, établissement, valeur, pastille « estimé ») et `frontend/src/components/EmptyState.tsx` guidant vers la création d'un premier compte
 - [x] T078 [US2] Écrire `frontend/tests/pages/Dashboard.test.tsx` puis implémenter `frontend/src/pages/Dashboard.tsx` : synthèse en haut avec la mention « hors dettes », courbe avec sélecteur de période, répartition, liste des comptes ; ouverture d'un compte vers `AccountDetail`
@@ -181,7 +181,7 @@ Règles transverses à respecter dans chaque tâche : montants, quantités, prix
 - [ ] T087 [P] [US3] Implémenter `backend/src/finance/importers/base.py` : interface d'importeur qui reçoit un fichier et renvoie des lignes normalisées, sans jamais écrire en base
 - [ ] T088 [US3] Implémenter `backend/src/finance/importers/csv_generic.py` : détection d'encodage (`charset-normalizer`), séparateur, formats de date et de nombre, application d'un `ImportMapping` (dépend de T087)
 - [ ] T089 [P] [US3] Implémenter `backend/src/finance/services/import_mappings.py` : paramétrage par établissement (`delimiter` « un caractère », `decimal_separator` `,` ou `.`)
-- [ ] T090 [US3] Implémenter `backend/src/finance/services/imports.py` : aperçu, empreinte de ligne avec rang d'occurrence, actifs inconnus, validation, écriture via `services/transactions.py`, trace `ImportBatch` (`rows_added`, `rows_skipped`, `rows_rejected`) (dépend de T088, T054)
+- [ ] T090 [US3] Implémenter `backend/src/finance/services/imports.py` : aperçu, empreinte de ligne avec rang d'occurrence, actifs inconnus, validation, écriture via `services/transactions.py`, trace `ImportBatch` (`rows_added`, `rows_skipped`, `rows_rejected`) (dépend de T088, T054) *(attention : `services/transactions.create_transaction` relit toutes les opérations du compte à chaque appel, soit O(n²) pour 500 lignes ; prévoir une écriture groupée avec un seul chargement)*
 - [ ] T091 [US3] Implémenter `backend/src/finance/api/routers/imports.py` : `GET/POST /import-mappings`, `POST /imports/preview`, `POST /imports/commit`, avec limite de taille de fichier (dépend de T090)
 - [ ] T092 [P] [US3] Implémenter `frontend/src/components/ColumnMapper.tsx` et `frontend/src/components/UnknownInstrumentsPanel.tsx` (créer, rattacher ou ignorer)
 - [ ] T093 [US3] Écrire `frontend/tests/pages/Import.test.tsx` puis implémenter `frontend/src/pages/Import.tsx` : dépôt du fichier, réglages, correspondance des colonnes, aperçu, actifs inconnus, résumé (ajoutées, ignorées, rejetées), paramétrage proposé automatiquement au prochain fichier du même établissement
