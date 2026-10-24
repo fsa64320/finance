@@ -12,6 +12,7 @@ from finance.api.errors import install_error_handlers
 from finance.api.routers import accounts as accounts_router
 from finance.api.routers import auth as auth_router
 from finance.api.routers import dashboard as dashboard_router
+from finance.api.routers import data as data_router
 from finance.api.routers import imports as imports_router
 from finance.api.routers import instruments as instruments_router
 from finance.api.routers import prices as prices_router
@@ -71,6 +72,7 @@ def create_app(
     app.include_router(imports_router.router, prefix=API_PREFIX)
     app.include_router(prices_router.router, prefix=API_PREFIX)
     app.include_router(settings_router.router, prefix=API_PREFIX)
+    app.include_router(data_router.router, prefix=API_PREFIX)
 
     frontend = static_dir or settings.static_dir
     if frontend is not None:

@@ -123,3 +123,20 @@ def cipher_settings(engine: sa.Engine) -> dict[str, Any]:
         return _read_cipher_settings(raw.driver_connection)
     finally:
         raw.close()
+
+
+def rekey(engine: sa.Engine, new_password: str) -> None:
+    """Rechiffre la base ouverte avec `new_password` (SQLCipher `PRAGMA rekey`).
+
+    Les connexions du pool gardent l'ancienne clé : l'appelant doit fermer ce moteur (`dispose`) et
+    rouvrir la base avec le nouveau mot de passe.
+    """
+    _check_password(new_password)
+    raw = engine.raw_connection()
+    try:
+        connection = raw.driver_connection
+        if connection is None:
+            raise RuntimeError("connexion indisponible")
+        connection.execute(f"PRAGMA rekey = {_quote(new_password)}")
+    finally:
+        raw.close()

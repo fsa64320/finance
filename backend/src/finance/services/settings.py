@@ -118,3 +118,9 @@ def auto_fetch_enabled(session: Session) -> bool:
 
 def reference_currency(session: Session) -> str:
     return get_settings(session).reference_currency
+
+
+def record_export(session: Session, at: datetime) -> None:
+    """Retient la date du dernier export, pour le rappel périodique."""
+    _put(session, LAST_EXPORT_KEY, at.isoformat())
+    session.flush()
