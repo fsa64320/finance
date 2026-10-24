@@ -8,6 +8,9 @@ from sqlalchemy.orm import Session
 
 from finance.db import models
 from finance.domain.entries import Entry
+from finance.domain.enums import RateKind
+from finance.domain.fx import FxRateRow, FxTable
+from finance.domain.livret_a import RateRow
 from finance.domain.valuation import DeclaredBalanceRow, InstrumentInfo, PricePoint
 
 
@@ -97,4 +100,26 @@ def load_declared_balances(session: Session) -> list[DeclaredBalanceRow]:
             recorded_at=row.recorded_at,
         )
         for row in session.scalars(sa.select(models.DeclaredBalance))
+    ]
+
+
+def load_fx_table(session: Session) -> FxTable:
+    return FxTable(
+        FxRateRow(
+            base=row.base or "",
+            quote=row.quote or "",
+            effective_from=row.effective_from,
+            value=row.value,
+            recorded_at=row.recorded_at,
+        )
+        for row in session.scalars(sa.select(models.Rate).where(models.Rate.kind == RateKind.FX))
+    )
+
+
+def load_livret_rates(session: Session) -> list[RateRow]:
+    return [
+        RateRow(effective_from=row.effective_from, value=row.value, recorded_at=row.recorded_at)
+        for row in session.scalars(
+            sa.select(models.Rate).where(models.Rate.kind == RateKind.LIVRET_A)
+        )
     ]

@@ -1,4 +1,4 @@
-import type { components } from './schema'
+import type { components, paths } from './schema'
 
 type Schemas = components['schemas']
 
@@ -19,3 +19,18 @@ export type TransactionWithHistory = Schemas['TransactionWithHistory']
 export type TransferInput = Schemas['TransferInput']
 export type DeclaredBalance = Schemas['DeclaredBalance']
 export type DeclaredBalanceInput = Schemas['DeclaredBalanceInput']
+export type ImportMapping = Schemas['ImportMapping']
+export type ImportPreview = Schemas['ImportPreview']
+export type ImportCommit = Schemas['ImportCommit']
+export type ImportResult = Schemas['ImportResult']
+export type Price = Schemas['Price']
+export type PriceInput = Schemas['PriceInput']
+export type PriceKind = Schemas['PriceKind']
+export type LivretARate = Schemas['LivretARate']
+export type Settings = Schemas['Settings']
+export type SettingsPatch = Schemas['SettingsPatch']
+export type RefreshResult =
+  paths['/prices/refresh']['post']['responses']['200']['content']['application/json']
+export type RefreshSource = RefreshResult['sources'][number]
+export type TickerSuggestion =
+  paths['/instruments/{instrumentId}/ticker-suggestions']['post']['responses']['200']['content']['application/json'][number]

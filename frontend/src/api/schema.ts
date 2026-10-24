@@ -490,6 +490,9 @@ export interface paths {
                         }[];
                     };
                 };
+                404: components["responses"]["NotFound"];
+                409: components["responses"]["Conflict"];
+                422: components["responses"]["Validation"];
                 502: components["responses"]["ExternalSourceFailed"];
             };
         };
@@ -742,6 +745,7 @@ export interface paths {
                         "application/json": components["schemas"]["Price"][];
                     };
                 };
+                422: components["responses"]["Validation"];
             };
         };
         put?: never;
@@ -918,6 +922,7 @@ export interface paths {
                         "application/json": components["schemas"]["LivretARate"];
                     };
                 };
+                422: components["responses"]["Validation"];
             };
         };
         delete?: never;
@@ -978,6 +983,8 @@ export interface paths {
                         "application/json": components["schemas"]["ImportMapping"];
                     };
                 };
+                409: components["responses"]["Conflict"];
+                422: components["responses"]["Validation"];
             };
         };
         delete?: never;
@@ -1114,6 +1121,7 @@ export interface paths {
                         "application/json": components["schemas"]["DashboardSummary"];
                     };
                 };
+                422: components["responses"]["Validation"];
             };
         };
         put?: never;
@@ -1160,6 +1168,7 @@ export interface paths {
                         };
                     };
                 };
+                422: components["responses"]["Validation"];
             };
         };
         put?: never;
@@ -1206,6 +1215,7 @@ export interface paths {
                         };
                     };
                 };
+                422: components["responses"]["Validation"];
             };
         };
         put?: never;
@@ -1355,6 +1365,7 @@ export interface paths {
                         "application/json": components["schemas"]["Settings"];
                     };
                 };
+                422: components["responses"]["Validation"];
             };
         };
         trace?: never;
@@ -1435,6 +1446,8 @@ export interface components {
             price?: components["schemas"]["Decimal"] | null;
             /** Format: date */
             price_date?: string | null;
+            /** @description SCPI, dernier prix de souscription connu (l'écart avec le prix de retrait est l'écart initial) */
+            subscription_price?: components["schemas"]["Decimal"];
             estimated: boolean;
         };
         AccountDetail: components["schemas"]["AccountSummary"] & {
@@ -1615,6 +1628,14 @@ export interface components {
                 decimal_separator?: string;
                 headers?: string[];
             };
+            /**
+             * Format: uuid
+             * @description Paramétrage appliqué ou proposé automatiquement pour ce fichier
+             */
+            mapping_id?: string | null;
+            /** @description Correspondance appliquée ; vide tant que la personne n'en a pas fourni */
+            columns?: components["schemas"]["ImportColumns"];
+            /** @description Lignes nouvelles et valides */
             rows_valid: number;
             /** @description Lignes déjà présentes, ignorées */
             rows_duplicate: number;
@@ -1669,7 +1690,7 @@ export interface components {
             as_of?: string;
             notices: {
                 /** @enum {string} */
-                kind: "stale_price" | "missing_balance" | "missing_rate" | "missing_fx" | "price_source_disabled";
+                kind: "stale_price" | "missing_balance" | "missing_rate" | "missing_fx" | "price_source_disabled" | "negative_position";
                 message: string;
                 /** Format: uuid */
                 instrument_id?: string | null;

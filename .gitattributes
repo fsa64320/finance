@@ -1,1 +1,2 @@
 graphify-out/graph.json merge=graphify
+backend/tests/fixtures/csv/* -text

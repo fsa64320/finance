@@ -53,7 +53,14 @@ select = ["E", "F", "W", "I", "B", "UP", "S", "C4", "SIM", "RUF"]
 
 [tool.ruff.lint.flake8-bugbear]
 # Les dépendances FastAPI s'écrivent en valeurs par défaut des paramètres.
-extend-immutable-calls = ["fastapi.Depends", "fastapi.Query", "fastapi.Path", "fastapi.Body"]
+extend-immutable-calls = [
+    "fastapi.Depends",
+    "fastapi.Query",
+    "fastapi.Path",
+    "fastapi.Body",
+    "fastapi.File",
+    "fastapi.Form",
+]
 
 [tool.ruff.lint.per-file-ignores]
 # assert est le style normal des tests

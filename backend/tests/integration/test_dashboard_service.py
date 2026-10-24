@@ -9,7 +9,15 @@ from sqlalchemy.orm import Session
 from finance.domain.allocation import AssetClass
 from finance.domain.enums import AccountType as A
 from finance.domain.enums import InstrumentKind as K
-from finance.services import accounts, balances, dashboard, instruments, transactions, transfers
+from finance.services import (
+    accounts,
+    balances,
+    dashboard,
+    instruments,
+    rates,
+    transactions,
+    transfers,
+)
 from finance.services.errors import ValidationFailed
 from tests.integration.test_services_us1 import buy, d, deposit, new_account, new_etf
 
@@ -17,7 +25,11 @@ TODAY = date(2026, 3, 31)
 
 
 def quickstart(session: Session):  # type: ignore[no-untyped-def]
-    """PEA (1 000 € dont 901,99 € d'ETF), Livret A (2 500 €) et assurance-vie (5 000 €)."""
+    """PEA (1 000 € dont 901,99 € d'ETF), Livret A (2 500 €) et assurance-vie (5 000 €).
+
+    Un taux de 0 % garde des soldes ronds ; les intérêts estimés ont leurs propres tests.
+    """
+    rates.add_livret_a_rate(session, effective_from=date(2026, 1, 1), value=d("0"))
     pea = new_account(session)
     etf = new_etf(session)
     deposit(session, pea, "1000")

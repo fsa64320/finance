@@ -58,6 +58,8 @@ def test_quickstart_section_3(authed_client: TestClient) -> None:
     assert detail["value"] == "1000" and detail["estimated"] is True
 
     # d. Livret A de 3 000 € (versement), puis retrait de 500 € : solde 2 500 €
+    #    (taux à 0 % pour garder des totaux ronds : les intérêts estimés sont testés à part)
+    client.post(f"{API}/rates/livret-a", json={"effective_from": "2026-01-01", "value": "0"})
     livret = create_account(client, type="LIVRET_A", name="Livret A", institution="Banque")
     post_transaction(
         client, account_id=livret["id"], type="DEPOSIT", trade_date="2026-01-03", amount="3000"

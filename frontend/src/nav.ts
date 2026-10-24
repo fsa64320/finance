@@ -8,4 +8,6 @@ export const NAV_ITEMS: NavItem[] = [
   { to: '/', label: 'Tableau de bord' },
   { to: '/comptes', label: 'Comptes' },
   { to: '/actifs', label: 'Actifs' },
+  { to: '/import', label: 'Importer' },
+  { to: '/reglages', label: 'Réglages' },
 ]

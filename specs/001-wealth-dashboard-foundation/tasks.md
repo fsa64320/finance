@@ -168,23 +168,23 @@ Règles transverses à respecter dans chaque tâche : montants, quantités, prix
 
 ### Tests for User Story 3 (écrire d'abord) ⚠️
 
-- [ ] T080 [P] [US3] Créer des fichiers anonymisés dans `backend/tests/fixtures/csv/` : `courtier_a_50_lignes.csv` (séparateur point-virgule, virgule décimale, dates jour/mois/année, encodage `windows-1252`), `lignes_invalides.csv`, `doublons_meme_jour.csv`, `actifs_inconnus.csv`, `vide.csv` ; aucune donnée réelle
-- [ ] T081 [P] [US3] Écrire `backend/tests/unit/test_csv_parsing.py` : détection d'encodage, séparateur, format de date et de nombre, fichier vide
-- [ ] T082 [P] [US3] Écrire `backend/tests/unit/test_line_fingerprint.py` : l'empreinte combine compte, date, type, actif, quantité, montant, libellé et rang d'occurrence ; deux achats identiques du même fichier restent distincts ; un `external_id` fourni l'emporte sur l'empreinte
-- [ ] T083 [P] [US3] Écrire `backend/tests/integration/test_import_idempotent.py` : 50 lignes importées puis réimportées ajoutent 0 opération ; 500 lignes en moins d'une minute et 0 doublon à la réimportation (SC-003)
-- [ ] T084 [P] [US3] Écrire `backend/tests/integration/test_import_unknown_instruments.py` : créer, rattacher ou ignorer un actif inconnu, et rien n'est créé avant la validation (clarification 4)
-- [ ] T085 [P] [US3] Écrire `backend/tests/integration/test_import_invalid_rows.py` : lignes invalides listées avec leur cause, rien d'écrit sans confirmation, import partiel confirmé ; fichier trop volumineux refusé avec un message
-- [ ] T086 [P] [US3] Écrire `backend/tests/contract/test_imports_contract.py` pour `/import-mappings`, `/imports/preview`, `/imports/commit`
+- [x] T080 [P] [US3] Créer des fichiers anonymisés dans `backend/tests/fixtures/csv/` : `courtier_a_50_lignes.csv` (séparateur point-virgule, virgule décimale, dates jour/mois/année, encodage `windows-1252`), `lignes_invalides.csv`, `doublons_meme_jour.csv`, `actifs_inconnus.csv`, `vide.csv` ; aucune donnée réelle
+- [x] T081 [P] [US3] Écrire `backend/tests/unit/test_csv_parsing.py` : détection d'encodage, séparateur, format de date et de nombre, fichier vide
+- [x] T082 [P] [US3] Écrire `backend/tests/unit/test_line_fingerprint.py` : l'empreinte combine compte, date, type, actif, quantité, montant, libellé et rang d'occurrence ; deux achats identiques du même fichier restent distincts ; un `external_id` fourni l'emporte sur l'empreinte
+- [x] T083 [P] [US3] Écrire `backend/tests/integration/test_import_idempotent.py` : 50 lignes importées puis réimportées ajoutent 0 opération ; 500 lignes en moins d'une minute et 0 doublon à la réimportation (SC-003)
+- [x] T084 [P] [US3] Écrire `backend/tests/integration/test_import_unknown_instruments.py` : créer, rattacher ou ignorer un actif inconnu, et rien n'est créé avant la validation (clarification 4)
+- [x] T085 [P] [US3] Écrire `backend/tests/integration/test_import_invalid_rows.py` : lignes invalides listées avec leur cause, rien d'écrit sans confirmation, import partiel confirmé ; fichier trop volumineux refusé avec un message
+- [x] T086 [P] [US3] Écrire `backend/tests/contract/test_imports_contract.py` pour `/import-mappings`, `/imports/preview`, `/imports/commit`
 
 ### Implementation for User Story 3
 
-- [ ] T087 [P] [US3] Implémenter `backend/src/finance/importers/base.py` : interface d'importeur qui reçoit un fichier et renvoie des lignes normalisées, sans jamais écrire en base
-- [ ] T088 [US3] Implémenter `backend/src/finance/importers/csv_generic.py` : détection d'encodage (`charset-normalizer`), séparateur, formats de date et de nombre, application d'un `ImportMapping` (dépend de T087)
-- [ ] T089 [P] [US3] Implémenter `backend/src/finance/services/import_mappings.py` : paramétrage par établissement (`delimiter` « un caractère », `decimal_separator` `,` ou `.`)
-- [ ] T090 [US3] Implémenter `backend/src/finance/services/imports.py` : aperçu, empreinte de ligne avec rang d'occurrence, actifs inconnus, validation, écriture via `services/transactions.py`, trace `ImportBatch` (`rows_added`, `rows_skipped`, `rows_rejected`) (dépend de T088, T054) *(attention : `services/transactions.create_transaction` relit toutes les opérations du compte à chaque appel, soit O(n²) pour 500 lignes ; prévoir une écriture groupée avec un seul chargement)*
-- [ ] T091 [US3] Implémenter `backend/src/finance/api/routers/imports.py` : `GET/POST /import-mappings`, `POST /imports/preview`, `POST /imports/commit`, avec limite de taille de fichier (dépend de T090)
-- [ ] T092 [P] [US3] Implémenter `frontend/src/components/ColumnMapper.tsx` et `frontend/src/components/UnknownInstrumentsPanel.tsx` (créer, rattacher ou ignorer)
-- [ ] T093 [US3] Écrire `frontend/tests/pages/Import.test.tsx` puis implémenter `frontend/src/pages/Import.tsx` : dépôt du fichier, réglages, correspondance des colonnes, aperçu, actifs inconnus, résumé (ajoutées, ignorées, rejetées), paramétrage proposé automatiquement au prochain fichier du même établissement
+- [x] T087 [P] [US3] Implémenter `backend/src/finance/importers/base.py` : interface d'importeur qui reçoit un fichier et renvoie des lignes normalisées, sans jamais écrire en base
+- [x] T088 [US3] Implémenter `backend/src/finance/importers/csv_generic.py` : détection d'encodage (`charset-normalizer`), séparateur, formats de date et de nombre, application d'un `ImportMapping` (dépend de T087)
+- [x] T089 [P] [US3] Implémenter `backend/src/finance/services/import_mappings.py` : paramétrage par établissement (`delimiter` « un caractère », `decimal_separator` `,` ou `.`)
+- [x] T090 [US3] Implémenter `backend/src/finance/services/imports.py` : aperçu, empreinte de ligne avec rang d'occurrence, actifs inconnus, validation, écriture via `services/transactions.py`, trace `ImportBatch` (`rows_added`, `rows_skipped`, `rows_rejected`) (dépend de T088, T054) *(attention : `services/transactions.create_transaction` relit toutes les opérations du compte à chaque appel, soit O(n²) pour 500 lignes ; prévoir une écriture groupée avec un seul chargement)*
+- [x] T091 [US3] Implémenter `backend/src/finance/api/routers/imports.py` : `GET/POST /import-mappings`, `POST /imports/preview`, `POST /imports/commit`, avec limite de taille de fichier (dépend de T090)
+- [x] T092 [P] [US3] Implémenter `frontend/src/components/ColumnMapper.tsx` et `frontend/src/components/UnknownInstrumentsPanel.tsx` (créer, rattacher ou ignorer)
+- [x] T093 [US3] Écrire `frontend/tests/pages/Import.test.tsx` puis implémenter `frontend/src/pages/Import.tsx` : dépôt du fichier, réglages, correspondance des colonnes, aperçu, actifs inconnus, résumé (ajoutées, ignorées, rejetées), paramétrage proposé automatiquement au prochain fichier du même établissement
 
 **Checkpoint**: US1, US2 et US3 fonctionnent : un historique importé apparaît sur le tableau de bord
 
@@ -198,31 +198,31 @@ Règles transverses à respecter dans chaque tâche : montants, quantités, prix
 
 ### Tests for User Story 4 (écrire d'abord) ⚠️
 
-- [ ] T094 [P] [US4] Écrire `backend/tests/unit/test_price_selection.py` : dernier prix antérieur ou égal à la date, valeur marquée estimée si ancien, saisie la plus récente (`recorded_at`) prioritaire à une même date
-- [ ] T095 [P] [US4] Écrire `backend/tests/unit/test_scpi_valuation.py` : prix de revient au prix de souscription, valorisation au prix de retrait, écart initial visible, sans prix valeur estimée au prix de revient ; distributions comptées comme opérations
-- [ ] T096 [P] [US4] Écrire `backend/tests/unit/test_livret_a_interest.py` : cas calculés à la main du solde minimum de la quinzaine × taux annuel / 24, crédit au 31 décembre, table de taux datée, intérêt réel saisi prioritaire, plafond de 22950 paramétrable
-- [ ] T097 [P] [US4] Écrire `backend/tests/unit/test_fx_conversion.py` : conversion au taux de la date de valorisation, report du dernier taux les jours sans publication, valeur « non convertible » si aucun taux
-- [ ] T098 [P] [US4] Écrire `backend/tests/unit/test_price_providers.py` avec `httpx` simulé : lecture du fichier de taux de la BCE, échec de Yahoo Finance avec repli sur les derniers prix, correspondance OpenFIGI ; vérifier que les requêtes sortantes ne contiennent que des tickers, des ISIN et des devises, et aucune quantité, aucun montant, aucun nom de compte ni aucune date d'opération (SC-008, principe I), et qu'aucune requête ne part tant que la récupération automatique n'est pas activée
-- [ ] T099 [P] [US4] Écrire `backend/tests/contract/test_prices_rates_contract.py` pour `/prices`, `/prices/refresh`, `/rates/livret-a`, `/settings`, `/instruments/{instrumentId}/ticker-suggestions`
+- [x] T094 [P] [US4] Écrire `backend/tests/unit/test_price_selection.py` : dernier prix antérieur ou égal à la date, valeur marquée estimée si ancien, saisie la plus récente (`recorded_at`) prioritaire à une même date
+- [x] T095 [P] [US4] Écrire `backend/tests/unit/test_scpi_valuation.py` : prix de revient au prix de souscription, valorisation au prix de retrait, écart initial visible, sans prix valeur estimée au prix de revient ; distributions comptées comme opérations
+- [x] T096 [P] [US4] Écrire `backend/tests/unit/test_livret_a_interest.py` : cas calculés à la main du solde minimum de la quinzaine × taux annuel / 24, crédit au 31 décembre, table de taux datée, intérêt réel saisi prioritaire, plafond de 22950 paramétrable
+- [x] T097 [P] [US4] Écrire `backend/tests/unit/test_fx_conversion.py` : conversion au taux de la date de valorisation, report du dernier taux les jours sans publication, valeur « non convertible » si aucun taux
+- [x] T098 [P] [US4] Écrire `backend/tests/unit/test_price_providers.py` avec `httpx` simulé : lecture du fichier de taux de la BCE, échec de Yahoo Finance avec repli sur les derniers prix, correspondance OpenFIGI ; vérifier que les requêtes sortantes ne contiennent que des tickers, des ISIN et des devises, et aucune quantité, aucun montant, aucun nom de compte ni aucune date d'opération (SC-008, principe I), et qu'aucune requête ne part tant que la récupération automatique n'est pas activée
+- [x] T099 [P] [US4] Écrire `backend/tests/contract/test_prices_rates_contract.py` pour `/prices`, `/prices/refresh`, `/rates/livret-a`, `/settings`, `/instruments/{instrumentId}/ticker-suggestions`
 
 ### Implementation for User Story 4
 
-- [ ] T100 [P] [US4] Implémenter `backend/src/finance/prices/base.py` : interface `PriceProvider` (prix d'un actif à une date)
-- [ ] T101 [P] [US4] Implémenter `backend/src/finance/prices/ecb.py` : taux de change de la BCE (publiés en général vers 16 h CET les jours ouvrés)
-- [ ] T102 [P] [US4] Implémenter `backend/src/finance/prices/yahoo.py` : cours et valeurs liquidatives via `yfinance`, désactivable, erreurs absorbées
-- [ ] T103 [P] [US4] Implémenter `backend/src/finance/prices/openfigi.py` : `POST https://api.openfigi.com/v3/mapping`, déclenchée par l'utilisateur, limite de débit respectée
-- [ ] T104 [P] [US4] Implémenter `backend/src/finance/domain/prices.py` : sélection du prix applicable, état « estimé »
-- [ ] T105 [P] [US4] Implémenter `backend/src/finance/domain/fx.py` : conversion à la date de valorisation et report du dernier taux
-- [ ] T106 [P] [US4] Implémenter `backend/src/finance/domain/livret_a.py` : intérêts estimés par quinzaine, arrondi au centime documenté dans le code, plafond
-- [ ] T107 [US4] Étendre `backend/src/finance/domain/valuation.py` : SCPI (souscription pour le revient, retrait pour la valorisation), conversion de devises, intérêts estimés du Livret A (dépend de T104, T105, T106)
-- [ ] T108 [US4] Implémenter `backend/src/finance/services/prices.py` : saisie manuelle, mise à jour automatique avec repli sur les derniers prix et signalement d'ancienneté, conservation locale
-- [ ] T109 [P] [US4] Implémenter `backend/src/finance/services/rates.py` (taux du Livret A datés et modifiables, taux de change) et `backend/src/finance/services/settings.py` (récupération automatique des prix **désactivée par défaut** jusqu'à un choix explicite, devise de référence, plafonds par défaut)
-- [ ] T110 [US4] Implémenter `backend/src/finance/api/routers/prices.py` (`GET/POST /prices`, `POST /prices/refresh`, suggestions de ticker), `backend/src/finance/api/routers/rates.py` (`GET/POST /rates/livret-a`) et `backend/src/finance/api/routers/settings.py` (`GET/PATCH /settings`)
-- [ ] T111 [P] [US4] Écrire `frontend/tests/components/PriceEntryForm.test.tsx` puis implémenter `frontend/src/components/PriceEntryForm.tsx` (prix de souscription et de retrait pour les SCPI, valeur liquidative, date)
-- [ ] T112 [P] [US4] Implémenter `frontend/src/components/StaleBadge.tsx` (prix ancien, solde non déclaré, taux manquant) et l'afficher dans `AccountDetail.tsx` et `AccountList.tsx`
-- [ ] T113 [P] [US4] Ajouter à `frontend/src/pages/Instruments.tsx` le bouton « Mettre à jour les cours », la saisie du ticker et les suggestions OpenFIGI
-- [ ] T114 [P] [US4] Implémenter `frontend/src/components/LivretARatesEditor.tsx` (table des taux datés, plafond)
-- [ ] T137 [P] [US4] Écrire `frontend/tests/components/PriceFetchConsent.test.tsx` puis implémenter `frontend/src/components/PriceFetchConsent.tsx` : choix explicite à la première utilisation, récupération désactivée tant que rien n'est choisi, liste des services contactés et des données envoyées (FR-029)
+- [x] T100 [P] [US4] Implémenter `backend/src/finance/prices/base.py` : interface `PriceProvider` (prix d'un actif à une date)
+- [x] T101 [P] [US4] Implémenter `backend/src/finance/prices/ecb.py` : taux de change de la BCE (publiés en général vers 16 h CET les jours ouvrés)
+- [x] T102 [P] [US4] Implémenter `backend/src/finance/prices/yahoo.py` : cours et valeurs liquidatives via `yfinance`, désactivable, erreurs absorbées
+- [x] T103 [P] [US4] Implémenter `backend/src/finance/prices/openfigi.py` : `POST https://api.openfigi.com/v3/mapping`, déclenchée par l'utilisateur, limite de débit respectée
+- [x] T104 [P] [US4] Implémenter `backend/src/finance/domain/prices.py` : sélection du prix applicable, état « estimé »
+- [x] T105 [P] [US4] Implémenter `backend/src/finance/domain/fx.py` : conversion à la date de valorisation et report du dernier taux
+- [x] T106 [P] [US4] Implémenter `backend/src/finance/domain/livret_a.py` : intérêts estimés par quinzaine, arrondi au centime documenté dans le code, plafond
+- [x] T107 [US4] Étendre `backend/src/finance/domain/valuation.py` : SCPI (souscription pour le revient, retrait pour la valorisation), conversion de devises, intérêts estimés du Livret A (dépend de T104, T105, T106)
+- [x] T108 [US4] Implémenter `backend/src/finance/services/prices.py` : saisie manuelle, mise à jour automatique avec repli sur les derniers prix et signalement d'ancienneté, conservation locale
+- [x] T109 [P] [US4] Implémenter `backend/src/finance/services/rates.py` (taux du Livret A datés et modifiables, taux de change) et `backend/src/finance/services/settings.py` (récupération automatique des prix **désactivée par défaut** jusqu'à un choix explicite, devise de référence, plafonds par défaut)
+- [x] T110 [US4] Implémenter `backend/src/finance/api/routers/prices.py` (`GET/POST /prices`, `POST /prices/refresh`, suggestions de ticker), `backend/src/finance/api/routers/rates.py` (`GET/POST /rates/livret-a`) et `backend/src/finance/api/routers/settings.py` (`GET/PATCH /settings`)
+- [x] T111 [P] [US4] Écrire `frontend/tests/components/PriceEntryForm.test.tsx` puis implémenter `frontend/src/components/PriceEntryForm.tsx` (prix de souscription et de retrait pour les SCPI, valeur liquidative, date)
+- [x] T112 [P] [US4] Implémenter `frontend/src/components/StaleBadge.tsx` (prix ancien, solde non déclaré, taux manquant) et l'afficher dans `AccountDetail.tsx` et `AccountList.tsx`
+- [x] T113 [P] [US4] Ajouter à `frontend/src/pages/Instruments.tsx` le bouton « Mettre à jour les cours », la saisie du ticker et les suggestions OpenFIGI
+- [x] T114 [P] [US4] Implémenter `frontend/src/components/LivretARatesEditor.tsx` (table des taux datés, plafond)
+- [x] T137 [P] [US4] Écrire `frontend/tests/components/PriceFetchConsent.test.tsx` puis implémenter `frontend/src/components/PriceFetchConsent.tsx` : choix explicite à la première utilisation, récupération désactivée tant que rien n'est choisi, liste des services contactés et des données envoyées (FR-029)
 
 **Checkpoint**: US1 à US4 fonctionnent : les positions sont valorisées, les SCPI et le Livret A suivent leurs règles
 

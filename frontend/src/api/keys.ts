@@ -8,6 +8,10 @@ export const keys = {
   dashboardSeries: (period: string) => ['dashboard', 'series', period] as const,
   dashboardAllocation: ['dashboard', 'allocation'] as const,
   instruments: ['instruments'] as const,
+  importMappings: ['import-mappings'] as const,
+  settings: ['settings'] as const,
+  livretRates: ['rates', 'livret-a'] as const,
+  prices: (instrumentId: string) => ['prices', instrumentId] as const,
   transactions: ['transactions'] as const,
   accountTransactions: (accountId: string) => ['transactions', 'account', accountId] as const,
   transactionHistory: (transactionId: string) =>

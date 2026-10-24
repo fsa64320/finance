@@ -20,11 +20,19 @@ CONTRACT_PATH = (
     / "contracts"
     / "openapi.yaml"
 )
-IMPLEMENTED_TAGS = {"auth", "accounts", "instruments", "transactions", "dashboard"}
+IMPLEMENTED_TAGS = {
+    "auth",
+    "accounts",
+    "instruments",
+    "transactions",
+    "dashboard",
+    "imports",
+    "prices",
+    "settings",
+}
 # Opérations du contrat reportées à une tâche ultérieure ; T141 vide cette liste.
 DEFERRED_OPERATIONS = {
     ("POST", "/api/v1/auth/change-password"),  # T139 (US5, FR-033)
-    ("POST", "/api/v1/instruments/{instrumentId}/ticker-suggestions"),  # T110 (US4)
 }
 METHODS = {"get", "post", "put", "patch", "delete"}
 
@@ -77,7 +85,10 @@ def body_schema(document: dict[str, Any], operation: Operation) -> dict[str, Any
     body = operation.get("requestBody")
     if body is None:
         return None
-    return resolve(document, body["content"]["application/json"]["schema"])
+    content = body["content"]
+    if "application/json" not in content:  # envoi de fichier : vérifié par les tests d'import
+        return None
+    return resolve(document, content["application/json"]["schema"])
 
 
 def requires_session(document: dict[str, Any], operation: Operation) -> bool:

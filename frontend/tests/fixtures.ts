@@ -124,3 +124,122 @@ export function allocationBody(overrides: Record<string, unknown> = {}) {
     ...overrides,
   }
 }
+
+export const IMPORT_HEADERS = [
+  'Date',
+  'Opération',
+  'Libellé',
+  'ISIN',
+  'Quantité',
+  'Cours',
+  'Montant',
+  'Frais',
+  'Référence',
+]
+
+export const IMPORT_COLUMNS = {
+  trade_date: 'Date',
+  type: 'Opération',
+  label: 'Libellé',
+  instrument_name: 'Libellé',
+  isin: 'ISIN',
+  quantity: 'Quantité',
+  unit_price: 'Cours',
+  amount: 'Montant',
+  fees: 'Frais',
+  external_id: 'Référence',
+}
+
+export const MAPPING_ID = '66666666-6666-4666-8666-666666666666'
+
+export function previewBody(overrides: Record<string, unknown> = {}) {
+  return {
+    preview_id: 'jeton-1',
+    detected: {
+      delimiter: ';',
+      encoding: 'windows-1252',
+      date_format: '%d/%m/%Y',
+      decimal_separator: ',',
+      headers: IMPORT_HEADERS,
+    },
+    mapping_id: null,
+    columns: IMPORT_COLUMNS,
+    rows_valid: 50,
+    rows_duplicate: 0,
+    rows_rejected: [] as { line: number; reason: string }[],
+    unknown_instruments: [] as { key: string; name: string; isin: string | null; rows: number }[],
+    sample: [
+      {
+        line: 2,
+        status: 'new',
+        trade_date: '2024-01-05',
+        type: 'DEPOSIT',
+        instrument_name: null,
+        isin: null,
+        quantity: null,
+        unit_price: null,
+        amount: '12500',
+        fees: '0',
+        label: 'Versement espèces',
+      },
+    ],
+    ...overrides,
+  }
+}
+
+export function importResult(overrides: Record<string, unknown> = {}) {
+  return {
+    import_id: '77777777-7777-4777-8777-777777777777',
+    rows_added: 50,
+    rows_skipped: 0,
+    rows_rejected: 0,
+    instruments_created: 0,
+    ...overrides,
+  }
+}
+
+export const SERVICES = [
+  {
+    name: 'BCE',
+    purpose: 'Taux de change de référence, contre l’euro',
+    data_sent: 'Une requête sans paramètre : ni compte, ni montant, ni actif.',
+  },
+  {
+    name: 'Yahoo Finance',
+    purpose: 'Cours et valeurs liquidatives',
+    data_sent: 'Le ticker de chaque actif suivi et une période grossière.',
+  },
+  {
+    name: 'OpenFIGI',
+    purpose: 'Recherche d’un ticker à partir d’un code ISIN',
+    data_sent: 'Le code ISIN de l’actif concerné, rien d’autre.',
+  },
+]
+
+export function settingsBody(overrides: Record<string, unknown> = {}) {
+  return {
+    reference_currency: 'EUR',
+    auto_fetch_prices: false,
+    export_reminder_days: 30,
+    last_export_at: null,
+    external_services: SERVICES,
+    ...overrides,
+  }
+}
+
+export function priceBody(overrides: Record<string, unknown> = {}) {
+  return {
+    instrument_id: ETF_ID,
+    price_date: '2026-10-20',
+    kind: 'MARKET',
+    value: '98.4',
+    currency: 'EUR',
+    source: 'MANUAL',
+    ...overrides,
+  }
+}
+
+export const LIVRET_RATES = [
+  { effective_from: '2025-02-01', value: '2.4' },
+  { effective_from: '2025-08-01', value: '1.7' },
+]

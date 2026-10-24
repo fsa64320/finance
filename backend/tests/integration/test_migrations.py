@@ -12,7 +12,7 @@ from finance.db.models import Base
 def test_upgrade_records_the_head_revision(migrated_engine: sa.Engine) -> None:
     with migrated_engine.connect() as conn:
         version = conn.execute(sa.text("SELECT version_num FROM alembic_version")).scalar_one()
-    assert version == "0001"
+    assert version == "0002"
 
 
 def test_upgrade_is_idempotent(migrated_engine: sa.Engine) -> None:

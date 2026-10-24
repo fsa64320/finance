@@ -8,9 +8,11 @@ from sqlalchemy.orm import Session
 
 from finance.api import serializers
 from finance.api.deps import get_db_session
+from finance.api.routers.prices import get_providers
 from finance.api.schemas import InstrumentInput, InstrumentPatch
 from finance.domain.enums import PriceMode
-from finance.services import instruments
+from finance.prices.base import Providers
+from finance.services import instruments, prices
 
 router = APIRouter(tags=["instruments"])
 
@@ -46,3 +48,20 @@ def patch_instrument(
     return serializers.instrument(
         instruments.update_instrument(session, str(instrumentId), changes)
     )
+
+
+@router.post(
+    "/instruments/{instrumentId}/ticker-suggestions",
+    responses={
+        404: {"description": "Actif introuvable"},
+        409: {"description": "Récupération automatique désactivée"},
+        502: {"description": "Source externe indisponible"},
+    },
+)
+def ticker_suggestions(
+    instrumentId: UUID,
+    session: Session = Depends(get_db_session),
+    providers: Providers = Depends(get_providers),
+) -> list[dict[str, str]]:
+    found = prices.suggest_tickers(session, providers, str(instrumentId))
+    return [{"ticker": s.ticker, "exchange": s.exchange, "name": s.name} for s in found]

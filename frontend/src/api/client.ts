@@ -63,7 +63,10 @@ export async function request<T = undefined>(
 ): Promise<T> {
   const headers: Record<string, string> = { accept: 'application/json' }
   const init: RequestInit = { method, credentials: 'same-origin', headers }
-  if (body !== undefined) {
+  if (body instanceof FormData) {
+    // Le navigateur ajoute lui-même le type multipart et sa frontière.
+    init.body = body
+  } else if (body !== undefined) {
     headers['content-type'] = 'application/json'
     init.body = JSON.stringify(body)
   }
