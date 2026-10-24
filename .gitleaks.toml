@@ -12,4 +12,6 @@ regexes = [
   '''test-passphrase-not-a-secret''',
   '''mauvais-mot-de-passe-12''',
   '''cerisier-rouge-83-lagune''',
+  '''nouveau-mot-de-passe-2''',
+  '''ancien-mot-de-passe-1''',
 ]

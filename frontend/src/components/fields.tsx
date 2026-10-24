@@ -36,7 +36,7 @@ interface TextFieldProps {
   onChange: (value: string) => void
   error?: string
   hint?: string
-  type?: 'text' | 'date'
+  type?: 'text' | 'date' | 'password' | 'number'
   inputMode?: 'decimal' | 'text'
   autoComplete?: string
   placeholder?: string
