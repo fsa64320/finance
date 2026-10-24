@@ -6,11 +6,11 @@ from decimal import Decimal
 
 import pytest
 import sqlalchemy as sa
+from finance.db.append_only import PROTECTED_TABLES, AppendOnlyError
 from sqlalchemy.exc import DatabaseError
 from sqlalchemy.orm import Session
 
 from finance.db import models
-from finance.db.append_only import PROTECTED_TABLES, AppendOnlyError
 from tests import helpers
 
 Factory = Callable[[Session], object]
@@ -110,10 +110,10 @@ def test_raw_sql_is_refused_by_the_database(
     connection = session.get_bind().connect()
     try:
         with pytest.raises(DatabaseError, match="append-only"):
-            connection.execute(sa.text(f'UPDATE "{table}" SET {column} = {column}'))
+            connection.execute(sa.text(f'UPDATE "{table}" SET {column} = {column}'))  # noqa: S608 - table fixe
         connection.rollback()
         with pytest.raises(DatabaseError, match="append-only"):
-            connection.execute(sa.text(f'DELETE FROM "{table}"'))
+            connection.execute(sa.text(f'DELETE FROM "{table}"'))  # noqa: S608 - table fixe
         connection.rollback()
     finally:
         connection.close()

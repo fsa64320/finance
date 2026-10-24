@@ -29,7 +29,7 @@ EXPECTED_TABLES = {
 
 def test_all_tables_exist(migrated_engine: sa.Engine) -> None:
     tables = set(sa.inspect(migrated_engine).get_table_names())
-    assert EXPECTED_TABLES <= tables
+    assert tables >= EXPECTED_TABLES
 
 
 def test_two_open_accounts_cannot_share_a_name(session: Session) -> None:

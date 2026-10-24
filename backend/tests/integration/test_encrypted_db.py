@@ -6,8 +6,6 @@ from pathlib import Path
 
 import pytest
 import sqlalchemy as sa
-
-from finance.db import engine as engine_module
 from finance.db.engine import (
     DatabaseExistsError,
     DatabaseNotFoundError,
@@ -16,6 +14,8 @@ from finance.db.engine import (
     cipher_settings,
     open_database,
 )
+
+from finance.db import engine as engine_module
 from tests.conftest import TEST_PASSWORD
 
 SQLITE_HEADER = b"SQLite format 3\x00"
@@ -136,7 +136,7 @@ def test_connections_from_several_threads_are_keyed(engine: sa.Engine) -> None:
     def worker() -> None:
         try:
             results.append(read_marker(engine))
-        except BaseException as error:  # noqa: BLE001 - remonté dans le thread principal
+        except BaseException as error:
             errors.append(error)
 
     threads = [threading.Thread(target=worker) for _ in range(6)]
