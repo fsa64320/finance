@@ -4,6 +4,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 
 import { AUTH_STATUS_KEY, getAuthStatus } from './api/auth'
 import Layout from './components/Layout'
+import LiveAnnouncer from './components/LiveAnnouncer'
 import AccountDetail from './pages/AccountDetail'
 import Accounts from './pages/Accounts'
 import Dashboard from './pages/Dashboard'
@@ -59,7 +60,9 @@ export default function App() {
   const [queryClient] = useState(() => new QueryClient())
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthGate />
+      <LiveAnnouncer>
+        <AuthGate />
+      </LiveAnnouncer>
     </QueryClientProvider>
   )
 }

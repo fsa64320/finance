@@ -8,6 +8,8 @@ import { keys } from '../api/keys'
 import AccountList from '../components/AccountList'
 import AllocationChart from '../components/AllocationChart'
 import EmptyState from '../components/EmptyState'
+import ErrorState from '../components/ErrorState'
+import LoadingState from '../components/LoadingState'
 import NetWorthChart from '../components/NetWorthChart'
 import { formatDate, formatMoney } from '../lib/format'
 
@@ -44,18 +46,12 @@ export default function Dashboard() {
       <h2 className="text-xl font-semibold">Tableau de bord</h2>
 
       <div className={`${cardClass} mt-4`}>
-        {summary.isPending && <p className="text-muted">Chargement…</p>}
+        {summary.isPending && <LoadingState />}
         {summary.isError && (
-          <div role="alert" className="text-danger">
-            <p>Impossible de charger le patrimoine.</p>
-            <button
-              type="button"
-              className="mt-2 rounded-lg border border-line px-3 py-1.5 text-sm text-ink"
-              onClick={() => void summary.refetch()}
-            >
-              Réessayer
-            </button>
-          </div>
+          <ErrorState
+            message="Impossible de charger le patrimoine."
+            onRetry={() => void summary.refetch()}
+          />
         )}
         {summary.data && (
           <>
@@ -115,11 +111,12 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="mt-4">
-              {series.isPending && <p className="text-muted">Chargement…</p>}
+              {series.isPending && <LoadingState />}
               {series.isError && (
-                <p role="alert" className="text-danger">
-                  Impossible de charger l'évolution.
-                </p>
+                <ErrorState
+                  message="Impossible de charger l'évolution."
+                  onRetry={() => void series.refetch()}
+                />
               )}
               {series.data && (
                 <NetWorthChart points={series.data.points} currency={series.data.currency} />
@@ -130,11 +127,12 @@ export default function Dashboard() {
           <div className={`${cardClass} mt-6`}>
             <h3 className="font-medium">Répartition</h3>
             <div className="mt-4">
-              {allocation.isPending && <p className="text-muted">Chargement…</p>}
+              {allocation.isPending && <LoadingState />}
               {allocation.isError && (
-                <p role="alert" className="text-danger">
-                  Impossible de charger la répartition.
-                </p>
+                <ErrorState
+                  message="Impossible de charger la répartition."
+                  onRetry={() => void allocation.refetch()}
+                />
               )}
               {allocation.data && (
                 <AllocationChart
@@ -156,11 +154,12 @@ export default function Dashboard() {
             </Link>
           </div>
           <div className="mt-4">
-            {accounts.isPending && <p className="text-muted">Chargement…</p>}
+            {accounts.isPending && <LoadingState />}
             {accounts.isError && (
-              <p role="alert" className="text-danger">
-                Impossible de charger les comptes.
-              </p>
+              <ErrorState
+                message="Impossible de charger les comptes."
+                onRetry={() => void accounts.refetch()}
+              />
             )}
             {accounts.data && <AccountList accounts={accounts.data} />}
           </div>

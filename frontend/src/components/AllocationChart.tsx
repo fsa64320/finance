@@ -61,7 +61,7 @@ export default function AllocationChart({ slices, currency }: AllocationChartPro
               />
               {ASSET_CLASS_LABELS[slice.asset_class]}
             </span>
-            <span className="text-right whitespace-nowrap">
+            <span className="text-right tabular-nums whitespace-nowrap">
               {formatMoney(slice.value, currency)} · {formatPercent(slice.weight_percent)}
             </span>
           </li>

@@ -6,6 +6,9 @@ import { keys } from '../api/keys'
 import type { AccountInput, AccountType } from '../api/types'
 import AccountList from '../components/AccountList'
 import { SelectField, TextField, buttonClass } from '../components/fields'
+import ErrorState from '../components/ErrorState'
+import LoadingState from '../components/LoadingState'
+import { useAnnounce } from '../lib/announce'
 import { splitApiError } from '../lib/form-errors'
 import { ACCOUNT_TYPE_LABELS } from '../lib/labels'
 
@@ -17,6 +20,7 @@ const TYPE_OPTIONS = (Object.keys(ACCOUNT_TYPE_LABELS) as AccountType[]).map((ty
 
 export default function Accounts() {
   const queryClient = useQueryClient()
+  const announce = useAnnounce()
   const [includeClosed, setIncludeClosed] = useState(false)
   const accounts = useQuery({
     queryKey: keys.accountList(includeClosed),
@@ -32,7 +36,8 @@ export default function Accounts() {
 
   const create = useMutation({
     mutationFn: (input: AccountInput) => createAccount(input),
-    onSuccess: async () => {
+    onSuccess: async (_created, input) => {
+      announce(`Compte « ${input.name} » créé.`)
       setName('')
       setInstitution('')
       setOpenedOn('')
@@ -73,11 +78,13 @@ export default function Accounts() {
         Afficher les comptes clos
       </label>
 
-      {accounts.isPending && <p className="mt-4 text-muted">Chargement…</p>}
+      {accounts.isPending && <LoadingState className="mt-4" />}
       {accounts.isError && (
-        <p role="alert" className="mt-4 text-danger">
-          Impossible de charger les comptes.
-        </p>
+        <ErrorState
+          className="mt-4"
+          message="Impossible de charger les comptes."
+          onRetry={() => void accounts.refetch()}
+        />
       )}
       {accounts.data && accounts.data.length === 0 && (
         <p className="mt-4 text-muted">

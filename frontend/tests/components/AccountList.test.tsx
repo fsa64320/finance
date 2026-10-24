@@ -101,3 +101,20 @@ describe('EmptyState', () => {
     ).toBeInTheDocument()
   })
 })
+
+describe('alignement des montants (FR-036)', () => {
+  it('aligne à droite et en chiffres tabulaires la colonne des valeurs', () => {
+    render(
+      <MemoryRouter>
+        <AccountList accounts={[summary()]} />
+      </MemoryRouter>,
+    )
+    const cells = screen.getAllByRole('cell')
+    const money = cells.filter((cell) => /€/.test(cell.textContent ?? ''))
+    expect(money.length).toBeGreaterThan(0)
+    for (const cell of money) {
+      expect(cell).toHaveClass('text-right')
+      expect(cell).toHaveClass('tabular-nums')
+    }
+  })
+})

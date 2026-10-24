@@ -9,6 +9,7 @@ import {
 } from 'recharts'
 
 import type { SeriesPoint } from '../api/dashboard'
+import ChartSummary from './ChartSummary'
 import { formatDate, formatMoney } from '../lib/format'
 
 interface NetWorthChartProps {
@@ -70,6 +71,14 @@ export default function NetWorthChart({ points, currency }: NetWorthChartProps) 
           </AreaChart>
         </ResponsiveContainer>
       </div>
+      <ChartSummary
+        caption="Évolution du patrimoine"
+        columns={['Date', 'Valeur']}
+        rows={points.map((point) => [
+          formatDate(point.date),
+          formatMoney(point.value, currency) + (point.estimated ? ' (estimé)' : ''),
+        ])}
+      />
       {points.some((point) => point.estimated) && (
         <p className="mt-2 text-xs text-warn-ink">
           Courbe comprenant des valeurs estimées (prix manquant ou ancien).

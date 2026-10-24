@@ -32,7 +32,7 @@ export default function AccountList({
             <th scope="col" className="py-2 pr-4 font-medium">
               Établissement
             </th>
-            <th scope="col" className="py-2 pr-4 text-right font-medium">
+            <th scope="col" className="py-2 pr-4 text-right tabular-nums font-medium">
               Valeur
             </th>
             {showStatus && (
@@ -52,7 +52,7 @@ export default function AccountList({
               </td>
               <td className="py-2 pr-4">{ACCOUNT_TYPE_LABELS[account.type]}</td>
               <td className="py-2 pr-4">{account.institution ?? '—'}</td>
-              <td className="py-2 pr-4 text-right whitespace-nowrap">
+              <td className="py-2 pr-4 text-right tabular-nums whitespace-nowrap">
                 <span>{formatMoney(account.value, account.currency)}</span>{' '}
                 {account.estimated && (
                   <span className="rounded bg-warn-bg px-1.5 py-0.5 text-xs text-warn-ink">
