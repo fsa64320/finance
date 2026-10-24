@@ -3,9 +3,9 @@
 from decimal import Decimal
 
 import pytest
-from finance.domain.ledger import cash_effect
 
 from finance.domain.enums import TransactionType as T
+from finance.domain.ledger import cash_effect
 
 ADDING = [T.DEPOSIT, T.DIVIDEND, T.DISTRIBUTION, T.INTEREST, T.EMPLOYER_MATCH, T.TRANSFER_IN]
 REMOVING = [T.WITHDRAWAL, T.FEE, T.TRANSFER_OUT]

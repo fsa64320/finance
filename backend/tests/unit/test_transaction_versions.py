@@ -3,6 +3,9 @@
 import random
 from decimal import Decimal
 
+from hypothesis import given, settings
+from hypothesis import strategies as st
+
 from finance.domain.entries import (
     Entry,
     active_entries,
@@ -12,9 +15,6 @@ from finance.domain.entries import (
     void,
 )
 from finance.domain.ledger import cash_balance, positions
-from hypothesis import given, settings
-from hypothesis import strategies as st
-
 from tests.domain_helpers import buy, d, day, deposit, sell
 
 

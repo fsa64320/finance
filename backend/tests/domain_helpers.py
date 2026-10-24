@@ -6,8 +6,8 @@ from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 
 from finance.domain.entries import Entry
-
-from finance.domain.enums import TransactionType
+from finance.domain.enums import InstrumentKind, PriceKind, TransactionType
+from finance.domain.valuation import DeclaredBalanceRow, InstrumentInfo, PricePoint
 
 _ids = itertools.count(1)
 _BASE = datetime(2026, 1, 1, 9, 0, tzinfo=UTC)
@@ -99,9 +99,6 @@ def sell(
 
 
 # ------------------------------------------------------------------ valorisation
-from finance.domain.valuation import DeclaredBalanceRow, InstrumentInfo, PricePoint  # noqa: E402
-
-from finance.domain.enums import InstrumentKind, PriceKind  # noqa: E402
 
 
 def instrument(identifier: str, kind: InstrumentKind, currency: str = "EUR") -> InstrumentInfo:

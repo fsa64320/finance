@@ -3,6 +3,7 @@
 from decimal import Decimal
 
 import pytest
+
 from finance.domain.caps import (
     DEFAULT_LIVRET_A_CAP,
     DEFAULT_PEA_CAP,
@@ -11,7 +12,6 @@ from finance.domain.caps import (
     deposits_total,
     lock_status,
 )
-
 from finance.domain.enums import TransactionType as T
 from tests.domain_helpers import d, day, deposit, make, withdrawal
 

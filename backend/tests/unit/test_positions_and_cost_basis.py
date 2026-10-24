@@ -4,9 +4,8 @@ from decimal import Decimal
 
 from finance.domain.cost_basis import compute_cost_basis
 from finance.domain.entries import active_entries
-from finance.domain.ledger import cash_balance, positions
-
 from finance.domain.enums import TransactionType as T
+from finance.domain.ledger import cash_balance, positions
 from tests.domain_helpers import buy, d, day, deposit, make, sell
 
 
