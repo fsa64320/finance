@@ -4,9 +4,9 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
-from finance.domain.allocation import AssetClass
 from sqlalchemy.orm import Session
 
+from finance.domain.allocation import AssetClass
 from finance.domain.enums import AccountType as A
 from finance.domain.enums import InstrumentKind as K
 from finance.services import accounts, balances, dashboard, instruments, transactions, transfers

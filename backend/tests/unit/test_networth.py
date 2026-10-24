@@ -2,9 +2,8 @@
 
 from decimal import Decimal
 
-from finance.domain.networth import AccountRef, compute_net_worth, is_open_on
-
 from finance.domain.enums import InstrumentKind as K
+from finance.domain.networth import AccountRef, compute_net_worth, is_open_on
 from tests.domain_helpers import buy, d, day, deposit, instrument, price
 
 ETF = instrument("etf", K.ETF)

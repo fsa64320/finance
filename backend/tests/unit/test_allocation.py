@@ -4,10 +4,10 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
-from finance.domain.allocation import AssetClass, asset_class_of, compute_allocation, split_weights
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
+from finance.domain.allocation import AssetClass, asset_class_of, compute_allocation, split_weights
 from finance.domain.enums import InstrumentKind as K
 from finance.domain.valuation import AccountValue, PositionValue
 from tests.domain_helpers import d

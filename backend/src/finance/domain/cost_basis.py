@@ -24,6 +24,32 @@ class CostBasis:
     oversold: bool  # vrai si les ventes dépassent les achats connus (historique incomplet)
 
 
+def apply_trade(quantity: Decimal, total: Decimal, entry: Entry) -> tuple[Decimal, Decimal]:
+    """Applique un achat ou une vente à une position (quantité, coût) ; renvoie le nouvel état.
+
+    Partagée par le calcul ponctuel et par le balayage de la série du patrimoine, pour que les
+    deux donnent exactement les mêmes valeurs.
+    """
+    moved = entry.quantity or Decimal(0)
+    with localcontext() as context:
+        context.prec = PRECISION
+        if entry.type is T.BUY:
+            before = quantity
+            quantity = quantity + moved
+            if quantity <= 0:
+                return quantity, Decimal(0)
+            if before <= 0:
+                # Les parts achetées recouvrent une position négative : le revient repart du prix
+                # de l'achat pour les parts restantes.
+                return quantity, quantity * (entry.unit_price or Decimal(0)) + entry.fees
+            return quantity, total + moved * (entry.unit_price or Decimal(0)) + entry.fees
+        before = quantity
+        quantity = quantity - moved
+        if quantity <= 0:
+            return quantity, Decimal(0)
+        return quantity, total * quantity / before
+
+
 def compute_cost_basis(
     entries: Iterable[Entry], *, account_id: str, instrument_id: str, as_of: date
 ) -> CostBasis:
@@ -41,26 +67,13 @@ def compute_cost_basis(
     )
     quantity = Decimal(0)
     total = Decimal(0)
-    with localcontext() as context:
-        context.prec = PRECISION
-        for entry in relevant:
-            moved = entry.quantity or Decimal(0)
-            if entry.type is T.BUY:
-                before = quantity
-                quantity += moved
-                if quantity <= 0:
-                    total = Decimal(0)
-                elif before <= 0:
-                    # Les parts achetées recouvrent une position négative : le revient repart du
-                    # prix de l'achat pour les parts restantes.
-                    total = quantity * (entry.unit_price or Decimal(0)) + entry.fees
-                else:
-                    total += moved * (entry.unit_price or Decimal(0)) + entry.fees
-            else:
-                before = quantity
-                quantity -= moved
-                total = Decimal(0) if quantity <= 0 else total * quantity / before
-        unit_cost = total / quantity if quantity > 0 else None
+    for entry in relevant:
+        quantity, total = apply_trade(quantity, total, entry)
+    unit_cost: Decimal | None = None
+    if quantity > 0:
+        with localcontext() as context:
+            context.prec = PRECISION
+            unit_cost = total / quantity
     return CostBasis(
         quantity=quantity, total_cost=total, unit_cost=unit_cost, oversold=quantity < 0
     )

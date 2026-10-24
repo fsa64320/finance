@@ -5,6 +5,12 @@ from datetime import timedelta
 from decimal import Decimal
 from itertools import pairwise
 
+from hypothesis import given, settings
+from hypothesis import strategies as st
+
+from finance.domain.enums import InstrumentKind as K
+from finance.domain.enums import PriceKind
+from finance.domain.enums import TransactionType as T
 from finance.domain.networth import AccountRef, compute_net_worth
 from finance.domain.series import (
     DAILY_LIMIT_DAYS,
@@ -13,12 +19,6 @@ from finance.domain.series import (
     period_start,
     sample_dates,
 )
-from hypothesis import given, settings
-from hypothesis import strategies as st
-
-from finance.domain.enums import InstrumentKind as K
-from finance.domain.enums import PriceKind
-from finance.domain.enums import TransactionType as T
 from tests.domain_helpers import buy, d, day, declared, deposit, instrument, make, price, sell
 
 ETF = instrument("etf", K.ETF)
@@ -26,7 +26,9 @@ FUND = instrument("fe", K.EURO_FUND)
 INSTRUMENTS = {"etf": ETF, "fe": FUND}
 
 
-def ref(identifier: str = "a", opened: str = "2025-01-01", closed: str | None = None) -> AccountRef:
+def ref(
+    identifier: str = "a1", opened: str = "2025-01-01", closed: str | None = None
+) -> AccountRef:
     return AccountRef(
         id=identifier,
         opened_on=day(opened),

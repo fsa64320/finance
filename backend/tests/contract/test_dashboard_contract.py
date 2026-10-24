@@ -7,7 +7,7 @@ from fastapi.testclient import TestClient
 from jsonschema import Draft202012Validator
 
 from tests.api_helpers import API, create_account, create_instrument, post_transaction
-from tests.contract.test_accounts_transactions_contract import CONTRACT, REGISTRY, conforms
+from tests.contract.test_accounts_transactions_contract import CONTRACT, conforms
 
 
 def response_schema(path: str) -> dict[str, Any]:
@@ -22,7 +22,8 @@ def conforms_to_path(payload: Any, path: str) -> None:
     if "$ref" in schema:
         conforms(payload, schema["$ref"].rsplit("/", 1)[1])
     else:
-        Draft202012Validator(schema, registry=REGISTRY).validate(payload)
+        # Le schéma est en ligne : on lui joint `components` pour résoudre ses références locales.
+        Draft202012Validator({**schema, "components": CONTRACT["components"]}).validate(payload)
 
 
 @pytest.fixture
