@@ -92,7 +92,8 @@ def _decode(content: bytes, encoding: str, *, strict: bool) -> str:
         return content.decode(encoding, errors="strict" if strict else "replace")
     except (LookupError, UnicodeDecodeError):
         raise ImportFileError(
-            f"Le fichier n'est pas lisible avec l'encodage « {encoding} » : changez l'encodage."
+            f"Le fichier n'est pas lisible avec l'encodage « {encoding} » : changez l'encodage.",
+            "encoding",
         ) from None
 
 
@@ -263,7 +264,8 @@ def parse_csv(content: bytes, settings: ImportSettings) -> ParseResult:
     columns = {key: value for key, value in settings.columns.items() if key in FIELDS and value}
     if "trade_date" not in columns or "type" not in columns:
         raise ImportFileError(
-            "La correspondance doit indiquer la colonne de la date et celle du type d'opération."
+            "La correspondance doit indiquer la colonne de la date et celle du type d'opération.",
+            "columns",
         )
     text = _decode(content, settings.encoding, strict=True)
     reader = csv.reader(io.StringIO(text, newline=""), delimiter=settings.delimiter)
@@ -272,7 +274,7 @@ def parse_csv(content: bytes, settings: ImportSettings) -> ParseResult:
     indexes: dict[str, int] = {}
     for field_name, column in columns.items():
         if column.strip() not in positions:
-            raise ImportFileError(f"Colonne introuvable dans le fichier : « {column} »")
+            raise ImportFileError(f"Colonne introuvable dans le fichier : « {column} »", "columns")
         indexes[field_name] = positions[column.strip()]
 
     rows: list[ParsedRow] = []

@@ -133,3 +133,26 @@ class DeclaredBalanceInput(Strict):
     balance_date: date
     amount: DecimalStr
     currency: CurrencyCode
+
+
+class ImportMappingInput(Strict):
+    name: str
+    delimiter: str = Field(max_length=1)
+    encoding: str
+    date_format: str
+    decimal_separator: Literal[",", "."]
+    columns: dict[str, str]
+
+
+class InstrumentResolutionInput(Strict):
+    key: str
+    action: Literal["create", "link", "skip"]
+    kind: InstrumentKind | None = None
+    instrument_id: UUID | None = None
+
+
+class ImportCommitInput(Strict):
+    preview_id: str
+    confirm_rejected: bool
+    instrument_resolutions: list[InstrumentResolutionInput] | None = None
+    save_mapping_as: str | None = None

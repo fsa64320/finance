@@ -13,6 +13,7 @@ from finance.domain.valuation import PositionValue, ValuationWarning
 from finance.services.accounts import AccountOverview
 from finance.services.balances import BalanceData
 from finance.services.dashboard import AllocationResult, SeriesResult, Summary
+from finance.services.imports import ImportOutcome, PreviewResult, SampleRow
 from finance.services.transactions import TransactionOutcome
 from finance.services.transfers import TransferOutcome
 
@@ -195,4 +196,73 @@ def dashboard_allocation(result: AllocationResult) -> dict[str, Any]:
             }
             for s in result.slices
         ],
+    }
+
+
+def import_mapping(row: models.ImportMapping) -> dict[str, Any]:
+    return {
+        "id": row.id,
+        "name": row.name,
+        "delimiter": row.delimiter,
+        "encoding": row.encoding,
+        "date_format": row.date_format,
+        "decimal_separator": row.decimal_separator,
+        "columns": row.columns,
+    }
+
+
+def _sample(item: SampleRow) -> dict[str, Any]:
+    row = item.row
+
+    def number(value: Decimal | None) -> str | None:
+        return None if value is None else dec(value)
+
+    return {
+        "line": row.line,
+        "status": item.status,
+        "trade_date": row.trade_date.isoformat(),
+        "type": row.type.value,
+        "instrument_name": row.instrument_name,
+        "isin": row.isin,
+        "quantity": number(row.quantity),
+        "unit_price": number(row.unit_price),
+        "amount": number(row.amount),
+        "fees": dec(row.fees),
+        "label": row.label,
+    }
+
+
+def import_preview(result: PreviewResult) -> dict[str, Any]:
+    detected = result.detected
+    return {
+        "preview_id": result.preview_id,
+        "detected": {
+            "delimiter": detected.delimiter,
+            "encoding": detected.encoding,
+            "date_format": detected.date_format,
+            "decimal_separator": detected.decimal_separator,
+            "headers": detected.headers,
+        },
+        "mapping_id": result.mapping_id,
+        "columns": result.columns,
+        "rows_valid": result.rows_valid,
+        "rows_duplicate": result.rows_duplicate,
+        "rows_rejected": [
+            {"line": item.line, "reason": item.reason} for item in result.rows_rejected
+        ],
+        "unknown_instruments": [
+            {"key": item.key, "name": item.name, "isin": item.isin, "rows": item.rows}
+            for item in result.unknown_instruments
+        ],
+        "sample": [_sample(item) for item in result.sample],
+    }
+
+
+def import_result(outcome: ImportOutcome) -> dict[str, Any]:
+    return {
+        "import_id": outcome.import_id,
+        "rows_added": outcome.rows_added,
+        "rows_skipped": outcome.rows_skipped,
+        "rows_rejected": outcome.rows_rejected,
+        "instruments_created": outcome.instruments_created,
     }
