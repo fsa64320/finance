@@ -5,9 +5,15 @@ info:
   description: >
     API du lot 001. Tous les montants, quantités, prix et taux sont des chaînes décimales
     (ex. "90.199"), jamais des nombres JSON. Dates au format ISO 8601 (AAAA-MM-JJ).
-    Toutes les routes sauf /auth/* exigent une session déverrouillée.
+    Toutes les routes sauf /auth/status, /auth/setup et /auth/unlock exigent une session
+    déverrouillée (cookie `finance_session`, HttpOnly, SameSite=Strict, Secure en HTTPS). Une requête
+    qui modifie des données avec un en-tête Origin d'un autre site reçoit 403 (`forbidden_origin`),
+    un corps trop volumineux 413 (`payload_too_large`).
 servers:
   - url: /api/v1
+
+security:
+  - sessionCookie: []
 
 tags:
   - name: auth
@@ -50,6 +56,7 @@ paths:
       responses:
         "204": { description: Instance créée et session ouverte }
         "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/Validation" }
   /auth/unlock:
     post:
       tags: [auth]
@@ -59,17 +66,20 @@ paths:
         required: true
         content:
           application/json:
-            schema: { $ref: "#/components/schemas/PasswordRequest" }
+            schema: { $ref: "#/components/schemas/UnlockRequest" }
       responses:
         "204": { description: Session ouverte }
         "401": { $ref: "#/components/responses/Unauthorized" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/Validation" }
         "429": { $ref: "#/components/responses/TooManyAttempts" }
   /auth/lock:
     post:
       tags: [auth]
-      summary: Ferme la session
+      summary: Ferme la session et verrouille l'instance
       responses:
         "204": { description: Session fermée }
+        "401": { $ref: "#/components/responses/Unauthorized" }
   /auth/change-password:
     post:
       tags: [auth]
@@ -604,6 +614,15 @@ paths:
               schema: { $ref: "#/components/schemas/Settings" }
 
 components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: finance_session
+      description: >
+        Session ouverte par /auth/setup ou /auth/unlock. Expire après 30 minutes d'inactivité et
+        12 heures au plus après la connexion.
+
   parameters:
     AccountId:
       name: accountId
@@ -672,6 +691,12 @@ components:
             properties:
               field: { type: string }
               message: { type: string }
+    UnlockRequest:
+      type: object
+      required: [password]
+      properties:
+        password: { type: string, minLength: 1, maxLength: 128 }
+
     PasswordRequest:
       type: object
       required: [password]
