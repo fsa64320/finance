@@ -1,0 +1,24 @@
+# Fichiers exclus du graphe de connaissances (graphify).
+# Le graphe porte sur le code et la documentation du produit, pas sur l'outillage.
+
+# Outillage Spec Kit et agent (gabarits, scripts, skills)
+.specify/
+.claude/
+
+# Dépendances et artefacts de build
+node_modules/
+.venv/
+__pycache__/
+dist/
+build/
+frontend/dist/
+
+# Données locales : ne jamais indexer
+*.db
+*.sqlite
+*.sqlite3
+data/
+exports/
+*.csv
+.env
+.env.*
