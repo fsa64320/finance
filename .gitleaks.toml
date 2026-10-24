@@ -1,0 +1,13 @@
+# Configuration gitleaks : règles par défaut, plus une exception étroite et documentée.
+title = "Finance"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Mots de passe fictifs des tests (jamais utilisés ailleurs que dans la suite de tests)"
+regexes = [
+  '''tulipe-bleue-47-horizon''',
+  '''autre-mot-de-passe-91''',
+  '''test-passphrase-not-a-secret''',
+]

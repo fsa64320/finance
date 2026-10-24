@@ -98,7 +98,7 @@ def test_strip_edges_removes_non_letters_at_both_ends(given: str, expected: str)
 
 
 def test_strip_edges_is_linear_on_adversarial_input() -> None:
-    """Réponse à l'alerte CodeQL py/polynomial-redos : pas d'expression rationnelle en tête/queue."""
+    """Réponse à l'alerte CodeQL py/polynomial-redos : aucune expression rationnelle."""
     started = time.perf_counter()
     for text in ("0" * 200_000 + "a", "a" + "0" * 200_000, "0!" * 100_000 + "a"):
         strip_edges(text)

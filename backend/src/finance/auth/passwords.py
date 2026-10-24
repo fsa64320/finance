@@ -5,12 +5,9 @@ La liste embarquée est volontairement courte : elle attrape les mots de passe l
 d'une vraie phrase de passe, qu'il vaut mieux encourager dans l'interface.
 """
 
-import re
-
 MIN_LENGTH = 12
 MAX_LENGTH = 128
 
-_EDGES = re.compile(r"^[\W\d_]+|[\W\d_]+$")
 _LEET = str.maketrans({"@": "a", "0": "o", "$": "s", "3": "e", "1": "i", "!": "i", "5": "s"})
 
 # Mots de base courants (français et anglais) ; les chiffres et symboles autour sont retirés avant
@@ -48,6 +45,20 @@ class PasswordPolicyError(ValueError):
     """Mot de passe refusé ; le message explique la règle sans jamais citer le mot de passe."""
 
 
+def strip_edges(text: str) -> str:
+    """Retire les caractères qui ne sont pas des lettres au début et à la fin (chiffres, symboles).
+
+    Volontairement sans expression rationnelle : un motif `[^lettre]+$` est quadratique sur une
+    longue suite de chiffres (alerte CodeQL py/polynomial-redos). Cette version est linéaire.
+    """
+    start, end = 0, len(text)
+    while start < end and not text[start].isalpha():
+        start += 1
+    while end > start and not text[end - 1].isalpha():
+        end -= 1
+    return text[start:end]
+
+
 def _is_repetition(text: str) -> bool:
     for size in range(1, 5):
         pattern = text[:size]
@@ -67,7 +78,7 @@ def _is_common(lowered: str) -> bool:
         return True
     if any(row in lowered for row in _KEYBOARD_ROWS):
         return True
-    core = _EDGES.sub("", lowered).translate(_LEET)
+    core = strip_edges(lowered).translate(_LEET)
     return core in BASE_WORDS or _is_repeated_base_word(core)
 
 
