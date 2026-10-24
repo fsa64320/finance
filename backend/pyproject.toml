@@ -52,6 +52,8 @@ select = ["E", "F", "W", "I", "B", "UP", "S", "C4", "SIM", "RUF"]
 [tool.ruff.lint.per-file-ignores]
 # assert est le style normal des tests
 "tests/**" = ["S101"]
+# Migrations : SQL construit sur une liste figée de tables, lignes longues générées par Alembic
+"migrations/**" = ["E501", "S608"]
 
 [tool.mypy]
 python_version = "3.12"
