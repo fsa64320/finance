@@ -1,4 +1,4 @@
-"""Clarification 4, FR-016 : actifs inconnus à créer, rattacher ou ignorer, rien avant la validation."""
+"""Clarification 4, FR-016 : actifs inconnus à créer, rattacher ou ignorer, après validation."""
 
 from fastapi.testclient import TestClient
 
@@ -129,7 +129,11 @@ def test_creer_sans_type_ou_rattacher_a_un_actif_introuvable(authed_client: Test
         authed_client,
         body["preview_id"],
         instrument_resolutions=[
-            {"key": keys[ALPHA], "action": "link", "instrument_id": "00000000-0000-4000-8000-000000000000"},
+            {
+                "key": keys[ALPHA],
+                "action": "link",
+                "instrument_id": "00000000-0000-4000-8000-000000000000",
+            },
             {"key": keys["Fonds Inconnu Beta"], "action": "skip"},
         ],
     )

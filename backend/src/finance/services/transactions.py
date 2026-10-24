@@ -8,6 +8,7 @@ import base64
 import binascii
 import json
 import re
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date, datetime
 from decimal import Decimal
@@ -17,6 +18,7 @@ import sqlalchemy as sa
 from sqlalchemy.orm import Session
 
 from finance.db import models
+from finance.domain.entries import Entry
 from finance.domain.enums import TransactionType as T
 from finance.domain.ledger import cash_balance, cash_effect, positions
 from finance.domain.rules import check_transaction
@@ -77,16 +79,16 @@ def _latest_row(session: Session, transaction_id: str) -> models.TransactionVers
     return row
 
 
-def _prepare(
-    session: Session, data: TransactionData, *, replacing: str | None = None
+def evaluate_transaction(
+    account: models.Account,
+    others: Sequence[Entry],
+    data: TransactionData,
+    *,
+    with_cash_warning: bool = True,
 ) -> tuple[Decimal, list[str]]:
-    """Valide l'opération et calcule son effet de trésorerie ; renvoie aussi les avertissements."""
-    account = _account(session, data.account_id)
-    if (
-        data.instrument_id is not None
-        and session.get(models.Instrument, data.instrument_id) is None
-    ):
-        raise ValidationFailed.single("instrument_id", "Actif introuvable.")
+    """Règles métier d'une opération face aux `others` du compte ; renvoie effet de trésorerie et
+    avertissements. Sans accès à la base, pour que l'import valide des centaines de lignes d'un
+    seul chargement."""
     if not _CURRENCY.fullmatch(data.currency):
         raise ValidationFailed.single(
             "currency", "La devise est un code de trois lettres majuscules."
@@ -97,12 +99,6 @@ def _prepare(
             f"L'opération doit être en {account.currency}, la devise du compte "
             "(la conversion de devises arrive plus tard).",
         )
-
-    others = [
-        entry
-        for entry in loaders.load_entries(session, account_ids=[account.id])
-        if entry.transaction_id != replacing
-    ]
     held: Decimal | None = None
     if data.type is T.SELL and data.instrument_id is not None:
         held = positions(others, as_of=data.trade_date, account_id=account.id).get(
@@ -136,9 +132,30 @@ def _prepare(
         raise ValidationFailed.single("amount", str(error)) from error
 
     warnings = [warning.message for warning in result.warnings]
-    if cash_balance(others, account_id=account.id, as_of=data.trade_date) + cash < 0:
+    if (
+        with_cash_warning
+        and cash_balance(others, account_id=account.id, as_of=data.trade_date) + cash < 0
+    ):
         warnings.append("Les liquidités du compte sont négatives à cette date.")
     return cash, warnings
+
+
+def _prepare(
+    session: Session, data: TransactionData, *, replacing: str | None = None
+) -> tuple[Decimal, list[str]]:
+    """Valide l'opération et calcule son effet de trésorerie ; renvoie aussi les avertissements."""
+    account = _account(session, data.account_id)
+    if (
+        data.instrument_id is not None
+        and session.get(models.Instrument, data.instrument_id) is None
+    ):
+        raise ValidationFailed.single("instrument_id", "Actif introuvable.")
+    others = [
+        entry
+        for entry in loaders.load_entries(session, account_ids=[account.id])
+        if entry.transaction_id != replacing
+    ]
+    return evaluate_transaction(account, others, data)
 
 
 def _add_version(

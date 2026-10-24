@@ -1,4 +1,4 @@
-"""FR-018, SC-003 : un fichier se réimporte sans créer de doublon ; 500 lignes en moins d'une minute."""
+"""FR-018, SC-003 : réimportation sans doublon ; 500 lignes en moins d'une minute."""
 
 import time
 
@@ -126,7 +126,9 @@ def test_sans_correspondance_ni_parametrage_l_apercu_ne_lit_aucune_ligne(
     authed_client: TestClient,
 ) -> None:
     account_id = pea(authed_client)
-    body = preview(authed_client, account_id, fixture("courtier_a_50_lignes.csv"), columns=None).json()
+    body = preview(
+        authed_client, account_id, fixture("courtier_a_50_lignes.csv"), columns=None
+    ).json()
     assert body["mapping_id"] is None and body["columns"] == {}
     assert body["rows_valid"] == 0
     assert body["detected"]["headers"][0] == "Date"

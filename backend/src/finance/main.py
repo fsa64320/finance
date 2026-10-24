@@ -12,6 +12,7 @@ from finance.api.errors import install_error_handlers
 from finance.api.routers import accounts as accounts_router
 from finance.api.routers import auth as auth_router
 from finance.api.routers import dashboard as dashboard_router
+from finance.api.routers import imports as imports_router
 from finance.api.routers import instruments as instruments_router
 from finance.api.routers import transactions as transactions_router
 from finance.api.security import (
@@ -22,6 +23,7 @@ from finance.api.security import (
 from finance.api.static import mount_frontend
 from finance.auth.service import AuthService
 from finance.config import Settings, load_settings
+from finance.services.imports import PreviewState, PreviewStore
 
 __all__ = ["COOKIE_NAME", "create_app"]
 
@@ -53,12 +55,14 @@ def create_app(
         lifespan=lifespan,
     )
     app.state.auth = auth
+    app.state.import_previews = PreviewStore[PreviewState]()
     install_error_handlers(app)
     app.include_router(auth_router.router, prefix=API_PREFIX)
     app.include_router(accounts_router.router, prefix=API_PREFIX)
     app.include_router(instruments_router.router, prefix=API_PREFIX)
     app.include_router(transactions_router.router, prefix=API_PREFIX)
     app.include_router(dashboard_router.router, prefix=API_PREFIX)
+    app.include_router(imports_router.router, prefix=API_PREFIX)
 
     frontend = static_dir or settings.static_dir
     if frontend is not None:

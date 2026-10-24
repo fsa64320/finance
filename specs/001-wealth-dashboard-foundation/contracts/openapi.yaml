@@ -462,6 +462,8 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/ImportMapping" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/Validation" }
   /imports/preview:
     post:
       tags: [imports]
@@ -985,7 +987,14 @@ components:
             headers:
               type: array
               items: { type: string }
-        rows_valid: { type: integer }
+        mapping_id:
+          type: [string, "null"]
+          format: uuid
+          description: Paramétrage appliqué ou proposé automatiquement pour ce fichier
+        columns:
+          description: Correspondance appliquée ; vide tant que la personne n'en a pas fourni
+          $ref: "#/components/schemas/ImportColumns"
+        rows_valid: { type: integer, description: "Lignes nouvelles et valides" }
         rows_duplicate: { type: integer, description: "Lignes déjà présentes, ignorées" }
         rows_rejected:
           type: array

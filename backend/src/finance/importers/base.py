@@ -15,6 +15,10 @@ from finance.domain.enums import TransactionType
 class ImportFileError(ValueError):
     """Le fichier entier est inutilisable (vide, mal encodé, colonne introuvable…)."""
 
+    def __init__(self, message: str, field: str = "file") -> None:
+        super().__init__(message)
+        self.field = field
+
 
 @dataclass(frozen=True)
 class ImportSettings:

@@ -171,18 +171,18 @@ Règles transverses à respecter dans chaque tâche : montants, quantités, prix
 - [x] T080 [P] [US3] Créer des fichiers anonymisés dans `backend/tests/fixtures/csv/` : `courtier_a_50_lignes.csv` (séparateur point-virgule, virgule décimale, dates jour/mois/année, encodage `windows-1252`), `lignes_invalides.csv`, `doublons_meme_jour.csv`, `actifs_inconnus.csv`, `vide.csv` ; aucune donnée réelle
 - [x] T081 [P] [US3] Écrire `backend/tests/unit/test_csv_parsing.py` : détection d'encodage, séparateur, format de date et de nombre, fichier vide
 - [x] T082 [P] [US3] Écrire `backend/tests/unit/test_line_fingerprint.py` : l'empreinte combine compte, date, type, actif, quantité, montant, libellé et rang d'occurrence ; deux achats identiques du même fichier restent distincts ; un `external_id` fourni l'emporte sur l'empreinte
-- [ ] T083 [P] [US3] Écrire `backend/tests/integration/test_import_idempotent.py` : 50 lignes importées puis réimportées ajoutent 0 opération ; 500 lignes en moins d'une minute et 0 doublon à la réimportation (SC-003)
-- [ ] T084 [P] [US3] Écrire `backend/tests/integration/test_import_unknown_instruments.py` : créer, rattacher ou ignorer un actif inconnu, et rien n'est créé avant la validation (clarification 4)
-- [ ] T085 [P] [US3] Écrire `backend/tests/integration/test_import_invalid_rows.py` : lignes invalides listées avec leur cause, rien d'écrit sans confirmation, import partiel confirmé ; fichier trop volumineux refusé avec un message
-- [ ] T086 [P] [US3] Écrire `backend/tests/contract/test_imports_contract.py` pour `/import-mappings`, `/imports/preview`, `/imports/commit`
+- [x] T083 [P] [US3] Écrire `backend/tests/integration/test_import_idempotent.py` : 50 lignes importées puis réimportées ajoutent 0 opération ; 500 lignes en moins d'une minute et 0 doublon à la réimportation (SC-003)
+- [x] T084 [P] [US3] Écrire `backend/tests/integration/test_import_unknown_instruments.py` : créer, rattacher ou ignorer un actif inconnu, et rien n'est créé avant la validation (clarification 4)
+- [x] T085 [P] [US3] Écrire `backend/tests/integration/test_import_invalid_rows.py` : lignes invalides listées avec leur cause, rien d'écrit sans confirmation, import partiel confirmé ; fichier trop volumineux refusé avec un message
+- [x] T086 [P] [US3] Écrire `backend/tests/contract/test_imports_contract.py` pour `/import-mappings`, `/imports/preview`, `/imports/commit`
 
 ### Implementation for User Story 3
 
 - [x] T087 [P] [US3] Implémenter `backend/src/finance/importers/base.py` : interface d'importeur qui reçoit un fichier et renvoie des lignes normalisées, sans jamais écrire en base
 - [x] T088 [US3] Implémenter `backend/src/finance/importers/csv_generic.py` : détection d'encodage (`charset-normalizer`), séparateur, formats de date et de nombre, application d'un `ImportMapping` (dépend de T087)
-- [ ] T089 [P] [US3] Implémenter `backend/src/finance/services/import_mappings.py` : paramétrage par établissement (`delimiter` « un caractère », `decimal_separator` `,` ou `.`)
-- [ ] T090 [US3] Implémenter `backend/src/finance/services/imports.py` : aperçu, empreinte de ligne avec rang d'occurrence, actifs inconnus, validation, écriture via `services/transactions.py`, trace `ImportBatch` (`rows_added`, `rows_skipped`, `rows_rejected`) (dépend de T088, T054) *(attention : `services/transactions.create_transaction` relit toutes les opérations du compte à chaque appel, soit O(n²) pour 500 lignes ; prévoir une écriture groupée avec un seul chargement)*
-- [ ] T091 [US3] Implémenter `backend/src/finance/api/routers/imports.py` : `GET/POST /import-mappings`, `POST /imports/preview`, `POST /imports/commit`, avec limite de taille de fichier (dépend de T090)
+- [x] T089 [P] [US3] Implémenter `backend/src/finance/services/import_mappings.py` : paramétrage par établissement (`delimiter` « un caractère », `decimal_separator` `,` ou `.`)
+- [x] T090 [US3] Implémenter `backend/src/finance/services/imports.py` : aperçu, empreinte de ligne avec rang d'occurrence, actifs inconnus, validation, écriture via `services/transactions.py`, trace `ImportBatch` (`rows_added`, `rows_skipped`, `rows_rejected`) (dépend de T088, T054) *(attention : `services/transactions.create_transaction` relit toutes les opérations du compte à chaque appel, soit O(n²) pour 500 lignes ; prévoir une écriture groupée avec un seul chargement)*
+- [x] T091 [US3] Implémenter `backend/src/finance/api/routers/imports.py` : `GET/POST /import-mappings`, `POST /imports/preview`, `POST /imports/commit`, avec limite de taille de fichier (dépend de T090)
 - [ ] T092 [P] [US3] Implémenter `frontend/src/components/ColumnMapper.tsx` et `frontend/src/components/UnknownInstrumentsPanel.tsx` (créer, rattacher ou ignorer)
 - [ ] T093 [US3] Écrire `frontend/tests/pages/Import.test.tsx` puis implémenter `frontend/src/pages/Import.tsx` : dépôt du fichier, réglages, correspondance des colonnes, aperçu, actifs inconnus, résumé (ajoutées, ignorées, rejetées), paramétrage proposé automatiquement au prochain fichier du même établissement
 
