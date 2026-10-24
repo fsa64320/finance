@@ -42,6 +42,21 @@
 
 [Gates determined based on constitution file]
 
+**UX gate (principle VII)**: spec.md has a User Experience section; every screen has its empty,
+loading, error and success states; WCAG 2.2 AA path identified; French formats applied; a single
+component and token set is used.
+
+## Design UX
+
+<!--
+  ACTION REQUIRED for any user-visible feature. Detail goes in ux.md; summarize here.
+-->
+
+- **Design system and tokens**: [existing components/tokens reused, or new ones justified]
+- **Navigation and layout**: [where the feature sits, responsive breakpoints]
+- **Screens**: [list of screens with link to ux.md]
+- **Accessibility verification**: [how AA is checked: automated tooling, keyboard walkthrough]
+
 ## Project Structure
 
 ### Documentation (this feature)
@@ -52,6 +67,7 @@ specs/[###-feature]/
 ├── research.md          # Phase 0 output (/speckit-plan command)
 ├── data-model.md        # Phase 1 output (/speckit-plan command)
 ├── quickstart.md        # Phase 1 output (/speckit-plan command)
+├── ux.md                # Phase 1 output: screens, flows, states, accessibility (user-visible features)
 ├── contracts/           # Phase 1 output (/speckit-plan command)
 └── tasks.md             # Phase 2 output (/speckit-tasks command - NOT created by /speckit-plan)
 ```

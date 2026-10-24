@@ -1,12 +1,13 @@
 <!--
 Sync Impact Report
-- Version change: 1.0.0 → 1.1.0 (MINOR : extension substantielle du principe I)
-- Principes modifiés: I. Données locales d'abord (appels sortants précisés : identifiants d'actifs
-  et devises autorisés, récupération désactivée par défaut, services contactés affichés)
-- Principes ajoutés / sections ajoutées / sections retirées: aucun
+- Version change: 1.1.0 → 1.2.0 (MINOR : ajout du principe VII)
+- Principes ajoutés: VII. Expérience utilisateur et accessibilité
+- Principes modifiés / sections retirées: aucun
 - Historique : 1.0.0 (2026-10-24) a ajouté les principes I à VI, les sections Contraintes
-  techniques et légales, Workflow de développement et Governance
-- Templates dépendants: lus à l'exécution, non modifiés par cette commande
+  techniques et légales, Workflow de développement et Governance ; 1.1.0 a étendu le principe I
+  (appels sortants précisés)
+- Templates mis à jour: spec-template.md (parcours et états d'écran), plan-template.md (Design UX,
+  gate UX, ux.md), tasks-template.md (tâches UX et accessibilité)
 - TODO différés: aucun
 -->
 
@@ -70,6 +71,19 @@ bancaires automatiques) ne sont pas anticipées dans l'architecture avant d'êtr
 *Raison d'être : un outil auto-hébergé que l'on ne peut pas installer ou maintenir seul ne sera
 pas adopté.*
 
+### VII. Expérience utilisateur et accessibilité
+Chaque fonctionnalité visible part des parcours, personas et besoins documentés dans
+`docs/ux-discovery/` et les référence dans sa spécification. Chaque écran MUST définir ses états
+vide, chargement, erreur et succès, et chaque message d'erreur MUST dire quoi faire ensuite.
+L'interface respecte WCAG 2.2 niveau AA (contrastes, navigation au clavier, libellés de champs,
+focus visible, information jamais portée par la seule couleur), s'adapte du mobile au bureau, et
+utilise un seul jeu de composants et de jetons de design. Les montants, dates et nombres suivent les
+conventions françaises (`1 234,56 €`, `24/10/2026`) et sont alignés pour être comparables. Toute
+action destructive ou irréversible demande une confirmation explicite. Aucune fonctionnalité visible
+n'est fusionnée sans sa revue UX (parcours, états, accessibilité) décrite dans le plan.
+*Raison d'être : un outil de suivi de patrimoine n'est adopté que si l'on comprend ses chiffres au
+premier regard et si chacun, quel que soit son handicap ou son appareil, peut s'en servir.*
+
 ## Contraintes techniques et légales
 
 - **Stack :** backend Python avec FastAPI, frontend React avec Vite, SQLite par défaut,
@@ -109,6 +123,7 @@ substantielle d'un existant, PATCH pour les clarifications et corrections de for
 Toute revue de plan ou de code vérifie la conformité aux principes ci-dessus. Les écarts doivent
 être justifiés par écrit dans le plan ou la description de la demande de fusion. Les consignes
 d'exécution propres à l'agent de développement se trouvent dans les skills du dossier
-`.claude/skills`, et le contexte produit dans `docs/design-brief.md`.
+`.claude/skills`, le contexte produit dans `docs/design-brief.md` et la découverte UX dans
+`docs/ux-discovery/`.
 
-**Version**: 1.1.0 | **Ratified**: 2026-10-24 | **Last Amended**: 2026-10-24
+**Version**: 1.2.0 | **Ratified**: 2026-10-24 | **Last Amended**: 2026-10-24

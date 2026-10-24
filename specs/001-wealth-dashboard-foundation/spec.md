@@ -20,6 +20,11 @@
 - Q: Quelles règles pour le mot de passe et les sessions ? → A: 12 caractères minimum (128 maximum) et absent de la liste des mots de passe courants ; après 5 échecs consécutifs le délai avant un nouvel essai double à chaque échec jusqu'à 15 minutes ; la session expire après 30 minutes d'inactivité et au plus 12 heures après la connexion ; le cookie est `Secure` en HTTPS.
 - Q: La récupération automatique des prix est-elle active par défaut ? → A: Non. Elle reste désactivée jusqu'à un choix explicite de l'utilisateur à la première utilisation, peut être coupée à tout moment, et la liste des services contactés et des données envoyées est affichée (constitution v1.1.0, principe I).
 - Q: Peut-on changer le mot de passe ? → A: Oui, depuis les réglages, en saisissant l'ancien mot de passe ; les données sont rechiffrées (FR-033).
+- Q: Qui doit pouvoir installer et mettre en route l'application, un débutant sans terminal ou une personne à l'aise avec `docker compose up` ? → A: Un débutant doit réussir. `docker compose up` reste la procédure de base, complétée par une procédure pas à pas sans ligne de commande ; SC-006 est mesuré sur un débutant.
+- Q: L'interface doit-elle être pleinement utilisable sur téléphone dans ce lot, ou l'ordinateur est-il le seul appareil visé ? → A: Ordinateur d'abord, téléphone en lecture : le parcours complet (saisie, import) est conçu et testé sur ordinateur ; sur téléphone, la consultation reste lisible sans défilement horizontal, sans exigence de confort pour la saisie et l'import.
+- Q: Quel niveau d'accessibilité la spec doit-elle exiger pour les écrans de ce lot ? → A: WCAG 2.2 niveau AA sur tous les écrans, avec un critère mesurable : zéro violation bloquante à l'audit automatisé et parcours complet au clavier (FR-034, SC-010).
+- Q: Quelles actions doivent demander une confirmation explicite avant d'être exécutées ? → A: La restauration d'un export (avec rappel que les données actuelles seront remplacées), la clôture d'un compte et le changement de mot de passe. L'annulation d'une opération est immédiate, rattrapable via l'historique des modifications (FR-035).
+- Q: Quels états d'écran la spec doit-elle exiger pour chaque écran de données ? → A: Quatre états sur chaque écran de données : vide (avec l'action suivante), chargement, erreur (cause et action possible) et succès ou confirmation (FR-036).
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -55,7 +60,7 @@ La personne ouvre l'application et voit d'un coup d'œil son patrimoine net, la 
 2. **Given** un historique d'opérations sur plusieurs années, **When** la personne choisit une période (1 mois, 1 an, depuis le début), **Then** la courbe affiche la valeur du patrimoine à chaque date de la période, recalculée à partir des opérations et des prix connus à cette date.
 3. **Given** des actifs de classes différentes (actions/ETF, fonds, SCPI, fonds en euros, liquidités), **When** la personne consulte la répartition, **Then** chaque classe affiche sa valeur et son poids, et la somme des poids est de 100 %.
 4. **Given** la liste des comptes, **When** la personne ouvre un compte, **Then** elle voit ses positions, leur valeur, leur prix de revient et l'historique de ses opérations.
-5. **Given** une page consultée sur un écran d'ordinateur ou de téléphone, **When** elle s'affiche, **Then** tout le contenu reste lisible sans défilement horizontal.
+5. **Given** une page consultée sur un écran d'ordinateur ou, en consultation, sur un téléphone (375 px de large minimum), **When** elle s'affiche, **Then** tout le contenu reste lisible sans défilement horizontal.
 
 ---
 
@@ -99,7 +104,7 @@ Pour les actions, ETF et fonds, la personne obtient des cours et valeurs liquida
 
 ### User Story 5 - Installer l'application et protéger l'accès (Priority: P3)
 
-Une personne un peu technique installe l'application sur sa propre machine ou son propre serveur avec une seule commande, crée son accès protégé par un mot de passe, et retrouve ses données à chaque démarrage. Elle peut exporter l'ensemble de ses données et en faire une sauvegarde.
+Une personne sans compétence technique particulière installe l'application sur sa propre machine ou son propre serveur, soit avec une seule commande, soit en suivant une procédure pas à pas qui n'exige aucune ligne de commande, crée son accès protégé par un mot de passe, et retrouve ses données à chaque démarrage. Elle peut exporter l'ensemble de ses données et en faire une sauvegarde.
 
 **Why this priority**: indispensable à l'adoption et à la souveraineté des données, mais le reste du produit peut être validé avant que l'installation soit polie.
 
@@ -108,6 +113,7 @@ Une personne un peu technique installe l'application sur sa propre machine ou so
 **Acceptance Scenarios**:
 
 1. **Given** une machine disposant des prérequis documentés, **When** la personne suit la procédure d'installation, **Then** l'application est accessible depuis un navigateur sans autre configuration obligatoire.
+1. bis **Given** une personne qui n'a jamais utilisé de terminal, **When** elle suit la procédure pas à pas illustrée (sans ligne de commande), **Then** elle atteint l'application dans son navigateur sans aide extérieure.
 2. **Given** l'application installée pour la première fois, **When** la personne l'ouvre, **Then** elle est invitée à créer son mot de passe avant tout accès aux données.
 3. **Given** une session non authentifiée, **When** quelqu'un tente d'ouvrir une page de données, **Then** l'accès est refusé.
 4. **Given** le choix du mot de passe, **When** la personne le crée, **Then** l'application lui indique qu'un oubli rend les données irrécupérables et l'invite à exporter ses données.
@@ -176,7 +182,7 @@ Une personne un peu technique installe l'application sur sa propre machine ou so
 - **FR-023**: Le système MUST afficher la répartition du patrimoine par classe d'actifs (actions/ETF, fonds, SCPI, fonds en euros, liquidités) avec valeur et poids, la somme des poids étant 100 %.
 - **FR-024**: Le système MUST afficher la liste des comptes avec leur type, leur établissement et leur valeur, et permettre d'ouvrir le détail d'un compte (positions, prix de revient, historique d'opérations).
 - **FR-025**: Le système MUST signaler clairement toute valeur estimée ou périmée (prix ancien, solde non déclaré, taux manquant).
-- **FR-026**: L'interface MUST être utilisable sur ordinateur et sur téléphone, sans défilement horizontal de la page.
+- **FR-026**: L'interface MUST être conçue et testée pour l'ordinateur (parcours complet : saisie, import, consultation). Sur téléphone (à partir de 375 px de large), la consultation (tableau de bord, comptes, détail) MUST rester lisible sans défilement horizontal de la page ; le confort de la saisie et de l'import sur téléphone n'est pas exigé dans ce lot.
 - **FR-027**: L'interface MUST suivre l'organisation générale d'un outil de suivi de patrimoine grand public (synthèse, évolution, répartition, comptes) avec une identité visuelle propre au projet et sans élément de marque d'un tiers.
 
 **Socle**
@@ -187,6 +193,9 @@ Une personne un peu technique installe l'application sur sa propre machine ou so
 - **FR-031**: Tous les montants et quantités MUST être calculés avec une précision décimale exacte ; les arrondis ne s'appliquent qu'à l'affichage.
 - **FR-032**: Le système MUST afficher un avertissement indiquant que les valeurs et analyses sont indicatives et ne constituent pas un conseil en investissement.
 - **FR-033**: Le système MUST permettre de changer le mot de passe depuis les réglages en saisissant l'ancien ; les données sont alors rechiffrées avec le nouveau, qui doit respecter les règles de FR-028. L'ancien mot de passe cesse immédiatement de fonctionner.
+- **FR-034**: Tous les écrans MUST respecter WCAG 2.2 niveau AA : parcours complet au clavier avec focus visible, libellés associés à chaque champ et message d'erreur lié à son champ, contrastes et redimensionnement du texte conformes, alternative textuelle (résumé ou tableau de données) pour la courbe d'évolution et la répartition, et information jamais portée par la seule couleur (les signalements « estimé » et « périmé » ont un libellé ou une icône en plus de la couleur). Les changements d'état importants (import terminé, erreur, expiration de session) MUST être annoncés aux technologies d'assistance.
+- **FR-035**: Le système MUST demander une confirmation explicite avant la restauration d'un export (en rappelant que les données actuelles seront remplacées), avant la clôture d'un compte et avant le changement de mot de passe. L'annulation d'une opération n'exige pas de confirmation : elle est immédiate et la version d'origine reste consultable dans l'historique des modifications (FR-004).
+- **FR-036**: Chaque écran de données (tableau de bord, comptes, détail de compte, actifs et prix, import) MUST définir quatre états : vide (avec l'action suivante proposée), chargement, erreur (avec la cause et ce que l'utilisateur peut faire ensuite) et succès ou confirmation. Les montants, dates et pourcentages MUST suivre les conventions françaises (`1 234,56 €`, `24/10/2026`) et les montants être alignés pour être comparables.
 
 ### Key Entities
 
@@ -208,10 +217,11 @@ Une personne un peu technique installe l'application sur sa propre machine ou so
 - **SC-003**: Un fichier de 500 lignes est importé en moins de 1 minute, et sa réimportation ne crée aucune opération en double (0 doublon sur 500 lignes).
 - **SC-004**: Le tableau de bord s'affiche en moins de 3 secondes avec 10 ans d'historique et 5 000 opérations.
 - **SC-005**: La personne qui découvre le tableau de bord trouve son patrimoine net, la répartition par classe d'actifs et la valeur d'un compte donné en moins de 30 secondes, sans aide.
-- **SC-006**: Une personne technique installe l'application et accède à son tableau de bord vide en moins de 10 minutes en suivant la documentation.
+- **SC-006**: Une personne débutante, qui n'a jamais utilisé de terminal, installe l'application et accède à son tableau de bord vide en moins de 10 minutes en suivant la procédure pas à pas de la documentation, sans aide extérieure.
 - **SC-007**: Lorsque la source de prix est indisponible, 100 % des pages restent consultables et toute valeur issue d'un prix ancien est signalée.
 - **SC-008**: Aucune donnée personnelle (comptes, montants, opérations) n'est transmise à un tiers pendant l'usage normal.
 - **SC-009**: Un export suivi d'une restauration redonne des valeurs identiques pour tous les comptes et pour le patrimoine net.
+- **SC-010**: L'audit d'accessibilité automatisé ne remonte aucune violation bloquante sur les écrans livrés, et les parcours de création de compte, de saisie d'opération, d'import et de lecture du tableau de bord se font entièrement au clavier.
 
 ## Assumptions
 

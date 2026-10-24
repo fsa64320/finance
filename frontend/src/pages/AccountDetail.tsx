@@ -22,6 +22,9 @@ import type {
   TransactionInput,
 } from '../api/types'
 import BalanceForm from '../components/BalanceForm'
+import ConfirmDialog from '../components/ConfirmDialog'
+import ErrorState from '../components/ErrorState'
+import LoadingState from '../components/LoadingState'
 import ModificationHistory from '../components/ModificationHistory'
 import StaleBadge from '../components/StaleBadge'
 import TransactionForm from '../components/TransactionForm'
@@ -39,6 +42,7 @@ import {
   formatQuantity,
   formatUnitPrice,
 } from '../lib/format'
+import { useAnnounce } from '../lib/announce'
 import { ACCOUNT_TYPE_LABELS, TRANSACTION_TYPE_LABELS } from '../lib/labels'
 
 type Panel =
@@ -303,8 +307,13 @@ function TransactionRow({
       {showHistory && (
         <tr>
           <td colSpan={4} className="pb-3">
-            {history.isPending && <p className="text-muted">Chargement de l'historique…</p>}
-            {history.isError && <p role="alert">Impossible de charger l'historique.</p>}
+            {history.isPending && <LoadingState label="Chargement de l'historique…" />}
+            {history.isError && (
+              <ErrorState
+                message="Impossible de charger l'historique."
+                onRetry={() => void history.refetch()}
+              />
+            )}
             {history.data && <ModificationHistory versions={history.data.versions} />}
           </td>
         </tr>
@@ -316,6 +325,7 @@ function TransactionRow({
 export default function AccountDetail() {
   const { accountId = '' } = useParams()
   const queryClient = useQueryClient()
+  const announce = useAnnounce()
   const [panel, setPanel] = useState<Panel>(null)
   const [confirmClose, setConfirmClose] = useState(false)
 
@@ -345,25 +355,32 @@ export default function AccountDetail() {
 
   const patch = useMutation({
     mutationFn: (changes: Parameters<typeof patchAccount>[1]) => patchAccount(accountId, changes),
-    onSuccess: async () => {
+    onSuccess: async (_updated, changes) => {
       setPanel(null)
       setConfirmClose(false)
+      if (changes.closed_on !== undefined) {
+        announce(changes.closed_on ? 'Compte clôturé.' : 'Compte rouvert.')
+      }
       await refresh()
     },
   })
   const cancel = useMutation({
     mutationFn: (transaction: Transaction) => voidTransaction(transaction.id),
-    onSuccess: refresh,
+    onSuccess: async () => {
+      announce('Opération annulée.')
+      await refresh()
+    },
   })
 
-  if (detail.isPending) return <p className="text-muted">Chargement…</p>
+  if (detail.isPending) return <LoadingState />
   if (detail.isError) {
     const missing = detail.error instanceof ApiError && detail.error.status === 404
     return (
       <div>
-        <p role="alert" className="text-danger">
-          {missing ? 'Compte introuvable.' : 'Impossible de charger le compte.'}
-        </p>
+        <ErrorState
+          message={missing ? 'Compte introuvable.' : 'Impossible de charger le compte.'}
+          onRetry={missing ? undefined : () => void detail.refetch()}
+        />
         <Link className="mt-2 inline-block text-brand underline" to="/comptes">
           Retour aux comptes
         </Link>
@@ -401,17 +418,17 @@ export default function AccountDetail() {
 
       <dl className="mt-4 grid max-w-md grid-cols-2 gap-y-1 text-sm">
         <dt className="text-muted">Valeur</dt>
-        <dd data-testid="account-value" className="text-right text-lg font-semibold">
+        <dd data-testid="account-value" className="text-right tabular-nums text-lg font-semibold">
           {formatMoney(account.value, account.currency)}
         </dd>
         <dt className="text-muted">Liquidités</dt>
-        <dd data-testid="account-cash" className="text-right">
+        <dd data-testid="account-cash" className="text-right tabular-nums">
           {formatMoney(account.cash, account.currency)}
         </dd>
         {account.locked_amount !== undefined && (
           <>
             <dt className="text-muted">Sommes bloquées</dt>
-            <dd data-testid="locked-amount" className="text-right">
+            <dd data-testid="locked-amount" className="text-right tabular-nums">
               {formatMoney(account.locked_amount, account.currency)}
             </dd>
           </>
@@ -467,23 +484,6 @@ export default function AccountDetail() {
           >
             Rouvrir le compte
           </button>
-        ) : confirmClose ? (
-          <>
-            <button
-              type="button"
-              className={secondaryButtonClass}
-              onClick={() => patch.mutate({ closed_on: today() })}
-            >
-              Confirmer la clôture
-            </button>
-            <button
-              type="button"
-              className={secondaryButtonClass}
-              onClick={() => setConfirmClose(false)}
-            >
-              Garder le compte ouvert
-            </button>
-          </>
         ) : (
           <button
             type="button"
@@ -494,6 +494,18 @@ export default function AccountDetail() {
           </button>
         )}
       </div>
+      <ConfirmDialog
+        open={confirmClose}
+        title="Clôturer ce compte ?"
+        description="Le compte sort des totaux courants mais reste dans l'historique et sur la courbe passée. Vous pourrez le rouvrir."
+        confirmLabel="Confirmer la clôture"
+        cancelLabel="Garder le compte ouvert"
+        onCancel={() => setConfirmClose(false)}
+        onConfirm={() => {
+          setConfirmClose(false)
+          patch.mutate({ closed_on: today() })
+        }}
+      />
       {patch.isError && (
         <p role="alert" className="mt-2 text-sm text-danger">
           {patch.error instanceof ApiError ? patch.error.message : 'La modification a échoué.'}
@@ -550,11 +562,13 @@ export default function AccountDetail() {
       <PositionsTable detail={account} instruments={byId} />
 
       <h3 className="mt-8 text-lg font-medium">Opérations</h3>
-      {transactions.isPending && <p className="mt-2 text-muted">Chargement…</p>}
+      {transactions.isPending && <LoadingState className="mt-2" />}
       {transactions.isError && (
-        <p role="alert" className="mt-2 text-danger">
-          Impossible de charger les opérations.
-        </p>
+        <ErrorState
+          className="mt-2"
+          message="Impossible de charger les opérations."
+          onRetry={() => void transactions.refetch()}
+        />
       )}
       {transactions.data && items.length === 0 && (
         <p className="mt-2 text-muted">Aucune opération pour le moment.</p>

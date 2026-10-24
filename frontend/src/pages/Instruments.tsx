@@ -7,8 +7,11 @@ import { createInstrument, listInstruments } from '../api/instruments'
 import { keys } from '../api/keys'
 import { refreshPrices } from '../api/prices'
 import type { Instrument, InstrumentInput, InstrumentKind, RefreshSource } from '../api/types'
+import ErrorState from '../components/ErrorState'
 import InstrumentPanel from '../components/InstrumentPanel'
+import LoadingState from '../components/LoadingState'
 import { SelectField, TextField, buttonClass, secondaryButtonClass } from '../components/fields'
+import { useAnnounce } from '../lib/announce'
 import { splitApiError } from '../lib/form-errors'
 import { INSTRUMENT_KIND_LABELS, PRICE_MODE_LABELS } from '../lib/labels'
 
@@ -22,6 +25,7 @@ const KIND_OPTIONS = (Object.keys(INSTRUMENT_KIND_LABELS) as InstrumentKind[]).m
 
 export default function Instruments() {
   const queryClient = useQueryClient()
+  const announce = useAnnounce()
   const instruments = useQuery({ queryKey: keys.instruments, queryFn: listInstruments })
 
   const [kind, setKind] = useState<InstrumentKind>('ETF')
@@ -46,7 +50,8 @@ export default function Instruments() {
 
   const create = useMutation({
     mutationFn: (input: InstrumentInput) => createInstrument(input),
-    onSuccess: async () => {
+    onSuccess: async (_created, input) => {
+      announce(`Actif « ${input.name} » ajouté.`)
       setName('')
       setIsin('')
       setTicker('')
@@ -105,11 +110,13 @@ export default function Instruments() {
         {refresh.data && <RefreshSummary sources={refresh.data.sources} />}
       </div>
 
-      {instruments.isPending && <p className="mt-4 text-muted">Chargement…</p>}
+      {instruments.isPending && <LoadingState className="mt-4" />}
       {instruments.isError && (
-        <p role="alert" className="mt-4 text-danger">
-          Impossible de charger les actifs.
-        </p>
+        <ErrorState
+          className="mt-4"
+          message="Impossible de charger les actifs."
+          onRetry={() => void instruments.refetch()}
+        />
       )}
       {instruments.data && instruments.data.length === 0 && (
         <p className="mt-4 text-muted">
