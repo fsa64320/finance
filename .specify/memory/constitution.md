@@ -1,50 +1,110 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+Sync Impact Report
+- Version change: (template non renseigné) → 1.0.0
+- Principes ajoutés: I. Données locales d'abord; II. Journal immuable, source de vérité;
+  III. Exactitude monétaire; IV. Ingestion sans scraping; V. Tests chiffrés d'abord
+  (NON-NEGOTIABLE); VI. Simplicité et déploiement trivial
+- Sections ajoutées: Contraintes techniques et légales; Workflow de développement; Governance
+- Sections retirées: aucune
+- Templates dépendants: lus à l'exécution, non modifiés par cette commande
+- TODO différés: aucun
+-->
+
+# Finance Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Données locales d'abord
+Les données financières de l'utilisateur ne quittent jamais sa machine ou son serveur sans action
+explicite de sa part. Aucune télémétrie, aucun service tiers obligatoire, aucun compte en ligne
+requis. Les seuls appels sortants autorisés sont les récupérations de cours et de taux, et ils ne
+transmettent aucune donnée personnelle. Les données sont chiffrées au repos et l'authentification
+est locale.
+*Raison d'être : l'argument central du projet face aux solutions hébergées est la souveraineté des
+données.*
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### II. Journal immuable, source de vérité
+Le journal de transactions est la seule source de vérité. Une transaction enregistrée n'est jamais
+modifiée ni supprimée : une correction s'exprime par une transaction d'annulation ou de
+régularisation. Le patrimoine et la performance à une date donnée MUST se recalculer depuis le
+journal et les cours, sans valeur dérivée stockée en dur. Toute donnée dérivée mise en cache MUST
+pouvoir être reconstruite à l'identique.
+*Raison d'être : un import corrigé doit corriger tout l'historique, et chaque chiffre affiché doit
+être traçable.*
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### III. Exactitude monétaire
+Tout montant, quantité et taux est représenté par un type décimal exact (`Decimal` côté Python,
+`NUMERIC` ou texte décimal en base), jamais par un flottant. Chaque montant conserve sa devise
+d'origine et n'est converti qu'à la date de valorisation, avec le taux de change de cette date.
+Les arrondis ne se font qu'à l'affichage et selon une règle documentée.
+*Raison d'être : les erreurs d'arrondi se cumulent sur des années d'historique et détruisent la
+confiance dans l'outil.*
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### IV. Ingestion sans scraping
+Les données entrent par saisie manuelle, import de fichiers (CSV, OFX) ou API en lecture seule
+documentées. Le projet MUST NOT stocker d'identifiants d'établissements financiers ni automatiser
+la connexion à leurs sites. Chaque établissement est pris en charge par un importeur isolé qui
+reçoit un fichier et renvoie des transactions au format commun ; un importeur n'écrit jamais en
+base. Les imports sont idempotents : rejouer un fichier ne crée aucun doublon.
+*Raison d'être : sécurité des utilisateurs, fragilité des connecteurs, respect des conditions
+d'utilisation des établissements.*
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### V. Tests chiffrés d'abord (NON-NEGOTIABLE)
+Tout calcul financier (valorisation, prix de revient, XIRR, allocation, intérêts du Livret A,
+dividendes, distributions de SCPI) est écrit test d'abord : cas chiffrés à la main ou issus d'une
+source de référence, test qui échoue, puis implémentation. Tout importeur est livré avec un fichier
+d'exemple anonymisé et un test qui vérifie le résultat attendu. Aucune fonctionnalité de calcul
+n'est fusionnée sans ces tests.
+*Raison d'être : une erreur silencieuse dans un chiffre financier est pire qu'un plantage.*
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+### VI. Simplicité et déploiement trivial
+L'application s'installe avec une seule commande (`docker compose up`) et fonctionne avec SQLite
+par défaut ; PostgreSQL reste une option, jamais un prérequis. Toute complexité ajoutée (nouvelle
+dépendance, nouveau service, nouvelle abstraction) MUST être justifiée par un besoin du périmètre
+courant (YAGNI). Les fonctionnalités hors périmètre (multi-utilisateurs, mobile, connecteurs
+bancaires automatiques) ne sont pas anticipées dans l'architecture avant d'être spécifiées.
+*Raison d'être : un outil auto-hébergé que l'on ne peut pas installer ou maintenir seul ne sera
+pas adopté.*
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+## Contraintes techniques et légales
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+- **Stack :** backend Python avec FastAPI, frontend React avec Vite, SQLite par défaut,
+  PostgreSQL en option, livraison en une image Docker qui sert l'API et le frontend compilé.
+- **Frontières :** frontend et backend communiquent uniquement par une API JSON documentée
+  (OpenAPI). Le moteur de performance est composé de fonctions pures, sans accès à la base.
+- **Propriété intellectuelle :** l'interface s'inspire de l'organisation et des parcours de
+  produits existants (dont Finary), mais le projet MUST NOT reprendre leur code, leurs assets, leurs
+  marques, leurs logos, leurs icônes, leurs textes ni leur identité visuelle. Le projet a son
+  propre nom, sa palette et ses textes.
+- **Licence :** le projet est open source ; la licence choisie MUST être compatible avec toutes
+  les dépendances et être déclarée à la racine du dépôt avant la première publication.
+- **Avertissement :** les analyses fiscales et de performance sont indicatives et MUST le dire
+  explicitement dans l'interface ; le projet ne fournit aucun conseil en investissement.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+## Workflow de développement
+
+- Le développement suit le flux Spec Kit : constitution, spécification, plan, tâches, implémentation.
+- Chaque fonctionnalité est livrée par lots indépendants et testables ; le premier lot couvre
+  le socle, le modèle de données, l'import CSV générique et le tableau de bord de patrimoine net.
+- Le contrôle de conformité à cette constitution est un point de passage de la revue de plan et de
+  la revue de code : un écart non justifié bloque la fusion.
+- Les messages de commit suivent un format conventionnel (`feat:`, `fix:`, `docs:`, `chore:`).
+- Aucune donnée personnelle réelle ne figure dans le dépôt, ni dans les fixtures de test, ni
+  dans l'historique git.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+Cette constitution prévaut sur toute autre pratique du projet. Un amendement se propose par
+modification de ce fichier, avec l'exposé du motif et, si des règles existantes changent, un plan
+de migration du code concerné. Il est adopté par le mainteneur du dépôt.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+Le versionnement suit la règle sémantique : MAJOR pour une suppression ou une redéfinition
+incompatible d'un principe, MINOR pour l'ajout d'un principe ou d'une section ou l'extension
+substantielle d'un existant, PATCH pour les clarifications et corrections de forme.
+
+Toute revue de plan ou de code vérifie la conformité aux principes ci-dessus. Les écarts doivent
+être justifiés par écrit dans le plan ou la description de la demande de fusion. Les consignes
+d'exécution propres à l'agent de développement se trouvent dans les skills du dossier
+`.claude/skills`, et le contexte produit dans `docs/design-brief.md`.
+
+**Version**: 1.0.0 | **Ratified**: 2026-10-24 | **Last Amended**: 2026-10-24
