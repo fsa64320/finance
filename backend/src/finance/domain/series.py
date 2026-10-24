@@ -19,12 +19,16 @@ from finance.domain.entries import Entry
 from finance.domain.enums import InstrumentKind as K
 from finance.domain.enums import PriceKind
 from finance.domain.enums import TransactionType as T
+from finance.domain.fx import FxTable
+from finance.domain.livret_a import Flow, LivretASchedule, RateRow
 from finance.domain.networth import AccountRef, is_open_on
 from finance.domain.valuation import (
     PRICE_KIND_BY_INSTRUMENT,
     DeclaredBalanceRow,
     InstrumentInfo,
     PricePoint,
+    convert_amount,
+    value_priced,
 )
 
 DAILY_LIMIT_DAYS = 366  # jusqu'à un an (année bissextile comprise) : un point par jour
@@ -117,6 +121,8 @@ def net_worth_series(
     balances: Sequence[DeclaredBalanceRow],
     dates: Sequence[date],
     currency: str,
+    fx: FxTable | None = None,
+    livret_rates: Sequence[RateRow] = (),
 ) -> list[SeriesPoint]:
     """Valeur du patrimoine à chacune des `dates` (strictement croissantes)."""
     if any(later <= earlier for earlier, later in pairwise(dates)):
@@ -129,6 +135,19 @@ def net_worth_series(
         mine = [e for e in entries if e.account_id == ref.id and not e.voided]
         mine.sort(key=lambda e: (e.trade_date, e.created_at, e.transaction_id))
         states[ref.id] = _AccountState(entries=mine)
+
+    schedules = {
+        ref.id: LivretASchedule.build(
+            [
+                Flow(e.trade_date, e.cash_amount, e.type is T.INTEREST)
+                for e in states[ref.id].entries
+            ],
+            livret_rates,
+            until=dates[-1],
+        )
+        for ref in refs
+        if ref.is_livret_a
+    }
 
     # Flux cumulés des fonds en euros, indexés par date pour retrouver les flux entre deux dates.
     flow_dates: dict[tuple[str, str], list[date]] = defaultdict(list)
@@ -196,11 +215,14 @@ def net_worth_series(
                     state.traded.add(entry.instrument_id)
             if not is_open_on(ref, current):
                 continue
-            if ref.currency != currency:
-                estimated = True
-                continue
 
-            total += state.cash
+            account_total = state.cash
+            account_estimated = False
+            schedule = schedules.get(ref.id)
+            if schedule is not None:
+                interest = schedule.estimate_at(current)
+                account_total += interest.total
+                account_estimated = interest.total != 0 or interest.missing_rate_from is not None
             for identifier in sorted(state.traded | state.declared_ids):
                 if identifier not in instruments:
                     raise KeyError(f"actif inconnu : {identifier}")
@@ -208,17 +230,20 @@ def net_worth_series(
                 if info.kind is K.EURO_FUND:
                     pointer = balance_pointers.get((ref.id, identifier))
                     latest = pointer.advance(current) if pointer else None
-                    if (
-                        latest is None
-                        or not isinstance(latest, DeclaredBalanceRow)
-                        or latest.currency != currency
-                    ):
-                        estimated = True
-                    else:
-                        key = (ref.id, identifier)
-                        total += latest.amount + (
-                            cumulative(key, current) - cumulative(key, latest.balance_date)
-                        )
+                    if latest is None or not isinstance(latest, DeclaredBalanceRow):
+                        account_estimated = True
+                        continue
+                    converted = convert_amount(
+                        latest.amount, latest.currency, ref.currency, current, fx
+                    )
+                    if converted.value is None:
+                        account_estimated = True
+                        continue
+                    account_estimated = account_estimated or converted.code == "rate_stale"
+                    key = (ref.id, identifier)
+                    account_total += converted.value + (
+                        cumulative(key, current) - cumulative(key, latest.balance_date)
+                    )
                 elif info.kind is K.CASH:
                     continue
                 else:
@@ -226,17 +251,33 @@ def net_worth_series(
                     if quantity == 0:
                         continue
                     if quantity < 0:
-                        estimated = True
+                        account_estimated = True
                         continue
                     wanted = PRICE_KIND_BY_INSTRUMENT[info.kind]
                     price_pointer = price_pointers.get((identifier, wanted))
                     price = price_pointer.advance(current) if price_pointer else None
-                    if price is None:
-                        total += cost
-                        estimated = True
-                    elif not isinstance(price, PricePoint) or price.currency != currency:
-                        estimated = True
-                    else:
-                        total += quantity * price.value
+                    if price is not None and not isinstance(price, PricePoint):
+                        raise TypeError("prix attendu")
+                    priced = value_priced(
+                        quantity=quantity,
+                        total_cost=cost,
+                        price=price,
+                        currency=ref.currency,
+                        as_of=current,
+                        fx=fx,
+                    )
+                    account_estimated = account_estimated or priced.estimated
+                    if priced.value is not None:
+                        account_total += priced.value
+
+            if ref.currency != currency:
+                converted_total = convert_amount(account_total, ref.currency, currency, current, fx)
+                if converted_total.value is None:
+                    estimated = True
+                    continue
+                account_total = converted_total.value
+                account_estimated = account_estimated or converted_total.code == "rate_stale"
+            total += account_total
+            estimated = estimated or account_estimated
         points.append(SeriesPoint(date=current, value=total, estimated=estimated))
     return points

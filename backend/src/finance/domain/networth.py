@@ -6,11 +6,15 @@ from datetime import date
 from decimal import Decimal
 
 from finance.domain.entries import Entry
+from finance.domain.fx import FxTable
+from finance.domain.livret_a import LivretASchedule, RateRow
 from finance.domain.valuation import (
     AccountValue,
     DeclaredBalanceRow,
     InstrumentInfo,
+    PositionValue,
     PricePoint,
+    convert_amount,
     value_account,
 )
 
@@ -21,6 +25,7 @@ class AccountRef:
     opened_on: date
     closed_on: date | None
     currency: str
+    is_livret_a: bool = False  # ses intérêts sont estimés d'après la table de taux
 
 
 def is_open_on(ref: AccountRef, on: date) -> bool:
@@ -53,6 +58,42 @@ class NetWorth:
     account_values: tuple[AccountValue, ...]
 
 
+def convert_account_value(
+    value: AccountValue, total: Decimal, currency: str, as_of: date, fx: FxTable | None
+) -> AccountValue:
+    """Valeur du compte exprimée dans la devise de référence, composante par composante."""
+
+    def to_reference(amount: Decimal) -> Decimal:
+        converted = convert_amount(amount, value.currency, currency, as_of, fx).value
+        return amount if converted is None else converted
+
+    return AccountValue(
+        account_id=value.account_id,
+        as_of=value.as_of,
+        currency=currency,
+        cash=to_reference(value.cash),
+        positions=tuple(
+            PositionValue(
+                instrument_id=p.instrument_id,
+                kind=p.kind,
+                quantity=p.quantity,
+                total_cost=to_reference(p.total_cost),
+                unit_cost=None if p.unit_cost is None else to_reference(p.unit_cost),
+                price=p.price,
+                price_date=p.price_date,
+                value=None if p.value is None else to_reference(p.value),
+                estimated=p.estimated,
+                subscription_price=p.subscription_price,
+            )
+            for p in value.positions
+        ),
+        total=total,
+        estimated=value.estimated,
+        warnings=value.warnings,
+        interest_estimate=to_reference(value.interest_estimate),
+    )
+
+
 def compute_net_worth(
     *,
     refs: Sequence[AccountRef],
@@ -62,11 +103,13 @@ def compute_net_worth(
     balances: Sequence[DeclaredBalanceRow],
     as_of: date,
     currency: str,
+    fx: FxTable | None = None,
+    livret_rates: Sequence[RateRow] = (),
 ) -> NetWorth:
     """Somme des valeurs des comptes ouverts à `as_of`, dans la devise de référence `currency`.
 
-    Un compte dans une autre devise est laissé de côté et signalé : la conversion arrive avec
-    l'histoire US4.
+    Un compte dans une autre devise est converti au taux de `as_of` ; sans taux, il est laissé de
+    côté et signalé plutôt que compté faux.
     """
     accounts: list[AccountNetWorth] = []
     values: list[AccountValue] = []
@@ -76,17 +119,11 @@ def compute_net_worth(
     for ref in refs:
         if not is_open_on(ref, as_of):
             continue
-        if ref.currency != currency:
-            estimated = True
-            warnings.append(
-                AccountWarning(
-                    ref.id,
-                    "non_convertible",
-                    None,
-                    f"Compte en {ref.currency} : conversion en {currency} indisponible.",
-                )
-            )
-            continue
+        schedule = (
+            LivretASchedule.from_entries(entries, ref.id, livret_rates, until=as_of)
+            if ref.is_livret_a
+            else None
+        )
         value = value_account(
             account_id=ref.id,
             entries=entries,
@@ -94,11 +131,40 @@ def compute_net_worth(
             prices=prices,
             balances=balances,
             as_of=as_of,
-            currency=currency,
+            currency=ref.currency,
+            fx=fx,
+            livret=schedule,
         )
-        total += value.total
-        estimated = estimated or value.estimated
-        accounts.append(AccountNetWorth(ref.id, value.total, value.estimated))
+        account_total = value.total
+        account_estimated = value.estimated
+        if ref.currency != currency:
+            converted = convert_amount(value.total, ref.currency, currency, as_of, fx)
+            if converted.value is None:
+                estimated = True
+                warnings.append(
+                    AccountWarning(
+                        ref.id,
+                        "non_convertible",
+                        None,
+                        f"Compte en {ref.currency} : conversion en {currency} indisponible.",
+                    )
+                )
+                continue
+            account_total = converted.value
+            if converted.code == "rate_stale":
+                account_estimated = True
+                warnings.append(
+                    AccountWarning(
+                        ref.id,
+                        "rate_stale",
+                        None,
+                        f"Taux de change {ref.currency}/{currency} ancien : la valeur est estimée.",
+                    )
+                )
+            value = convert_account_value(value, account_total, currency, as_of, fx)
+        total += account_total
+        estimated = estimated or account_estimated
+        accounts.append(AccountNetWorth(ref.id, account_total, account_estimated))
         values.append(value)
         warnings.extend(
             AccountWarning(ref.id, w.code, w.instrument_id, w.message) for w in value.warnings
