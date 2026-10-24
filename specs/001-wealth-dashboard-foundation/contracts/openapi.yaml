@@ -749,6 +749,7 @@ components:
           required: [id, currency]
           properties:
             id: { type: string, format: uuid }
+            currency: { $ref: "#/components/schemas/Currency" }
             closed_on: { type: [string, "null"], format: date }
     AccountSummary:
       allOf:

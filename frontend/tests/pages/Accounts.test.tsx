@@ -37,7 +37,7 @@ describe('liste des comptes', () => {
     const pea = within(table).getByRole('link', { name: 'PEA Courtier A' }).closest('tr')!
     expect(within(pea).getByText('Plan d’épargne en actions (PEA)')).toBeInTheDocument()
     expect(within(pea).getByText('Courtier A')).toBeInTheDocument()
-    expect(plain(within(pea).getByText(/1 000,00/).textContent!)).toBe('1 000,00 €')
+    expect(plain(within(pea).getByText(/1\s000,00/).textContent!)).toBe('1 000,00 €')
   })
 
   it('pointe vers le détail du compte', async () => {

@@ -39,7 +39,7 @@ describe('ModificationHistory', () => {
     render(<ModificationHistory versions={versions} />)
     const second = screen.getByText('Version 2').closest('tr')!
     expect(within(second).getByText('12')).toBeInTheDocument()
-    expect(within(second).getByText(/1 081,99/)).toBeInTheDocument()
+    expect(within(second).getByText(/1\s081,99/)).toBeInTheDocument()
     const first = screen.getByText('Version 1').closest('tr')!
     expect(within(first).getByText('10')).toBeInTheDocument()
   })

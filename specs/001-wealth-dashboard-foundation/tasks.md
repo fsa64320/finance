@@ -120,11 +120,11 @@ Règles transverses à respecter dans chaque tâche : montants, quantités, prix
 - [x] T058 [P] [US1] Implémenter `backend/src/finance/api/routers/instruments.py` : `GET/POST /instruments`, `PATCH /instruments/{instrumentId}`
 - [x] T059 [US1] Implémenter `backend/src/finance/api/routers/transactions.py` : `GET/POST /transactions`, `GET/PUT/DELETE /transactions/{transactionId}` (la suppression annule, l'historique des versions est renvoyé), et `POST /transfers` *(le sérialiseur JSON est `api/serializers.py` ; les réponses sont validées contre le contrat par T046)*
 - [x] T060 [P] [US1] Implémenter `backend/src/finance/api/routers/balances.py` : `POST /declared-balances` *(la route vit dans `api/routers/accounts.py` : le contrat range `/declared-balances` sous le tag `accounts`)*
-- [ ] T061 [P] [US1] Écrire `frontend/tests/components/TransactionForm.test.tsx` puis implémenter `frontend/src/components/TransactionForm.tsx` (champs selon le type, avertissement de vente excédentaire, abondement réservé au PEE)
-- [ ] T062 [P] [US1] Implémenter `frontend/src/components/TransferForm.tsx` et `frontend/src/components/ModificationHistory.tsx` (versions d'une opération)
-- [ ] T063 [P] [US1] Implémenter `frontend/src/pages/Instruments.tsx` (création, message d'ISIN invalide)
-- [ ] T064 [US1] Écrire `frontend/tests/pages/Accounts.test.tsx` puis implémenter `frontend/src/pages/Accounts.tsx` (liste, création des cinq types de compte)
-- [ ] T065 [US1] Implémenter `frontend/src/pages/AccountDetail.tsx` : positions, prix de revient, liquidités, historique des opérations, barre de plafond du PEA, plafond du Livret A, sommes bloquées du PEE, déclaration de solde pour les fonds en euros et le Livret A
+- [x] T061 [P] [US1] Écrire `frontend/tests/components/TransactionForm.test.tsx` puis implémenter `frontend/src/components/TransactionForm.tsx` (champs selon le type, avertissement de vente excédentaire, abondement réservé au PEE)
+- [x] T062 [P] [US1] Implémenter `frontend/src/components/TransferForm.tsx` et `frontend/src/components/ModificationHistory.tsx` (versions d'une opération) *(avec `components/BalanceForm.tsx`, `components/fields.tsx`, `lib/form-errors.ts`, `lib/decimal-input.ts`, `lib/labels.ts` et les modules `api/accounts.ts`, `api/instruments.ts`, `api/transactions.ts`, `api/keys.ts`)*
+- [x] T063 [P] [US1] Implémenter `frontend/src/pages/Instruments.tsx` (création, message d'ISIN invalide)
+- [x] T064 [US1] Écrire `frontend/tests/pages/Accounts.test.tsx` puis implémenter `frontend/src/pages/Accounts.tsx` (liste, création des cinq types de compte) *(routes `/comptes`, `/comptes/:accountId` et `/actifs` ajoutées à `App.tsx` et à la navigation)*
+- [x] T065 [US1] Implémenter `frontend/src/pages/AccountDetail.tsx` : positions, prix de revient, liquidités, historique des opérations, barre de plafond du PEA, plafond du Livret A, sommes bloquées du PEE, déclaration de solde pour les fonds en euros et le Livret A *(inclut renommer, clôturer et rouvrir un compte, et la déclaration de solde du fonds en euros)*
 
 **Checkpoint**: US1 fonctionne seule : le scénario a à g du quickstart passe, avec le suivi manuel complet
 

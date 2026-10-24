@@ -35,7 +35,7 @@ describe('liste des actifs', () => {
     expect(within(etf).getByText('IE00B4L5Y983')).toBeInTheDocument()
     expect(within(etf).getByText('EUR')).toBeInTheDocument()
     expect(within(etf).getByText('Automatique')).toBeInTheDocument()
-    const fund = within(table).getByText('Fonds en euros').closest('tr')!
+    const fund = within(table).getByRole('rowheader', { name: 'Fonds en euros' }).closest('tr')!
     expect(
       within(fund).getByText('Fonds en euros', { selector: 'td:nth-child(2)' }),
     ).toBeInTheDocument()

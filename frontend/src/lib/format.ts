@@ -60,3 +60,29 @@ export function formatDate(isoDate: string): string {
     timeZone: 'UTC',
   }).format(date)
 }
+
+/** Prix unitaire : de deux à quatre décimales utiles (90,199 €), arrondi demi supérieur. */
+export function formatUnitPrice(amount: string, currency = 'EUR'): string {
+  const rounded = parse(amount).toDecimalPlaces(4, Decimal.ROUND_HALF_UP)
+  const text = rounded.isZero() ? '0' : rounded.toFixed()
+  const formatter = new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 4,
+  })
+  return format(formatter, text)
+}
+
+/** Part de `part` dans `whole`, en pourcents entiers (texte), sans flottant. */
+export function formatPercentOf(
+  part: string,
+  whole: string,
+  options: { capAt100?: boolean } = {},
+): string {
+  const total = parse(whole)
+  if (total.lte(0)) throw new Error('Le total doit être strictement positif.')
+  const percent = parse(part).times(100).div(total).toDecimalPlaces(0, Decimal.ROUND_HALF_UP)
+  const capped = options.capAt100 && percent.gt(100) ? new Decimal(100) : percent
+  return capped.toFixed(0)
+}

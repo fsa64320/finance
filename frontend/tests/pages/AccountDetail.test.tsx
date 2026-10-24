@@ -242,7 +242,7 @@ describe('opérations', () => {
     })
     const deposit = within(table).getByText('Versement').closest('tr')!
     expect(within(deposit).getByText('05/01/2026')).toBeInTheDocument()
-    expect(plain(within(deposit).getByText(/1 000,00/).textContent)).toBe('1 000,00 €')
+    expect(plain(within(deposit).getByText(/1\s000,00/).textContent)).toBe('1 000,00 €')
     const purchase = within(table).getByText('Achat').closest('tr')!
     expect(within(purchase).getByText('ETF Monde')).toBeInTheDocument()
     expect(within(purchase).getByText(/-901,99/)).toBeInTheDocument()

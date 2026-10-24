@@ -1413,6 +1413,7 @@ export interface components {
         Account: components["schemas"]["AccountInput"] & {
             /** Format: uuid */
             id: string;
+            currency: components["schemas"]["Currency"];
             /** Format: date */
             closed_on?: string | null;
         };
