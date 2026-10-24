@@ -522,6 +522,7 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/DashboardSummary" }
+        "422": { $ref: "#/components/responses/Validation" }
   /dashboard/series:
     get:
       tags: [dashboard]
@@ -547,6 +548,7 @@ paths:
                         date: { type: string, format: date }
                         value: { $ref: "#/components/schemas/Decimal" }
                         estimated: { type: boolean }
+        "422": { $ref: "#/components/responses/Validation" }
   /dashboard/allocation:
     get:
       tags: [dashboard]
@@ -574,6 +576,7 @@ paths:
                           enum: [equities_etf, funds, scpi, euro_funds, cash]
                         value: { $ref: "#/components/schemas/Decimal" }
                         weight_percent: { $ref: "#/components/schemas/Decimal" }
+        "422": { $ref: "#/components/responses/Validation" }
 
   /data/export:
     get:
@@ -1053,7 +1056,7 @@ components:
             type: object
             required: [kind, message]
             properties:
-              kind: { type: string, enum: [stale_price, missing_balance, missing_rate, missing_fx, price_source_disabled] }
+              kind: { type: string, enum: [stale_price, missing_balance, missing_rate, missing_fx, price_source_disabled, negative_position] }
               message: { type: string }
               instrument_id: { type: [string, "null"], format: uuid }
               account_id: { type: [string, "null"], format: uuid }

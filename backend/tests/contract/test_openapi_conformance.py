@@ -20,7 +20,7 @@ CONTRACT_PATH = (
     / "contracts"
     / "openapi.yaml"
 )
-IMPLEMENTED_TAGS = {"auth", "accounts", "instruments", "transactions"}
+IMPLEMENTED_TAGS = {"auth", "accounts", "instruments", "transactions", "dashboard"}
 # Opérations du contrat reportées à une tâche ultérieure ; T141 vide cette liste.
 DEFERRED_OPERATIONS = {
     ("POST", "/api/v1/auth/change-password"),  # T139 (US5, FR-033)

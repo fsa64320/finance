@@ -12,6 +12,7 @@ from finance.db.types import canonical_decimal_text
 from finance.domain.valuation import PositionValue, ValuationWarning
 from finance.services.accounts import AccountOverview
 from finance.services.balances import BalanceData
+from finance.services.dashboard import AllocationResult, SeriesResult, Summary
 from finance.services.transactions import TransactionOutcome
 from finance.services.transfers import TransferOutcome
 
@@ -151,4 +152,47 @@ def declared_balance(row: models.DeclaredBalance) -> dict[str, Any]:
         "balance_date": data.balance_date.isoformat(),
         "amount": dec(data.amount),
         "currency": data.currency,
+    }
+
+
+def dashboard_summary(result: Summary) -> dict[str, Any]:
+    return {
+        "currency": result.currency,
+        "net_worth": dec(result.net_worth),
+        "excludes_debts": result.excludes_debts,
+        "estimated": result.estimated,
+        "as_of": result.as_of.isoformat(),
+        "notices": [
+            {
+                "kind": notice.kind,
+                "message": notice.message,
+                "instrument_id": notice.instrument_id,
+                "account_id": notice.account_id,
+            }
+            for notice in result.notices
+        ],
+    }
+
+
+def dashboard_series(result: SeriesResult) -> dict[str, Any]:
+    return {
+        "currency": result.currency,
+        "points": [
+            {"date": p.date.isoformat(), "value": dec(p.value), "estimated": p.estimated}
+            for p in result.points
+        ],
+    }
+
+
+def dashboard_allocation(result: AllocationResult) -> dict[str, Any]:
+    return {
+        "currency": result.currency,
+        "slices": [
+            {
+                "asset_class": s.asset_class.value,
+                "value": dec(s.value),
+                "weight_percent": dec(s.weight_percent),
+            }
+            for s in result.slices
+        ],
     }
