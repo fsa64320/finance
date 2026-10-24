@@ -241,7 +241,7 @@ Règles transverses à respecter dans chaque tâche : montants, quantités, prix
 - [ ] T117 [P] [US5] Écrire `backend/tests/integration/test_protected_endpoints.py` : tous les endpoints sauf `/auth/*` répondent 401 sans session et 423 sur une instance verrouillée
 - [ ] T118 [P] [US5] Écrire `backend/tests/contract/test_data_contract.py` pour `GET /data/export` et `POST /data/restore`
 - [ ] T138 [P] [US5] Écrire `backend/tests/integration/test_change_password.py` : l'ancien mot de passe est exigé, le nouveau respecte les règles de FR-028, les données restent lisibles avec le nouveau, l'ancien est refusé ensuite (FR-033)
-- [ ] T119 [P] [US5] Écrire `scripts/smoke.sh` : construit l'image, démarre le conteneur avec un volume temporaire, crée l'accès, enregistre une donnée, redémarre et la relit
+- [x] T119 [P] [US5] Écrire `scripts/smoke.sh` : construit l'image, démarre le conteneur avec un volume temporaire, crée l'accès, enregistre une donnée, redémarre et la relit
 
 ### Implementation for User Story 5
 
@@ -249,11 +249,11 @@ Règles transverses à respecter dans chaque tâche : montants, quantités, prix
 - [ ] T121 [US5] Implémenter `backend/src/finance/api/routers/data.py` : `GET /data/export`, `POST /data/restore`
 - [ ] T139 [US5] Implémenter le changement de mot de passe : `backend/src/finance/auth/service.py` (rechiffrement de la base par `PRAGMA rekey`) et `POST /auth/change-password` dans `backend/src/finance/api/routers/auth.py`, avec le tag `auth` déjà couvert par `IMPLEMENTED_TAGS`
 - [ ] T140 [US5] Implémenter `frontend/src/components/ChangePasswordForm.tsx` et l'intégrer à `frontend/src/pages/Settings.tsx`, avec un test dans `frontend/tests/components/ChangePasswordForm.test.tsx`
-- [ ] T122 [P] [US5] Créer `Dockerfile` à la racine, ajouter l'entrée `docker` à `.github/dependabot.yml` et créer `.dockerignore` : étape de build du frontend puis image d'exécution Python, utilisateur non root, un seul processus `uvicorn`, volume `/data`
-- [ ] T123 [P] [US5] Créer `compose.yaml` à la racine : un service, un volume de données, port exposé uniquement sur la boucle locale par défaut, redémarrage automatique
+- [x] T122 [P] [US5] Créer `Dockerfile` à la racine, ajouter l'entrée `docker` à `.github/dependabot.yml` et créer `.dockerignore` : étape de build du frontend puis image d'exécution Python, utilisateur non root, un seul processus `uvicorn`, volume `/data`
+- [x] T123 [P] [US5] Créer `compose.yaml` à la racine : un service, un volume de données, port exposé uniquement sur la boucle locale par défaut, redémarrage automatique
 - [ ] T124 [US5] Implémenter `frontend/src/pages/Settings.tsx` : export et restauration avec avertissement (le fichier n'est pas chiffré), bascule de récupération automatique des prix, liste des services contactés (BCE, Yahoo Finance, OpenFIGI) avec les données envoyées à chacun, rappel d'export, taux du Livret A, changement de mot de passe
 - [ ] T125 [US5] Ajouter un rappel d'export périodique (réglage de fréquence, bannière dans `frontend/src/components/Layout.tsx`)
-- [ ] T126 [P] [US5] Écrire `README.md` à la racine : prérequis, installation avec `docker compose up`, procédure pas à pas illustrée sans ligne de commande pour un débutant (Docker Desktop, captures), création de l'accès, sauvegarde et restauration, avertissement sur le mot de passe oublié
+- [ ] T126 [P] [US5] Écrire `README.md` à la racine : prérequis, installation avec `docker compose up`, procédure pas à pas illustrée sans ligne de commande pour un débutant (Docker Desktop, captures), création de l'accès, sauvegarde et restauration, avertissement sur le mot de passe oublié *(texte rédigé ; captures d'écran à ajouter)*
 
 **Checkpoint**: les cinq histoires fonctionnent, l'application s'installe et se restaure
 

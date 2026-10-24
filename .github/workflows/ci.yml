@@ -92,12 +92,24 @@ jobs:
       - name: Build (types et bundle)
         run: npm run build
 
+  docker:
+    name: Docker
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Test de fumée de l'image (construction, démarrage, redémarrage, relecture)
+        run: scripts/smoke.sh
+
   # Point de passage unique à exiger dans la protection de branche.
   # Les jobs backend et frontend s'ajoutent à `needs` quand le code arrive.
   ci-gate:
     name: ci-gate
     if: always()
-    needs: [secret-scan, backend, frontend]
+    needs: [secret-scan, backend, frontend, docker]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

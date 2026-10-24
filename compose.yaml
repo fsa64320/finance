@@ -1,0 +1,25 @@
+# Finance : un service, un volume de données.
+#   docker compose up -d --build
+# puis ouvrir http://localhost:8000
+services:
+  finance:
+    build: .
+    image: finance:local
+    restart: unless-stopped
+    # Joignable depuis cet ordinateur seulement. Pour l'ouvrir au réseau local, remplacer par
+    # "8000:8000" et lire la section « Accès depuis un autre appareil » du README.
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - finance-data:/data
+    # Durcissement : système de fichiers en lecture seule, aucun privilège supplémentaire.
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  finance-data:
