@@ -18,7 +18,7 @@ async function fill(
   next = NEW,
   again = NEW,
 ) {
-  await user.type(screen.getByLabelText('Mot de passe actuel'), current)
+  if (current) await user.type(screen.getByLabelText('Mot de passe actuel'), current)
   await user.type(screen.getByLabelText('Nouveau mot de passe'), next)
   await user.type(screen.getByLabelText('Confirmer le nouveau mot de passe'), again)
   await user.click(screen.getByRole('button', { name: 'Changer le mot de passe' }))
@@ -122,9 +122,12 @@ describe('ChangePasswordForm', () => {
     await fill(user)
     expect(await screen.findByRole('alert')).toHaveTextContent(/3 secondes/i)
     expect(screen.getByRole('button', { name: 'Changer le mot de passe' })).toBeDisabled()
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(3000)
-    })
+    // Une seconde à la fois : React ne programme le minuteur suivant qu'après le rendu.
+    for (let i = 0; i < 3; i++) {
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000)
+      })
+    }
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Changer le mot de passe' })).toBeEnabled()
   })

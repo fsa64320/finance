@@ -4,6 +4,7 @@ import { NavLink, Outlet } from 'react-router-dom'
 import { AUTH_STATUS_KEY, lockInstance } from '../api/auth'
 import { BRAND } from '../brand'
 import { NAV_ITEMS } from '../nav'
+import ExportReminder from './ExportReminder'
 import Logo from './Logo'
 
 const linkClass = ({ isActive }: { isActive: boolean }) =>
@@ -50,6 +51,7 @@ export default function Layout() {
       </aside>
 
       <div className="flex min-w-0 flex-col pb-16 md:pb-0">
+        <ExportReminder />
         <main className="flex-1 p-4 md:p-8">
           <Outlet />
         </main>

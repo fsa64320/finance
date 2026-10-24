@@ -1,9 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
+import { changePassword } from '../api/auth'
+import { exportData, restoreData } from '../api/data'
 import { addLivretRate, listLivretRates } from '../api/rates'
 import { getSettings, patchSettings } from '../api/settings'
 import { keys } from '../api/keys'
 import type { LivretARate } from '../api/types'
+import { downloadJson } from '../lib/download'
+import ChangePasswordForm from '../components/ChangePasswordForm'
+import DataBackup from '../components/DataBackup'
 import LivretARatesEditor from '../components/LivretARatesEditor'
 import PriceFetchConsent from '../components/PriceFetchConsent'
 
@@ -18,6 +23,32 @@ export default function Settings() {
     mutationFn: (enabled: boolean) => patchSettings({ auto_fetch_prices: enabled }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: keys.settings }),
   })
+  const reminder = useMutation({
+    mutationFn: (days: number) => patchSettings({ export_reminder_days: days }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: keys.settings }),
+  })
+
+  async function runExport() {
+    const file = await exportData()
+    const day = typeof file.exported_at === 'string' ? file.exported_at.slice(0, 10) : 'export'
+    downloadJson(`finance-export-${day}.json`, file)
+    await queryClient.invalidateQueries({ queryKey: keys.settings })
+  }
+
+  async function runRestore(file: File) {
+    let payload: unknown
+    try {
+      payload = JSON.parse(await file.text())
+    } catch {
+      throw new Error('Ce fichier n’est pas un export valide (JSON illisible).')
+    }
+    if (typeof payload !== 'object' || payload === null || Array.isArray(payload)) {
+      throw new Error('Ce fichier n’est pas un export valide.')
+    }
+    await restoreData(payload as Record<string, unknown>)
+    await queryClient.invalidateQueries()
+  }
+
   const add = useMutation({
     mutationFn: (rate: LivretARate) => addLivretRate(rate),
     onSuccess: async () => {
@@ -67,6 +98,28 @@ export default function Settings() {
             <LivretARatesEditor rates={rates.data} onAdd={(rate) => add.mutateAsync(rate)} />
           </div>
         )}
+      </div>
+
+      <div className={`${cardClass} mt-6`}>
+        <h3 className="font-medium">Sauvegarde et restauration</h3>
+        {settings.data && (
+          <div className="mt-2">
+            <DataBackup
+              lastExportAt={settings.data.last_export_at ?? null}
+              reminderDays={settings.data.export_reminder_days}
+              onExport={runExport}
+              onRestore={runRestore}
+              onReminderChange={(days) => reminder.mutateAsync(days)}
+            />
+          </div>
+        )}
+      </div>
+
+      <div className={`${cardClass} mt-6`}>
+        <h3 className="font-medium">Mot de passe</h3>
+        <div className="mt-2">
+          <ChangePasswordForm onSubmit={(current, next) => changePassword(current, next)} />
+        </div>
       </div>
     </section>
   )

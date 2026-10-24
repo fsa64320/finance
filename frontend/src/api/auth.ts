@@ -23,3 +23,10 @@ export async function unlockInstance(password: string): Promise<void> {
 export async function lockInstance(): Promise<void> {
   await request('POST', '/auth/lock')
 }
+
+export async function changePassword(current: string, next: string): Promise<void> {
+  await request('POST', '/auth/change-password', {
+    current_password: current,
+    new_password: next,
+  })
+}

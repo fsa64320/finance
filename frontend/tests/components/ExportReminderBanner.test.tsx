@@ -47,9 +47,10 @@ describe('ExportReminderBanner', () => {
   })
 
   it('se déclenche pile au bout du délai', () => {
-    banner({ lastExportAt: '2026-09-24T12:00:00Z', reminderDays: 30 })
+    const { unmount } = banner({ lastExportAt: '2026-09-25T12:00:00Z', reminderDays: 30 })
     expect(screen.queryByRole('status')).not.toBeInTheDocument()
-    banner({ lastExportAt: '2026-09-23T12:00:00Z', reminderDays: 30 })
+    unmount()
+    banner({ lastExportAt: '2026-09-24T12:00:00Z', reminderDays: 30 })
     expect(screen.getByRole('status')).toBeInTheDocument()
   })
 
