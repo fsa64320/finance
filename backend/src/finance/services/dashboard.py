@@ -18,10 +18,13 @@ from sqlalchemy.orm import Session
 
 from finance.db import models
 from finance.domain.allocation import Slice, compute_allocation
+from finance.domain.enums import AccountType
+from finance.domain.fx import FxTable
+from finance.domain.livret_a import RateRow
 from finance.domain.networth import AccountRef, NetWorth, compute_net_worth
 from finance.domain.series import SeriesPoint, net_worth_series, period_start, sample_dates
 from finance.services import loaders
-from finance.services.accounts import REFERENCE_CURRENCY
+from finance.services import settings as settings_service
 from finance.services.errors import ValidationFailed
 
 PERIODS = ("1m", "3m", "1y", "5y", "all")
@@ -30,6 +33,9 @@ _NOTICE_KINDS = {
     "price_missing": "stale_price",
     "declared_balance_missing": "missing_balance",
     "non_convertible": "missing_fx",
+    "rate_stale": "missing_fx",
+    "price_stale": "stale_price",
+    "rate_missing": "missing_rate",
     "negative_position": "negative_position",
 }
 
@@ -130,16 +136,31 @@ class _Inputs:
     instruments: dict[str, Any]
     prices: list[Any]
     balances: list[Any]
+    fx: FxTable
+    livret_rates: list[RateRow]
+    currency: str
 
 
 def _load(session: Session) -> _Inputs:
     rows = session.scalars(sa.select(models.Account).order_by(models.Account.opened_on)).all()
     return _Inputs(
-        refs=[AccountRef(r.id, r.opened_on, r.closed_on, r.currency) for r in rows],
+        refs=[
+            AccountRef(
+                r.id,
+                r.opened_on,
+                r.closed_on,
+                r.currency,
+                is_livret_a=r.type is AccountType.LIVRET_A,
+            )
+            for r in rows
+        ],
         entries=loaders.load_entries(session),
         instruments=loaders.load_instrument_infos(session),
         prices=loaders.load_prices(session),
         balances=loaders.load_declared_balances(session),
+        fx=loaders.load_fx_table(session),
+        livret_rates=loaders.load_livret_rates(session),
+        currency=settings_service.reference_currency(session),
     )
 
 
@@ -151,7 +172,9 @@ def _net_worth(inputs: _Inputs, as_of: date) -> NetWorth:
         prices=inputs.prices,
         balances=inputs.balances,
         as_of=as_of,
-        currency=REFERENCE_CURRENCY,
+        currency=inputs.currency,
+        fx=inputs.fx,
+        livret_rates=inputs.livret_rates,
     )
 
 
@@ -200,7 +223,7 @@ def series(session: Session, period: str, today: date) -> SeriesResult:
     def compute() -> SeriesResult:
         inputs = _load(session)
         if not inputs.refs:
-            return SeriesResult(currency=REFERENCE_CURRENCY, points=[])
+            return SeriesResult(currency=inputs.currency, points=[])
         earliest = min(
             [r.opened_on for r in inputs.refs]
             + [e.trade_date for e in inputs.entries]
@@ -214,9 +237,11 @@ def series(session: Session, period: str, today: date) -> SeriesResult:
             prices=inputs.prices,
             balances=inputs.balances,
             dates=sample_dates(start, today),
-            currency=REFERENCE_CURRENCY,
+            currency=inputs.currency,
+            fx=inputs.fx,
+            livret_rates=inputs.livret_rates,
         )
-        return SeriesResult(currency=REFERENCE_CURRENCY, points=points)
+        return SeriesResult(currency=inputs.currency, points=points)
 
     result: SeriesResult = _cached(session, ("series", period, today), compute)
     return result

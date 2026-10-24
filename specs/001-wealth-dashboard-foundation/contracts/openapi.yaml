@@ -229,6 +229,9 @@ paths:
                     ticker: { type: string }
                     exchange: { type: string }
                     name: { type: string }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/Validation" }
         "502": { $ref: "#/components/responses/ExternalSourceFailed" }
 
   /transactions:
@@ -352,6 +355,7 @@ paths:
               schema:
                 type: array
                 items: { $ref: "#/components/schemas/Price" }
+        "422": { $ref: "#/components/responses/Validation" }
     post:
       tags: [prices]
       summary: Saisit un prix ou une valeur liquidative à la main
@@ -435,6 +439,7 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/LivretARate" }
+        "422": { $ref: "#/components/responses/Validation" }
 
   /import-mappings:
     get:
@@ -629,6 +634,7 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Settings" }
+        "422": { $ref: "#/components/responses/Validation" }
 
 components:
   securitySchemes:
@@ -780,6 +786,9 @@ components:
           oneOf: [{ $ref: "#/components/schemas/Decimal" }, { type: "null" }]
         price: { oneOf: [{ $ref: "#/components/schemas/Decimal" }, { type: "null" }] }
         price_date: { type: [string, "null"], format: date }
+        subscription_price:
+          description: SCPI, dernier prix de souscription connu (l'écart avec le prix de retrait est l'écart initial)
+          $ref: "#/components/schemas/Decimal"
         estimated: { type: boolean }
     AccountDetail:
       allOf:

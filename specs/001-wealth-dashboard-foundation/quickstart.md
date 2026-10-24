@@ -48,7 +48,7 @@ Créer les comptes et opérations suivants (interface ou API) :
 | a | Créer un PEA « PEA Courtier A » ouvert le 2026-01-02 | Compte à 0 € |
 | b | Versement de 1 000 € le 2026-01-05 | Liquidités 1 000 € |
 | c | Créer l'ETF « ETF Monde » (ISIN valide) ; achat de 10 parts à 90 € avec 1,99 € de frais le 2026-01-06 | 10 parts, prix de revient **90,199 €**, liquidités **98,01 €** |
-| d | Créer un Livret A de 3 000 € (versement), puis un retrait de 500 € | Solde **2 500 €** |
+| d | Saisir un taux du Livret A de 0 % au 2026-01-01 (les intérêts estimés sont sinon ajoutés à la valeur), puis créer un Livret A de 3 000 € (versement) et un retrait de 500 € | Solde **2 500 €** |
 | e | Créer une assurance-vie avec un fonds en euros, déclarer un solde de 5 000 € au 2026-01-01 | Valeur du fonds en euros **5 000 €** (+ flux suivants) |
 | f | Virement de 500 € du PEA vers le Livret A | PEA −500 €, Livret A +500 €, **patrimoine net inchangé** |
 | g | Modifier l'achat de l'étape c (quantité 12) | La liste montre la version à jour ; l'historique des modifications conserve la version d'origine |

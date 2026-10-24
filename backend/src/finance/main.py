@@ -14,6 +14,8 @@ from finance.api.routers import auth as auth_router
 from finance.api.routers import dashboard as dashboard_router
 from finance.api.routers import imports as imports_router
 from finance.api.routers import instruments as instruments_router
+from finance.api.routers import prices as prices_router
+from finance.api.routers import settings as settings_router
 from finance.api.routers import transactions as transactions_router
 from finance.api.security import (
     MaxBodySizeMiddleware,
@@ -23,6 +25,8 @@ from finance.api.security import (
 from finance.api.static import mount_frontend
 from finance.auth.service import AuthService
 from finance.config import Settings, load_settings
+from finance.prices.base import Providers
+from finance.prices.defaults import default_providers
 from finance.services.imports import PreviewState, PreviewStore
 
 __all__ = ["COOKIE_NAME", "create_app"]
@@ -34,6 +38,7 @@ def create_app(
     settings: Settings | None = None,
     *,
     clock: Callable[[], float] | None = None,
+    providers: Providers | None = None,
     static_dir: Path | None = None,
 ) -> FastAPI:
     settings = settings or load_settings()
@@ -56,6 +61,7 @@ def create_app(
     )
     app.state.auth = auth
     app.state.import_previews = PreviewStore[PreviewState]()
+    app.state.providers = providers or default_providers()
     install_error_handlers(app)
     app.include_router(auth_router.router, prefix=API_PREFIX)
     app.include_router(accounts_router.router, prefix=API_PREFIX)
@@ -63,6 +69,8 @@ def create_app(
     app.include_router(transactions_router.router, prefix=API_PREFIX)
     app.include_router(dashboard_router.router, prefix=API_PREFIX)
     app.include_router(imports_router.router, prefix=API_PREFIX)
+    app.include_router(prices_router.router, prefix=API_PREFIX)
+    app.include_router(settings_router.router, prefix=API_PREFIX)
 
     frontend = static_dir or settings.static_dir
     if frontend is not None:

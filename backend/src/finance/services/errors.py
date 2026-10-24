@@ -32,3 +32,7 @@ class ValidationFailed(ServiceError):
     @classmethod
     def single(cls, field: str, message: str) -> "ValidationFailed":
         return cls([FieldError(field, message)])
+
+
+class ExternalSourceError(ServiceError):
+    """Une source externe (cours, taux, tickers) est indisponible ; aucune donnée n'a changé."""

@@ -9,7 +9,7 @@ from uuid import UUID
 from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, PlainSerializer, WithJsonSchema
 
 from finance.db.types import canonical_decimal_text
-from finance.domain.enums import AccountType, InstrumentKind
+from finance.domain.enums import AccountType, InstrumentKind, PriceKind
 
 
 def _parse_decimal(value: Any) -> Decimal:
@@ -156,3 +156,22 @@ class ImportCommitInput(Strict):
     confirm_rejected: bool
     instrument_resolutions: list[InstrumentResolutionInput] | None = None
     save_mapping_as: str | None = None
+
+
+class PriceInput(Strict):
+    instrument_id: UUID
+    price_date: date
+    kind: PriceKind
+    value: DecimalStr
+    currency: CurrencyCode
+
+
+class LivretARateInput(Strict):
+    effective_from: date
+    value: DecimalStr
+
+
+class SettingsPatch(Strict):
+    reference_currency: str | None = None
+    auto_fetch_prices: bool | None = None
+    export_reminder_days: int | None = Field(default=None, ge=0)
