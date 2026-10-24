@@ -22,7 +22,7 @@ from sqlalchemy import (
     Text,
     text,
 )
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 from finance.db.types import DecimalText, UtcDateTime
 from finance.domain.enums import (
@@ -186,6 +186,12 @@ class TransactionVersion(Base):
     line_fingerprint: Mapped[str | None] = mapped_column(String(128), index=True)
     import_id: Mapped[str | None] = mapped_column(ForeignKey("import_batch.id"))
     created_at: Mapped[datetime] = mapped_column(UtcDateTime, default=utc_now)
+
+    transaction: Mapped[Transaction] = relationship(lazy="joined")
+
+    @property
+    def account_id(self) -> str:
+        return self.transaction.account_id
 
 
 class Price(Base):

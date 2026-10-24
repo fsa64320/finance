@@ -9,7 +9,10 @@ from fastapi import FastAPI
 
 from finance.api.deps import COOKIE_NAME
 from finance.api.errors import install_error_handlers
+from finance.api.routers import accounts as accounts_router
 from finance.api.routers import auth as auth_router
+from finance.api.routers import instruments as instruments_router
+from finance.api.routers import transactions as transactions_router
 from finance.api.security import (
     MaxBodySizeMiddleware,
     OriginCheckMiddleware,
@@ -51,6 +54,9 @@ def create_app(
     app.state.auth = auth
     install_error_handlers(app)
     app.include_router(auth_router.router, prefix=API_PREFIX)
+    app.include_router(accounts_router.router, prefix=API_PREFIX)
+    app.include_router(instruments_router.router, prefix=API_PREFIX)
+    app.include_router(transactions_router.router, prefix=API_PREFIX)
 
     frontend = static_dir or settings.static_dir
     if frontend is not None:
