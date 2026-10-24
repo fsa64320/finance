@@ -23,7 +23,9 @@ def get_previews(request: Request) -> PreviewStore[PreviewState]:
 
 
 @router.get("/import-mappings")
-def list_import_mappings(session: Session = Depends(get_db_session)) -> list[dict[str, Any]]:
+def list_import_mappings(
+    session: Session = Depends(get_db_session, scope="function"),
+) -> list[dict[str, Any]]:
     return [serializers.import_mapping(row) for row in import_mappings.list_mappings(session)]
 
 
@@ -33,7 +35,7 @@ def list_import_mappings(session: Session = Depends(get_db_session)) -> list[dic
     responses={409: {"description": "Nom de paramétrage déjà utilisé"}},
 )
 def create_import_mapping(
-    body: ImportMappingInput, session: Session = Depends(get_db_session)
+    body: ImportMappingInput, session: Session = Depends(get_db_session, scope="function")
 ) -> dict[str, Any]:
     mapping = import_mappings.create_mapping(
         session,
@@ -75,7 +77,7 @@ def preview_import(
     date_format: str | None = Form(default=None),
     decimal_separator: str | None = Form(default=None, pattern=r"^[,.]$"),
     columns: str | None = Form(default=None),
-    session: Session = Depends(get_db_session),
+    session: Session = Depends(get_db_session, scope="function"),
     store: PreviewStore[PreviewState] = Depends(get_previews),
 ) -> dict[str, Any]:
     # Une octet de plus que la limite suffit à la détecter sans lire un fichier démesuré.
@@ -103,7 +105,7 @@ def preview_import(
 )
 def commit_import(
     body: ImportCommitInput,
-    session: Session = Depends(get_db_session),
+    session: Session = Depends(get_db_session, scope="function"),
     store: PreviewStore[PreviewState] = Depends(get_previews),
 ) -> dict[str, Any]:
     resolutions = [

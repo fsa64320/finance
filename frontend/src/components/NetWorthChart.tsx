@@ -10,16 +10,12 @@ import {
 
 import type { SeriesPoint } from '../api/dashboard'
 import ChartSummary from './ChartSummary'
+import { formatTickDate, formatTickMoney, spanInDays } from '../lib/chart-ticks'
 import { formatDate, formatMoney } from '../lib/format'
 
 interface NetWorthChartProps {
   points: SeriesPoint[]
   currency: string
-}
-
-function shortDate(iso: string): string {
-  const [year, month] = iso.split('-')
-  return `${month}/${year?.slice(2)}`
 }
 
 /**
@@ -35,6 +31,7 @@ export default function NetWorthChart({ points, currency }: NetWorthChartProps) 
   const description =
     `Évolution du patrimoine : de ${formatMoney(first.value, currency)} le ${formatDate(first.date)} ` +
     `à ${formatMoney(last.value, currency)} le ${formatDate(last.date)}`
+  const span = spanInDays(first.date, last.date)
   const data = points.map((point) => ({
     date: point.date,
     raw: point.value,
@@ -48,11 +45,16 @@ export default function NetWorthChart({ points, currency }: NetWorthChartProps) 
         <ResponsiveContainer width="100%" height={260}>
           <AreaChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
             <CartesianGrid stroke="var(--line)" strokeDasharray="3 3" />
-            <XAxis dataKey="date" tickFormatter={shortDate} minTickGap={32} stroke="var(--muted)" />
-            <YAxis
-              width={72}
+            <XAxis
+              dataKey="date"
+              tickFormatter={(iso: string) => formatTickDate(iso, span)}
+              minTickGap={32}
               stroke="var(--muted)"
-              tickFormatter={(value: number) => formatMoney(String(Math.round(value)), currency)}
+            />
+            <YAxis
+              width={88}
+              stroke="var(--muted)"
+              tickFormatter={(value: number) => formatTickMoney(value, currency)}
             />
             <Tooltip
               formatter={(_value, _name, item) =>

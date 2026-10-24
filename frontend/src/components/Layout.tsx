@@ -3,12 +3,13 @@ import { NavLink, Outlet } from 'react-router-dom'
 
 import { AUTH_STATUS_KEY, lockInstance } from '../api/auth'
 import { BRAND } from '../brand'
+import Disclaimer from './Disclaimer'
 import { NAV_ITEMS } from '../nav'
 import ExportReminder from './ExportReminder'
 import Logo from './Logo'
 
 const linkClass = ({ isActive }: { isActive: boolean }) =>
-  `rounded-lg px-3 py-2 text-sm font-medium ${isActive ? 'bg-brand-soft text-ink' : 'text-muted'}`
+  `rounded-lg px-2 py-2 text-xs font-medium whitespace-nowrap md:px-3 md:text-sm ${isActive ? 'bg-brand-soft text-ink' : 'text-muted'}`
 
 /** Barre latérale sur ordinateur, barre basse sur téléphone ; jamais de défilement horizontal. */
 export default function Layout() {
@@ -40,7 +41,7 @@ export default function Layout() {
         </div>
         <nav
           aria-label="Navigation principale"
-          className="fixed inset-x-0 bottom-0 z-10 flex justify-around border-t border-line bg-card p-2 md:static md:mt-6 md:flex-col md:justify-start md:border-0 md:p-0"
+          className="fixed inset-x-0 bottom-0 z-10 flex justify-around overflow-x-auto border-t border-line bg-card p-2 md:static md:mt-6 md:flex-col md:justify-start md:border-0 md:p-0"
         >
           {NAV_ITEMS.map((item) => (
             <NavLink key={item.to} to={item.to} end={item.to === '/'} className={linkClass}>
@@ -55,7 +56,9 @@ export default function Layout() {
         <main className="flex-1 p-4 md:p-8">
           <Outlet />
         </main>
-        <footer className="border-t border-line p-4 text-xs text-muted">{BRAND.disclaimer}</footer>
+        <footer className="border-t border-line p-4 text-xs text-muted">
+          <Disclaimer />
+        </footer>
       </div>
     </div>
   )

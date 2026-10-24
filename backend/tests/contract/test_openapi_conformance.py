@@ -1,6 +1,7 @@
 """T018 : les routeurs montés respectent le contrat `contracts/openapi.yaml`.
 
-`IMPLEMENTED_TAGS` grandit à chaque histoire ; la dernière tâche (T141) y mettra tous les tags.
+Tous les tags du contrat sont vérifiés (T141) : le test échoue si le contrat contient un chemin sans
+routeur, ou un routeur absent du contrat.
 """
 
 from pathlib import Path
@@ -21,17 +22,8 @@ CONTRACT_PATH = (
     / "openapi.yaml"
 )
 IMPLEMENTED_TAGS = {
-    "auth",
-    "accounts",
-    "instruments",
-    "transactions",
-    "dashboard",
-    "imports",
-    "prices",
-    "settings",
-    "data",
+    tag["name"] for tag in yaml.safe_load(CONTRACT_PATH.read_text(encoding="utf-8"))["tags"]
 }
-# Opérations du contrat reportées à une tâche ultérieure ; T141 vide cette liste.
 DEFERRED_OPERATIONS: set[tuple[str, str]] = set()
 METHODS = {"get", "post", "put", "patch", "delete"}
 

@@ -3,3 +3,6 @@ dist
 coverage
 package-lock.json
 src/api/schema.ts
+.e2e-data
+test-results
+playwright-report

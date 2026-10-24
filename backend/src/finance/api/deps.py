@@ -31,7 +31,11 @@ def require_session(
 def get_db_session(
     _: str = Depends(require_session), auth: AuthService = Depends(get_auth)
 ) -> Iterator[Session]:
-    """Session SQLAlchemy sur la base déverrouillée : validée si la route réussit, sinon annulée."""
+    """Session SQLAlchemy sur la base déverrouillée : validée si la route réussit, sinon annulée.
+
+    À déclarer avec `scope="function"` : la validation a lieu avant l'envoi de la réponse, pour que
+    le client qui reçoit « 201 » relise aussitôt ses données.
+    """
     with auth.session_factory()() as session:
         try:
             yield session

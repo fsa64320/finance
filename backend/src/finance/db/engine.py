@@ -4,6 +4,7 @@ Le mot de passe est la clé : l'ouvrir correctement prouve que le mot de passe e
 aucun mécanisme de récupération (clarification 1) : un oubli rend les données illisibles.
 """
 
+import threading
 from pathlib import Path
 from typing import Any
 
@@ -59,7 +60,18 @@ def _read_cipher_settings(connection: Any) -> dict[str, Any]:
     }
 
 
+# L'initialisation de SQLCipher (et d'OpenSSL en dessous) n'est pas sûre quand plusieurs threads
+# ouvrent une connexion au même moment : un plantage (segmentation fault) a été observé en CI. Les
+# ouvertures sont donc sérialisées ; elles sont brèves, une fois les connexions du pool créées.
+_CONNECT_LOCK = threading.Lock()
+
+
 def _connect(path: Path, password: str) -> Any:
+    with _CONNECT_LOCK:
+        return _open_connection(path, password)
+
+
+def _open_connection(path: Path, password: str) -> Any:
     connection = sqlcipher.connect(str(path), check_same_thread=False)
     try:
         connection.execute(f"PRAGMA key = {_quote(password)}")

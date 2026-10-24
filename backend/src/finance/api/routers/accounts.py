@@ -22,7 +22,7 @@ CONFLICT = {"description": "Un compte ouvert porte déjà ce nom"}
 def list_accounts(
     include_closed: bool = False,
     as_of: date | None = None,
-    session: Session = Depends(get_db_session),
+    session: Session = Depends(get_db_session, scope="function"),
 ) -> list[dict[str, Any]]:
     rows = accounts.list_accounts(session, include_closed=include_closed)
     overviews = accounts.account_overviews(session, rows, as_of or date.today())
@@ -31,7 +31,7 @@ def list_accounts(
 
 @router.post("/accounts", status_code=201, responses={409: CONFLICT})
 def create_account(
-    body: AccountInput, session: Session = Depends(get_db_session)
+    body: AccountInput, session: Session = Depends(get_db_session, scope="function")
 ) -> dict[str, Any]:
     row = accounts.create_account(
         session,
@@ -49,7 +49,7 @@ def create_account(
 def get_account(
     accountId: UUID,
     as_of: date | None = None,
-    session: Session = Depends(get_db_session),
+    session: Session = Depends(get_db_session, scope="function"),
 ) -> dict[str, Any]:
     row = accounts.get_account(session, str(accountId))
     return serializers.account_detail(
@@ -61,7 +61,7 @@ def get_account(
 def patch_account(
     accountId: UUID,
     body: AccountPatch,
-    session: Session = Depends(get_db_session),
+    session: Session = Depends(get_db_session, scope="function"),
 ) -> dict[str, Any]:
     changes = body.model_dump(exclude_unset=True)
     return serializers.account(accounts.update_account(session, str(accountId), changes))
@@ -69,7 +69,7 @@ def patch_account(
 
 @router.post("/declared-balances", status_code=201)
 def declare_balance(
-    body: DeclaredBalanceInput, session: Session = Depends(get_db_session)
+    body: DeclaredBalanceInput, session: Session = Depends(get_db_session, scope="function")
 ) -> dict[str, Any]:
     row = balances.declare_balance(
         session,

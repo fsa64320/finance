@@ -16,6 +16,19 @@ Les valeurs et analyses affichées sont indicatives et ne constituent pas un con
 - L'estimation des intérêts du Livret A, la valorisation des SCPI au prix de retrait.
 - Un **export** complet de vos données et leur **restauration**.
 
+## Aperçu
+
+| Création de l'accès | Tableau de bord |
+|---|---|
+| ![Création du mot de passe](docs/images/creation-acces.png) | ![Tableau de bord du patrimoine](docs/images/tableau-de-bord.png) |
+
+| Import d'un fichier CSV | Détail d'un compte |
+|---|---|
+| ![Aperçu d'un import CSV](docs/images/import-apercu.png) | ![Détail d'un compte](docs/images/detail-compte.png) |
+
+*Captures produites par les tests de bout en bout (`npm run e2e:screenshots` dans `frontend/`) sur
+des données fictives.*
+
 ## Installer
 
 ### Ce qu'il vous faut
@@ -43,6 +56,8 @@ Les valeurs et analyses affichées sont indicatives et ne constituent pas un con
    bibliothèques). Les fois suivantes, le démarrage est immédiat.
 4. **Ouvrez <http://localhost:8000>** dans votre navigateur.
 5. **Créez votre mot de passe** (12 caractères au moins). Voir l'avertissement ci-dessous.
+
+   ![Création du mot de passe](docs/images/creation-acces.png)
 
 L'application redémarre toute seule avec votre ordinateur tant que Docker tourne.
 
@@ -73,7 +88,7 @@ ressaisir le mot de passe. Après 5 essais ratés, un délai s'impose entre deux
 
 ## Sauvegarder et restaurer
 
-**Exporter** : *Réglages › Exporter mes données* télécharge un fichier JSON complet. Attention : ce
+**Exporter** : *Réglages › Exporter mes données* (voir la capture des réglages ci-dessous) télécharge un fichier JSON complet. Attention : ce
 fichier **n'est pas chiffré**. Toute personne qui le détient lit tout votre patrimoine : rangez-le
 dans un endroit sûr (coffre chiffré, par exemple). L'application vous rappelle d'exporter à
 intervalle régulier.
@@ -84,6 +99,8 @@ est vérifié en entier avant toute écriture : en cas de problème, rien n'est 
 
 Vos données vivent dans le volume Docker `finance-data` (dossier `/data` du conteneur). Pour changer
 d'ordinateur, le plus simple est d'exporter puis de restaurer.
+
+![Réglages : récupération automatique, sauvegarde, mot de passe](docs/images/reglages.png)
 
 ## Confidentialité
 

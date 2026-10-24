@@ -253,7 +253,7 @@ Règles transverses à respecter dans chaque tâche : montants, quantités, prix
 - [x] T123 [P] [US5] Créer `compose.yaml` à la racine : un service, un volume de données, port exposé uniquement sur la boucle locale par défaut, redémarrage automatique
 - [x] T124 [US5] Implémenter `frontend/src/pages/Settings.tsx` : export et restauration avec avertissement (le fichier n'est pas chiffré), bascule de récupération automatique des prix, liste des services contactés (BCE, Yahoo Finance, OpenFIGI) avec les données envoyées à chacun, rappel d'export, taux du Livret A, changement de mot de passe
 - [x] T125 [US5] Ajouter un rappel d'export périodique (réglage de fréquence, bannière dans `frontend/src/components/Layout.tsx`)
-- [ ] T126 [P] [US5] Écrire `README.md` à la racine : prérequis, installation avec `docker compose up`, procédure pas à pas illustrée sans ligne de commande pour un débutant (Docker Desktop, captures), création de l'accès, sauvegarde et restauration, avertissement sur le mot de passe oublié *(texte rédigé ; captures d'écran à ajouter)*
+- [x] T126 [P] [US5] Écrire `README.md` à la racine : prérequis, installation avec `docker compose up`, procédure pas à pas illustrée sans ligne de commande pour un débutant (Docker Desktop, captures), création de l'accès, sauvegarde et restauration, avertissement sur le mot de passe oublié *(captures produites par les tests de bout en bout)*
 
 **Checkpoint**: les cinq histoires fonctionnent, l'application s'installe et se restaure
 
@@ -263,16 +263,16 @@ Règles transverses à respecter dans chaque tâche : montants, quantités, prix
 
 **Purpose**: améliorations transverses et validation finale
 
-- [ ] T127 [P] Ajouter `frontend/src/components/Disclaimer.tsx` (valeurs indicatives, aucun conseil en investissement, FR-032) dans `frontend/src/components/Layout.tsx`
-- [ ] T128 [P] Écrire `frontend/tests/e2e/quickstart.spec.ts` (Playwright) qui déroule les sections 3 à 8 de `quickstart.md`
-- [ ] T129 Étendre `frontend/tests/layout/no-horizontal-scroll.test.tsx` (T079) aux pages de consultation restantes (détail de compte, actifs) à 375 px, et corriger `frontend/src/components/*.tsx` en conséquence (FR-026)
+- [x] T127 [P] Ajouter `frontend/src/components/Disclaimer.tsx` (valeurs indicatives, aucun conseil en investissement, FR-032) dans `frontend/src/components/Layout.tsx`
+- [x] T128 [P] Écrire `frontend/tests/e2e/quickstart.spec.ts` (Playwright) qui déroule les sections 3 à 8 de `quickstart.md`
+- [x] T129 Étendre `frontend/tests/layout/no-horizontal-scroll.test.tsx` (T079) aux pages de consultation restantes (détail de compte, actifs) à 375 px, et corriger `frontend/src/components/*.tsx` en conséquence (FR-026)
 - [ ] T130 [P] Mesurer SC-001, SC-004 et SC-005 (avec un testeur débutant) et consigner les résultats dans `specs/001-wealth-dashboard-foundation/quickstart.md` section 9 *(à faire avec une personne extérieure ; état consigné dans le quickstart, section 9)*
 - [x] T131 [P] Vérifier qu'aucune requête sortante ne contient un montant ou un nom de compte (`quickstart.md` section 7, SC-008) et consigner le résultat
 - [x] T132 Revue de sécurité : en-têtes, contrôle `Origin`, limites de taille, absence de secrets, dépendances à jour ; compléter `SECURITY.md` si besoin
-- [ ] T133 [P] Mettre à jour `.github/CODEOWNERS` si de nouveaux dossiers sensibles apparaissent, et ajouter le check de chaque job de code à la liste des checks requis de la règle `protect-main`
+- [ ] T133 [P] Mettre à jour `.github/CODEOWNERS` si de nouveaux dossiers sensibles apparaissent, et ajouter le check de chaque job de code à la liste des checks requis de la règle `protect-main` *(CODEOWNERS à jour ; seul `ci-gate` est exigé par la règle `protect-main`, et il agrège les jobs de code)*
 - [x] T134 Choisir la licence du dépôt puis ajouter `LICENSE` et la mention dans `README.md` (fait : AGPL-3.0, PR `chore/license`)
 - [ ] T135 Valider l'arrondi des intérêts du Livret A sur de vrais relevés et ajuster `backend/src/finance/domain/livret_a.py` (point ouvert de research.md §13) *(en attente de relevés réels ; état consigné dans le quickstart, section 9)*
-- [ ] T141 Passer `IMPLEMENTED_TAGS` de `backend/tests/contract/test_openapi_conformance.py` à la liste complète des tags du contrat : le test échoue si le contrat contient un chemin sans routeur
+- [x] T141 Passer `IMPLEMENTED_TAGS` de `backend/tests/contract/test_openapi_conformance.py` à la liste complète des tags du contrat : le test échoue si le contrat contient un chemin sans routeur
 - [x] T136 Exécuter `quickstart.md` de bout en bout, mettre à jour `docs/design-brief.md` si le périmètre a bougé, puis lancer `graphify update .` pour rafraîchir le graphe *(sections 1 à 8 par `smoke.sh` et les tests de bout en bout, exécutés en CI ; périmètre inchangé, `design-brief.md` à jour ; graphe rafraîchi par le hook)*
 
 ---
@@ -282,7 +282,7 @@ Règles transverses à respecter dans chaque tâche : montants, quantités, prix
 **Purpose**: couvrir FR-034, FR-035, FR-036, SC-006 et SC-010 (voir `ux.md`). T147 et T150 doivent précéder T124, T140 et la reprise de l'UI déjà écrite (T061 à T065, T077 à T079). L'UI déjà livrée (US1, US2) est à reprendre pour les quatre états, les libellés accessibles et la confirmation de clôture (T065).
 
 - [x] T142 [P] Installer `jest-axe` et écrire `frontend/tests/a11y/axe.test.tsx` : zéro violation bloquante sur Login, Dashboard, Accounts, AccountDetail, Instruments, Import et Settings (SC-010) *(`vitest-axe`, `frontend/tests/a11y/axe.test.tsx` : connexion, tableau de bord, comptes, détail, actifs ; Import et Réglages à ajouter avec leurs pages ; contrastes vérifiés en navigateur par T143)*
-- [ ] T143 [P] Écrire `frontend/tests/e2e/keyboard.spec.ts` (Playwright) : création de compte, saisie d'opération, import et lecture du tableau de bord au clavier seul, focus visible (FR-034, SC-010)
+- [x] T143 [P] Écrire `frontend/tests/e2e/keyboard.spec.ts` (Playwright) : création de compte, saisie d'opération, import et lecture du tableau de bord au clavier seul, focus visible (FR-034, SC-010)
 - [x] T144 [P] Implémenter `frontend/src/components/ChartSummary.tsx` (résumé textuel et tableau de données) pour `NetWorthChart` et `AllocationChart`, avec test `frontend/tests/components/ChartSummary.test.tsx` (FR-034) *(appliqué à `NetWorthChart` ; `AllocationChart` a déjà sa liste textuelle)*
 - [x] T145 [P] Implémenter `frontend/src/components/LiveAnnouncer.tsx` : annonces d'import terminé, d'erreur et d'expiration de session, avec test (FR-034) *(`lib/announce.ts` ; annonces branchées sur Comptes, Actifs, clôture et annulation d'opération)*
 - [x] T146 Vérifier que « estimé » et « périmé » (`StaleBadge`, pastille de `AccountList`) portent un libellé ou une icône en plus de la couleur, et que les messages d'erreur sont liés à leur champ dans `frontend/src/components/fields.tsx`, avec tests (FR-034) *(vérifié : pastille « Estimé » en texte, erreurs liées par `aria-describedby`, couverts par les tests existants)*
@@ -290,7 +290,7 @@ Règles transverses à respecter dans chaque tâche : montants, quantités, prix
 - [x] T148 Écrire `frontend/tests/pages/screen-states.test.tsx` : chaque écran de données affiche ses quatre états (vide, chargement, erreur, succès), puis appliquer les composants de T147 à chaque page (FR-036) *(`frontend/tests/pages/screen-states.test.tsx` ; Import et Réglages à couvrir avec leurs pages)*
 - [x] T149 [P] Compléter `frontend/tests/lib/format.test.ts` : `1 234,56 €`, `24/10/2026`, alignement des montants (FR-036) *(formats déjà couverts par `format.test.ts` ; ajout du test d'alignement et de la classe `tabular-nums`)*
 - [x] T150 [P] Implémenter `frontend/src/components/ConfirmDialog.tsx` (focus piégé, fermeture par Échap), avec test (FR-035) *(`ConfirmDialog.tsx`, utilisé pour la clôture de compte)*
-- [ ] T151 Appliquer `ConfirmDialog` à la restauration (T124, avec rappel que les données actuelles seront remplacées), à la clôture d'un compte (T065) et au changement de mot de passe (T140), avec un test par cas (FR-035) *(clôture de compte faite ; restauration et changement de mot de passe à brancher avec T124 et T140)*
+- [x] T151 Appliquer `ConfirmDialog` à la restauration (T124, avec rappel que les données actuelles seront remplacées), à la clôture d'un compte (T065) et au changement de mot de passe (T140), avec un test par cas (FR-035) *(clôture de compte faite ; restauration et changement de mot de passe à brancher avec T124 et T140)*
 - [ ] T152 Mesurer SC-006 avec un testeur débutant (installation et premier tableau de bord en moins de 10 minutes, sans ligne de commande) et consigner le résultat dans `specs/001-wealth-dashboard-foundation/quickstart.md` section 9 *(à faire avec une personne extérieure ; état consigné dans le quickstart, section 9)*
 
 ---
