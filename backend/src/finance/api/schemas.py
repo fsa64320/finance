@@ -54,6 +54,11 @@ class PasswordRequest(BaseModel):
     password: str = Field(min_length=12, max_length=128)
 
 
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str = Field(min_length=12, max_length=128)
+
+
 class UnlockRequest(BaseModel):
     password: str = Field(min_length=1, max_length=128)
 

@@ -26,7 +26,7 @@ from finance.auth.errors import (
     NotInitializedError,
     TooManyAttemptsError,
 )
-from finance.auth.passwords import validate_password
+from finance.auth.passwords import PasswordPolicyError, validate_password
 from finance.auth.ratelimit import AttemptLimiter
 from finance.auth.sessions import SessionStore
 from finance.config import Settings
@@ -36,6 +36,7 @@ from finance.db.engine import (
     WrongPasswordError,
     cipher_settings,
     open_database,
+    rekey,
 )
 from finance.db.migrate import upgrade
 from finance.db.session import make_session_factory
@@ -126,6 +127,39 @@ class AuthService:
                 self._engine = engine
             else:
                 engine.dispose()  # simple vérification du mot de passe : la base est déjà ouverte
+            return self._sessions.create()
+
+    def change_password(self, current: str, new: str) -> str:
+        """Rechiffre la base avec `new` après avoir vérifié `current` (FR-033).
+
+        Les essais ratés comptent comme ceux du déverrouillage. L'ancien mot de passe cesse de
+        fonctionner immédiatement, les autres sessions sont fermées et le jeton d'une nouvelle
+        session est renvoyé.
+        """
+        with self._lock:
+            if self._engine is None:
+                raise LockedError("l'instance est verrouillée")
+            delay = self._limiter.retry_after()
+            if delay > 0:
+                raise TooManyAttemptsError(delay)
+            validate_password(new)
+            if new == current:
+                raise PasswordPolicyError("Le nouveau mot de passe doit différer de l'actuel.")
+            database = metadata.database_path(self._data_dir)
+            try:
+                open_database(database, current).dispose()
+            except DatabaseNotFoundError as error:
+                raise DatabaseMissingError("le fichier de base a disparu") from error
+            except (WrongPasswordError, ValueError) as error:
+                self._limiter.record_failure()
+                raise InvalidCredentialsError("mot de passe actuel incorrect") from error
+            self._limiter.record_success()
+
+            rekey(self._engine, new)
+            self._close()
+            self._engine = open_database(database, new)
+            self._factory = None
+            self._sessions.clear()
             return self._sessions.create()
 
     def lock(self, token: str | None = None) -> None:

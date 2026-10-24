@@ -1,0 +1,33 @@
+# Le contexte de construction ne contient que ce dont l'image a besoin : ni secrets, ni données.
+.git
+.github
+.specify
+.claude
+graphify-out
+docs
+specs
+scripts
+*.md
+!backend/README.md
+
+# Données et secrets locaux
+data
+exports
+.env
+.env.*
+*.db
+*.sqlite
+*.sqlite3
+*.pem
+*.key
+
+# Dépendances et caches reconstruits dans l'image
+**/node_modules
+**/.venv
+**/__pycache__
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+frontend/dist
+backend/tests
+frontend/tests
