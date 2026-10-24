@@ -5,10 +5,10 @@ from decimal import Decimal
 from typing import Any
 
 import pytest
-from finance.domain.rules import RuleResult, check_transaction
 
 from finance.domain.enums import AccountType as A
 from finance.domain.enums import TransactionType as T
+from finance.domain.rules import RuleResult, check_transaction
 
 
 def check(**overrides: Any) -> RuleResult:
@@ -159,3 +159,7 @@ def test_all_errors_are_reported_together_with_french_messages() -> None:
     result = buy(account_type=A.LIVRET_A, quantity=Decimal(0), trade_date=date(2025, 1, 1))
     assert {"livret_a_cash_only", "quantity_positive", "before_opening"} <= codes(result)
     assert all(violation.message and violation.field for violation in result.errors)
+
+
+def test_a_purchase_refuses_a_free_amount() -> None:
+    assert "amount_forbidden" in codes(buy(amount=Decimal(100)))

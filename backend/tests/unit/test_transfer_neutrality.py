@@ -3,7 +3,9 @@
 from decimal import Decimal
 
 import pytest
+
 from finance.domain.entries import Entry
+from finance.domain.enums import TransactionType as T
 from finance.domain.ledger import cash_balance
 from finance.domain.transfers import (
     TransferLegs,
@@ -12,8 +14,6 @@ from finance.domain.transfers import (
     validate_transfer,
     void_transfer,
 )
-
-from finance.domain.enums import TransactionType as T
 from tests.domain_helpers import d, day, deposit
 
 
@@ -134,3 +134,8 @@ def test_void_cancels_both_legs_together() -> None:
     from finance.domain.entries import active_entries
 
     assert active_entries([legs.out, legs.into]) == []
+
+
+def test_update_refuses_a_non_positive_amount() -> None:
+    with pytest.raises(ValueError, match="positif"):
+        update_transfer(transfer(), amount=d("0"))

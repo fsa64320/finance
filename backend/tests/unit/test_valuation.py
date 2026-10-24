@@ -3,11 +3,11 @@
 from decimal import Decimal
 
 import pytest
-from finance.domain.valuation import AccountValue, PositionValue, value_account
 
 from finance.domain.enums import InstrumentKind as K
 from finance.domain.enums import PriceKind as P
 from finance.domain.enums import TransactionType as T
+from finance.domain.valuation import AccountValue, PositionValue, value_account
 from tests.domain_helpers import buy, d, day, deposit, instrument, make, price, sell
 
 ETF = instrument("etf", K.ETF)
@@ -17,7 +17,7 @@ def value(entries, prices=(), instruments=None, on="2026-01-31") -> AccountValue
     return value_account(
         account_id="a1",
         entries=entries,
-        instruments=instruments or {"etf": ETF},
+        instruments={"etf": ETF} if instruments is None else instruments,
         prices=list(prices),
         balances=[],
         as_of=day(on),
@@ -148,3 +148,11 @@ def test_result_is_exact_decimal() -> None:
     result = value(scenario(), [price("etf", "2026-01-20", "0.1")])
     assert isinstance(result.total, Decimal)
     assert result.total == d("98.01") + d("1.0")
+
+
+def test_cash_instruments_are_not_positions() -> None:
+    cash = instrument("cash", K.CASH)
+    entries = [deposit("100", "2026-01-02"), buy("1", "1", "2026-01-03", instrument="cash")]
+    result = value(entries, instruments={"cash": cash})
+    assert result.positions == ()
+    assert result.cash == d("99")

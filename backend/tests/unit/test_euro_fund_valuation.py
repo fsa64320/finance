@@ -1,9 +1,8 @@
 """FR-006 : un fonds en euros n'a pas de cours ; sa valeur vient du dernier solde déclaré."""
 
-from finance.domain.valuation import AccountValue, PositionValue, value_account
-
 from finance.domain.enums import InstrumentKind
 from finance.domain.enums import TransactionType as T
+from finance.domain.valuation import AccountValue, PositionValue, value_account
 from tests.domain_helpers import d, day, declared, deposit, instrument, make
 
 FUND = instrument("fe", InstrumentKind.EURO_FUND)
@@ -106,3 +105,10 @@ def test_a_declared_balance_makes_the_fund_appear_without_any_purchase() -> None
     result = value([], [declared("fe", "2026-01-01", "5000")])
     assert [p.instrument_id for p in result.positions] == ["fe"]
     assert not result.estimated
+
+
+def test_a_balance_in_another_currency_cannot_be_converted_yet() -> None:
+    result = value([], [declared("fe", "2026-01-01", "5000", currency="USD")])
+    assert fund_value(result).value is None
+    assert [w.code for w in result.warnings] == ["non_convertible"]
+    assert result.total == d("0")
