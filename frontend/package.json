@@ -21,7 +21,7 @@
     "e2e:screenshots": "E2E_SCREENSHOTS=1 playwright test --project=parcours"
   },
   "dependencies": {
-    "@tanstack/react-query": "^5.104.5",
+    "@tanstack/react-query": "^5.105.0",
     "decimal.js-light": "^2.5.1",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
