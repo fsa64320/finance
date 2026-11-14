@@ -9,7 +9,7 @@ COPY frontend/ ./
 RUN npm run build
 
 # --- Étape 2 : dépendances Python (lockfile figé) ---------------------------------------------
-FROM python:3.12-slim AS backend
+FROM python:3.15-slim AS backend
 COPY --from=ghcr.io/astral-sh/uv:0.11 /uv /usr/local/bin/uv
 WORKDIR /app/backend
 ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy UV_PYTHON_DOWNLOADS=never
@@ -17,7 +17,7 @@ COPY backend/pyproject.toml backend/uv.lock ./
 RUN uv sync --frozen --no-dev --no-install-project
 
 # --- Étape 3 : image d'exécution --------------------------------------------------------------
-FROM python:3.12-slim
+FROM python:3.15-slim
 LABEL org.opencontainers.image.title="Finance" \
       org.opencontainers.image.description="Suivi de patrimoine auto-hébergé" \
       org.opencontainers.image.licenses="AGPL-3.0-only" \
